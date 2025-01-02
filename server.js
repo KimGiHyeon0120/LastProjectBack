@@ -48,24 +48,56 @@ app.post('/auth/register', async (req, res) => {
         return res.status(400).json({ message: '모든 필드를 입력해주세요.' });
     }
 
-    try {
-        // 비밀번호 암호화
-        const saltRounds = 10; // 암호화 강도 (높을수록 보안성 증가)
-        const hashedPassword = await bcrypt.hash(userPassword, saltRounds);
+    // MySQL 트랜잭션 시작
+    connection.beginTransaction(async (err) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ message: '트랜잭션 시작 실패' });
+        }
 
-        // 데이터베이스에 저장
-        const query = `INSERT INTO Users (user_id, user_name, user_email, user_password, role_id) VALUES (?, ?, ?, ?, ?)`;
-        connection.query(query, [userId, userName, userEmail, hashedPassword, 2], (err, results) => {
-            if (err) {
-                console.error(err);
-                return res.status(500).json({ message: '회원가입 실패' });
+        try {
+            // 중복 체크
+            const checkQuery = `SELECT COUNT(*) AS count FROM Users WHERE user_id = ? OR user_email = ?`;
+            const [checkResults] = await new Promise((resolve, reject) => {
+                connection.query(checkQuery, [userId, userEmail], (err, results) => {
+                    if (err) reject(err);
+                    else resolve(results);
+                });
+            });
+
+            if (checkResults.count > 0) {
+                throw new Error('아이디 또는 이메일이 이미 사용 중입니다.');
             }
-            res.status(201).json({ message: '회원가입 성공' });
-        });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: '서버 오류 발생' });
-    }
+
+            // 비밀번호 암호화
+            const saltRounds = 10;
+            const hashedPassword = await bcrypt.hash(userPassword, saltRounds);
+
+            // 사용자 등록
+            const insertQuery = `INSERT INTO Users (user_id, user_name, user_email, user_password, role_id) VALUES (?, ?, ?, ?, ?)`;
+            await new Promise((resolve, reject) => {
+                connection.query(insertQuery, [userId, userName, userEmail, hashedPassword, 2], (err, results) => {
+                    if (err) reject(err);
+                    else resolve(results);
+                });
+            });
+
+            // 트랜잭션 커밋
+            connection.commit((err) => {
+                if (err) {
+                    throw err;
+                }
+                res.status(201).json({ message: '회원가입 성공' });
+            });
+        } catch (err) {
+            console.error(err);
+
+            // 트랜잭션 롤백
+            connection.rollback(() => {
+                res.status(500).json({ message: '회원가입 실패', error: err.message });
+            });
+        }
+    });
 });
 
 
@@ -107,20 +139,100 @@ app.post('/auth/login', (req, res) => {
 // ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
-// 비밀번호 변경
-app.get('/auth/profile/:userId', (req, res) => {
-    const userId = req.params.userId;
-    const query = `SELECT user_id, user_name, user_email, user_profile_image FROM Users WHERE user_id = ?`;
-    connection.query(query, [userId], (err, results) => {
+// 아이디 찾기
+app.post('/auth/find-id', (req, res) => {
+    const { userEmail } = req.body;
+
+    console.log("Received email:", userEmail); // 전달된 userEmail 확인
+
+    if (!userEmail) {
+        return res.status(400).json({ message: '이메일을 입력해주세요.' });
+    }
+
+    const query = `SELECT user_id FROM Users WHERE user_email = ?`;
+    connection.query(query, [userEmail], (err, results) => {
         if (err) {
             console.error(err);
-            res.status(500).json({ message: '프로필 조회 실패' });
-        } else if (results.length === 0) {
-            res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
-        } else {
-            res.status(200).json(results[0]);
+            return res.status(500).json({ message: '아이디 찾기 실패' });
         }
+
+        if (results.length === 0) {
+            return res.status(404).json({ message: '등록된 사용자가 없습니다.' });
+        }
+
+        res.status(200).json({ userId: results[0].user_id });
     });
+});
+
+
+
+
+// ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+// 비밀번호 찾기
+app.post('/auth/reset-password/request', (req, res) => {
+    const { userEmail } = req.body;
+
+    if (!userEmail) {
+        return res.status(400).json({ message: '이메일을 입력해주세요.' });
+    }
+
+    const query = `SELECT user_id FROM Users WHERE user_email = ?`;
+    connection.query(query, [userEmail], (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ message: '비밀번호 재설정 요청 실패' });
+        }
+
+        if (results.length === 0) {
+            return res.status(404).json({ message: '등록된 사용자가 없습니다.' });
+        }
+
+        // 비밀번호 재설정 링크 생성
+        const resetLink = `http://localhost:3000/auth/reset-password?email=${userEmail}`;
+        res.status(200).json({ resetLink });
+    });
+});
+
+
+
+
+
+// ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+// 비밀번호 변경
+app.post('/auth/reset-password', async (req, res) => {
+    const { userEmail, newPassword } = req.body;
+
+    if (!userEmail || !newPassword) {
+        return res.status(400).json({ message: '이메일과 새 비밀번호를 입력해주세요.' });
+    }
+
+    try {
+        const hashedPassword = await bcrypt.hash(newPassword, 10); // 비밀번호 암호화
+
+        const query = `UPDATE Users SET user_password = ? WHERE user_email = ?`;
+        connection.query(query, [hashedPassword, userEmail], (err, results) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).json({ message: '비밀번호 재설정 실패' });
+            }
+
+            if (results.affectedRows === 0) {
+                return res.status(404).json({ message: '등록된 사용자가 없습니다.' });
+            }
+
+            res.status(200).json({ message: '비밀번호가 성공적으로 변경되었습니다.' });
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: '서버 오류 발생' });
+    }
 });
 
 
