@@ -71,64 +71,6 @@ router.post('/create', async (req, res) => {
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-// 이메일로 프로젝트 팀원 추가
-router.post('/add-member', async (req, res) => {
-    const { projectId, userEmail, projectRoleId } = req.body;
-
-    if (!projectId || !userEmail || !projectRoleId) {
-        return res.status(400).json({ message: '필수 필드를 모두 입력해주세요.' });
-    }
-
-    try {
-        // 사용자 이메일로 존재 여부 확인
-        const [user] = await connection.promise().query(
-            `SELECT user_idx FROM Users WHERE user_email = ?`,
-            [userEmail]
-        );
-
-        if (user.length === 0) {
-            return res.status(404).json({ message: '존재하지 않는 사용자 이메일입니다.' });
-        }
-
-        const userIdx = user[0].user_idx;
-
-        // 프로젝트 존재 여부 확인
-        const [project] = await connection.promise().query(
-            `SELECT project_id FROM Projects WHERE project_id = ?`,
-            [projectId]
-        );
-
-        if (project.length === 0) {
-            return res.status(404).json({ message: '존재하지 않는 프로젝트입니다.' });
-        }
-
-        // 중복 멤버 확인
-        const [existingMember] = await connection.promise().query(
-            `SELECT id FROM Project_Members WHERE project_id = ? AND user_idx = ?`,
-            [projectId, userIdx]
-        );
-
-        if (existingMember.length > 0) {
-            return res.status(400).json({ message: '이미 프로젝트에 추가된 사용자입니다.' });
-        }
-
-        // 프로젝트 멤버 추가
-        await connection.promise().query(
-            `INSERT INTO Project_Members (project_id, user_idx, project_role_id) VALUES (?, ?, ?)`,
-            [projectId, userIdx, projectRoleId]
-        );
-
-        res.status(201).json({ message: '프로젝트 팀원이 성공적으로 추가되었습니다.' });
-    } catch (err) {
-        console.error('프로젝트 팀원 추가 오류:', err);
-        res.status(500).json({ message: '프로젝트 팀원 추가 중 오류가 발생했습니다.' });
-    }
-});
-
-
-// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
 
 // 프로젝트 리스트 조회
 router.get('/list', async (req, res) => {
@@ -234,6 +176,235 @@ router.delete('/delete', async (req, res) => {
 
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+// 이메일로 프로젝트 팀원 추가
+router.post('/add-member', async (req, res) => {
+    const { projectId, userEmail, projectRoleId } = req.body;
+
+    if (!projectId || !userEmail || !projectRoleId) {
+        return res.status(400).json({ message: '필수 필드를 모두 입력해주세요.' });
+    }
+
+    try {
+        // 사용자 이메일로 존재 여부 확인
+        const [user] = await connection.promise().query(
+            `SELECT user_idx FROM Users WHERE user_email = ?`,
+            [userEmail]
+        );
+
+        if (user.length === 0) {
+            return res.status(404).json({ message: '존재하지 않는 사용자 이메일입니다.' });
+        }
+
+        const userIdx = user[0].user_idx;
+
+        // 프로젝트 존재 여부 확인
+        const [project] = await connection.promise().query(
+            `SELECT project_id FROM Projects WHERE project_id = ?`,
+            [projectId]
+        );
+
+        if (project.length === 0) {
+            return res.status(404).json({ message: '존재하지 않는 프로젝트입니다.' });
+        }
+
+        // 중복 멤버 확인
+        const [existingMember] = await connection.promise().query(
+            `SELECT id FROM Project_Members WHERE project_id = ? AND user_idx = ?`,
+            [projectId, userIdx]
+        );
+
+        if (existingMember.length > 0) {
+            return res.status(400).json({ message: '이미 프로젝트에 추가된 사용자입니다.' });
+        }
+
+        // 프로젝트 멤버 추가
+        await connection.promise().query(
+            `INSERT INTO Project_Members (project_id, user_idx, project_role_id) VALUES (?, ?, ?)`,
+            [projectId, userIdx, projectRoleId]
+        );
+
+        res.status(201).json({ message: '프로젝트 팀원이 성공적으로 추가되었습니다.' });
+    } catch (err) {
+        console.error('프로젝트 팀원 추가 오류:', err);
+        res.status(500).json({ message: '프로젝트 팀원 추가 중 오류가 발생했습니다.' });
+    }
+});
+
+
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+// 팀장 넘겨주기
+router.put('/transfer-leader', async (req, res) => {
+    const { projectId, requesterEmail, newLeaderEmail } = req.body;
+
+    if (!projectId || !requesterEmail || !newLeaderEmail) {
+        return res.status(400).json({ message: '필수 필드를 모두 입력해주세요.' });
+    }
+
+    try {
+        // 요청자(현재 사용자)의 ID 확인
+        const [requester] = await connection.promise().query(
+            `SELECT user_idx FROM Users WHERE user_email = ?`,
+            [requesterEmail]
+        );
+
+        if (requester.length === 0) {
+            return res.status(404).json({ message: '존재하지 않는 요청자 이메일입니다.' });
+        }
+
+        const requesterId = requester[0].user_idx;
+
+        // 요청자가 팀장인지 확인
+        const [requesterRole] = await connection.promise().query(
+            `SELECT project_role_id FROM Project_Members WHERE project_id = ? AND user_idx = ?`,
+            [projectId, requesterId]
+        );
+
+        if (requesterRole.length === 0 || requesterRole[0].project_role_id !== 1) {
+            return res.status(403).json({ message: '팀장이 아니므로 권한이 없습니다.' });
+        }
+
+        // 새 팀장의 사용자 ID 확인
+        const [newLeader] = await connection.promise().query(
+            `SELECT user_idx FROM Users WHERE user_email = ?`,
+            [newLeaderEmail]
+        );
+
+        if (newLeader.length === 0) {
+            return res.status(404).json({ message: '존재하지 않는 새 팀장 이메일입니다.' });
+        }
+
+        const newLeaderId = newLeader[0].user_idx;
+
+        // 새 팀장이 해당 프로젝트에 속해 있는지 확인
+        const [newLeaderMembership] = await connection.promise().query(
+            `SELECT id FROM Project_Members WHERE project_id = ? AND user_idx = ?`,
+            [projectId, newLeaderId]
+        );
+
+        if (newLeaderMembership.length === 0) {
+            return res.status(404).json({ message: '새 팀장이 해당 프로젝트에 속해 있지 않습니다.' });
+        }
+
+        // 트랜잭션 시작
+        await connection.promise().query('START TRANSACTION');
+
+        // 기존 팀장을 팀원으로 변경
+        await connection.promise().query(
+            `UPDATE Project_Members SET project_role_id = 2 WHERE project_id = ? AND user_idx = ?`,
+            [projectId, requesterId]
+        );
+
+        // 새 팀장을 팀장으로 변경
+        await connection.promise().query(
+            `UPDATE Project_Members SET project_role_id = 1 WHERE project_id = ? AND user_idx = ?`,
+            [projectId, newLeaderId]
+        );
+
+        // 트랜잭션 커밋
+        await connection.promise().query('COMMIT');
+
+        res.status(200).json({ message: '팀장 역할이 성공적으로 넘겨졌습니다.' });
+    } catch (err) {
+        console.error('팀장 역할 변경 오류:', err);
+
+        // 트랜잭션 롤백
+        await connection.promise().query('ROLLBACK');
+
+        res.status(500).json({ message: '팀장 역할 변경 중 오류가 발생했습니다.' });
+    }
+});
+
+
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+// 프로젝트 팀원 삭제
+router.delete('/delete-member', async (req, res) => {
+    const { projectId, requesterEmail, memberEmail } = req.body;
+
+    if (!projectId || !requesterEmail || !memberEmail) {
+        return res.status(400).json({ message: '필수 필드를 모두 입력해주세요.' });
+    }
+
+    try {
+        // 요청자(현재 사용자)의 ID 확인
+        const [requester] = await connection.promise().query(
+            `SELECT user_idx FROM Users WHERE user_email = ?`,
+            [requesterEmail]
+        );
+
+        if (requester.length === 0) {
+            return res.status(404).json({ message: '존재하지 않는 요청자 이메일입니다.' });
+        }
+
+        const requesterId = requester[0].user_idx;
+
+        // 요청자가 팀장인지 확인
+        const [requesterRole] = await connection.promise().query(
+            `SELECT project_role_id FROM Project_Members WHERE project_id = ? AND user_idx = ?`,
+            [projectId, requesterId]
+        );
+
+        if (requesterRole.length === 0 || requesterRole[0].project_role_id !== 1) {
+            return res.status(403).json({ message: '팀장이 아니므로 권한이 없습니다.' });
+        }
+
+        // 삭제할 팀원의 ID 확인
+        const [member] = await connection.promise().query(
+            `SELECT user_idx FROM Users WHERE user_email = ?`,
+            [memberEmail]
+        );
+
+        if (member.length === 0) {
+            return res.status(404).json({ message: '존재하지 않는 팀원 이메일입니다.' });
+        }
+
+        const memberId = member[0].user_idx;
+
+        // 삭제할 팀원이 해당 프로젝트에 속해 있는지 확인
+        const [memberInProject] = await connection.promise().query(
+            `SELECT id FROM Project_Members WHERE project_id = ? AND user_idx = ?`,
+            [projectId, memberId]
+        );
+
+        if (memberInProject.length === 0) {
+            return res.status(404).json({ message: '삭제할 팀원이 프로젝트에 속해 있지 않습니다.' });
+        }
+
+        // 팀원 삭제
+        await connection.promise().query(
+            `DELETE FROM Project_Members WHERE project_id = ? AND user_idx = ?`,
+            [projectId, memberId]
+        );
+
+        res.status(200).json({ message: '프로젝트 팀원이 성공적으로 삭제되었습니다.' });
+    } catch (err) {
+        console.error('팀원 삭제 오류:', err);
+        res.status(500).json({ message: '프로젝트 팀원 삭제 중 오류가 발생했습니다.' });
+    }
+});
+
+
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 module.exports = router;
