@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="../css/sample_01.css">
+</head>
+<body>
+    <div class="sidebar">
+        <h2>내 칸반 프로젝트</h2>
+        <ul>
+            <li><a href="#">요약</a></li>
+            <li><a href="#">타임라인</a></li>
+            <li><a href="#" class="active">보드</a></li>
+            <li><a href="#">목록</a></li>
+            <li><a href="#">목표</a></li>
+            <li><a href="#">보기 추가</a></li>
+        </ul>
+    </div>
+    <div class="main">
+        <div class="header">
+            <h1>보기 추가</h1>
+        </div>
+        <div class="content">
+            <form>
+                <div class="task">
+                    <label for="viewName">보기 이름</label>
+                    <input type="text" id="viewName" placeholder="보기 이름 입력">
+                </div>
+                <div class="task">
+                    <label for="viewType">보기 유형</label>
+                    <select id="viewType">
+                        <option value="kanban">칸반</option>
+                        <option value="list">목록</option>
+                        <option value="calendar">캘린더</option>
+                    </select>
+                </div>
+                <div class="add-task" onclick="alert('새 보기가 추가되었습니다!')">+ 추가하기</div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
