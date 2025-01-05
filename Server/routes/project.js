@@ -10,13 +10,6 @@ const connection = mysql.createConnection({
     database: 'project',
 });
 
-connection.connect((err) => {
-    if (err) {
-        console.error('Database connection failed:', err.stack);
-    } else {
-        console.log('Connected to database for Projects');
-    }
-});
 
 
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -81,26 +74,25 @@ router.get('/list-by-user', async (req, res) => {
     }
 
     try {
-        const [projects] = await connection.promise().query(
-            `
-            SELECT DISTINCT 
-                p.project_id AS projectId,
-                p.project_name AS projectName,
-                p.is_team_project AS isTeamProject,
-                p.created_at AS createdAt
-            FROM Projects p
-            INNER JOIN Project_Members pm ON p.project_id = pm.project_id
-            WHERE p.user_idx = ? OR pm.user_idx = ?
-            ORDER BY p.created_at DESC
-            `,
+        const [ownedProjects] = await connection.promise().query(
+            `SELECT p.project_id, p.project_name, p.created_at 
+             FROM Projects p
+             WHERE p.user_idx = ?`,
+            [userId]
+        );
+
+        const [participatingProjects] = await connection.promise().query(
+            `SELECT DISTINCT p.project_id, p.project_name, p.created_at
+             FROM Projects p
+             INNER JOIN Project_Members pm ON p.project_id = pm.project_id
+             WHERE pm.user_idx = ? AND p.user_idx != ?`,
             [userId, userId]
         );
 
-        if (projects.length === 0) {
-            return res.status(404).json({ message: '사용자가 참여한 프로젝트가 없습니다.' });
-        }
-
-        res.status(200).json(projects);
+        res.status(200).json({
+            ownedProjects,
+            participatingProjects,
+        });
     } catch (err) {
         console.error('사용자별 프로젝트 목록 조회 오류:', err);
         res.status(500).json({ message: '사용자별 프로젝트 목록 조회 중 오류가 발생했습니다.' });
