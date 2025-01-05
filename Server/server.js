@@ -5,39 +5,31 @@ const cors = require('cors');
 const mysql = require('mysql2');
 
 // 라우터 가져오기
-const userRoutes = require('./routes/user'); // userRoutes 추가
+const userRoutes = require('./routes/user');
 const projectRoutes = require('./routes/project');
 const scriptRoutes = require('./routes/script');
-
+const mentionsRoutes = require('./routes/mentions');
+const commentRoutes = require('./routes/comment');
+const notifiRoutes = require('./routes/notification'); // 오타 수정
 
 const app = express();
 
 // CORS 설정
 app.use(cors());
 
-// DB 연결 설정
-const connection = mysql.createConnection({
-    host: 'localhost',
-    port: 3306,
-    user: 'root',
-    password: '1234',
-    database: 'project',
-});
-
-
 // JSON 요청 파싱
 app.use(bodyParser.json());
 
 // 라우터 연결
-app.use('/api/users', userRoutes); // userRoutes 연결
+app.use('/api/users', userRoutes);
 app.use('/api/project', projectRoutes);
 app.use('/api/script', scriptRoutes);
-
-
-
+app.use('/api/mentions', mentionsRoutes);
+app.use('/api/comment', commentRoutes);
+app.use('/api/notification', notifiRoutes); // 오타 수정
 
 // 서버 시작
-const PORT = process.env.PORT || 3000; // 환경 변수 사용 가능
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
