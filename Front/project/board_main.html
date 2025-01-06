@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WBS 진행 보드</title>
+    <link rel="stylesheet" href="../css/sample_01.css">
+    <script>
+        function loadHTML(file) {
+            var rawFile = new XMLHttpRequest();
+            rawFile.open("GET", file, false);
+            rawFile.onreadystatechange = function () {
+                if (rawFile.readyState === 4) {
+                    if (rawFile.status === 200 || rawFile.status == 0) {
+                        var allText = rawFile.responseText;
+                        document.write(allText);
+                    }
+                }
+            }
+            rawFile.send(null);
+        }
+    </script>
+</head>
+<body>
+        <!-- 헤더 영역 -->
+        <header>
+            <script>loadHTML("./header.html")</script>
+        </header>
+
+    <div class="main">
+        <div class="header">
+            <h1>KAN 보드</h1>
+            <div class="actions">
+                <button style="background: #fff; border: none; padding: 5px 8px; cursor: pointer; border-radius: 4px; font-size: 14px;">+ 만들기</button>
+            </div>
+        </div>
+        <div class="tabs">
+            <a href="#" class="active">할 일</a>
+            <a href="#">진행 중</a>
+            <a href="#">완료</a>
+        </div>
+        <div class="content">
+            <div class="board">
+                <div class="board-column">
+                    <h3>할 일</h3>
+                    <div class="task">123</div>
+                    <div class="task">KAN-1</div>
+                    <div class="add-task">+ 이슈 만들기</div>
+                </div>
+                <div class="board-column">
+                    <h3>진행 중</h3>
+                    <div class="add-task">+</div>
+                </div>
+                <div class="board-column">
+                    <h3>완료</h3>
+                    <div class="add-task">+</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

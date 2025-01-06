@@ -1,0 +1,196 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: white;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.logo {
+    text-align: center; /* 가운데 정렬 */
+    margin-bottom: 30px;
+}
+
+.logo img {
+    display: block; /* 블록 요소로 설정하여 이미지가 한 줄에 배치 */
+    margin: 0 auto; /* 가로 정렬 중앙 */
+    width: 100px; /* 로고 크기 */
+    height: auto;
+    margin-bottom: 30px;
+}
+
+.tagline {
+    font-size: 16px; /* 멘트 글씨 크기 */
+    color: #666; /* 멘트 색상 */
+    font-weight: 500; /* 글씨 두께 */
+    margin-top: 10px; /* 로고와 멘트 간 간격 */
+    white-space: nowrap; /* 한 줄 유지 */
+}
+
+
+.container {
+    background: white;
+    width: 400px;
+    padding: 30px 20px;
+    text-align: center;
+    /* 테두리와 그림자 제거 */
+    border: none; 
+    box-shadow: none;
+    border-radius: 0; /* 필요에 따라 라운드 모서리도 없앨 수 있습니다 */
+}
+
+
+/* Google 로그인 버튼 위치 수정 */
+.google-login {
+    width: 100%;
+    padding: 12px;
+    margin-top: 20px;
+    font-size: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 30px; /* 원하는 간격을 추가 */
+    border: 1px solid #ddd; /* 테두리 추가 */
+    border-radius: 8px; /* 테두리 둥글게 */
+}
+
+.google-login img {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+}
+
+.google-login:hover {
+    background-color: #f4f4f4;
+    border-color: #bbb; /* 호버 시 테두리 색 변경 */
+}
+
+/* 폼 관련 스타일 */
+.form-group {
+    position: relative;
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.form-group label {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: #666;
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 20px 10px 5px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-sizing: border-box;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus {
+ 
+    border: 2px solid rgb(35, 131, 226);
+
+}
+
+.form-group input:focus + label,
+.form-group input:not(:placeholder-shown) + label {
+    top: 10px;
+    font-size: 12px;
+}
+
+.form-group input:focus + label + .span-text {
+    display: inline-block;
+    font-size: 12px;
+    color: rgb(35, 131, 226);
+
+    margin-top: 5px;
+}
+
+.form-group .span-text {
+    display: none;
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+}
+
+.form-actions {
+    margin-top: 20px;
+}
+
+.form-actions .login {
+    width: 100%;
+    padding: 12px;
+    font-size: 14px;
+    background-color: rgb(35, 131, 226);
+
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.form-actions .login:hover {
+    background-color: rgb(35, 131, 226);
+
+}
+
+/* 링크들 간의 구분 기호와 간격 조정 */
+.links {
+    display: flex;
+    justify-content: center; /* 가운데 정렬 */
+    margin-top: 15px;
+}
+
+/* 링크들 간의 구분 기호와 간격 조정 */
+.links a {
+    font-size: 12px; /* 글씨 크기 줄이기 */
+    color: #666;
+    text-decoration: none;
+    transition: color 0.2s, background-color 0.2s; /* 배경색 전환 애니메이션 추가 */
+    margin: 0 8px; /* 간격을 좁혀줌 */
+    padding: 5px 10px; /* 배경색 효과를 위해 여백 추가 */
+    border-radius: 4px; /* 둥근 모서리 추가 */
+    position: relative; /* ::after를 위해 위치 속성 설정 */
+}
+
+.links a:hover {
+    color: black;
+    background-color: #f4f4f4; /* 배경색 추가 */
+}
+
+.links a:not(:last-child)::after {
+    content: '|'; /* 구분 기호 추가 */
+    margin-left: 14px;
+    color: #eee;
+    position: absolute; /* 링크의 배경과 분리 */
+    right: -10px; /* 적절한 위치 조정 */
+    top: 50%;
+    transform: translateY(-50%);
+    background: none; /* 배경 제거 */
+    padding: 0; /* ::after 자체 여백 제거 */
+    transition: none; /* ::after에 애니메이션 제거 */
+}
+
+/* 링크에 마우스를 올렸을 때 ::after에 배경색이 추가되지 않도록 설정 */
+.links a:hover::after {
+    background: none; /* 배경색 제거 */
+}
