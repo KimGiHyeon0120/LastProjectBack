@@ -133,9 +133,6 @@ router.post('/login', (req, res) => {
 // 아이디 찾기
 router.post('/find-id', (req, res) => {
     const { userEmail } = req.body;
-
-    console.log("Received email:", userEmail); // 전달된 userEmail 확인
-
     if (!userEmail) {
         return res.status(400).json({ message: '이메일을 입력해주세요.' });
     }
@@ -143,7 +140,6 @@ router.post('/find-id', (req, res) => {
     const query = `SELECT user_id FROM Users WHERE user_email = ?`;
     connection.query(query, [userEmail], (err, results) => {
         if (err) {
-            console.error(err);
             return res.status(500).json({ message: '아이디 찾기 실패' });
         }
 
