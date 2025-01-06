@@ -8,7 +8,7 @@ const mysql = require('mysql2');
 const userRoutes = require('./routes/user'); // userRoutes 추가
 const projectRoutes = require('./routes/project');
 const scriptRoutes = require('./routes/script');
-
+const tesksRoutes = require('./routes/tasks');
 
 const app = express();
 
@@ -32,6 +32,7 @@ app.use(bodyParser.json());
 app.use('/api/users', userRoutes); // userRoutes 연결
 app.use('/api/project', projectRoutes);
 app.use('/api/script', scriptRoutes);
+app.use('/api/tasks', tesksRoutes);
 
 
 
