@@ -21,12 +21,12 @@
             <div class="form-group">
                 <input type="text" id="username" placeholder=" ">
                 <label for="username">아이디</label>
-            
+
             </div>
             <div class="form-group">
                 <input type="password" id="password" placeholder=" ">
                 <label for="password">비밀번호</label>
-                
+
             </div>
             <div class="form-actions">
                 <button type="button" class="login" onclick="login()">로그인</button>
@@ -37,11 +37,14 @@
             <a href="find-account.html">계정 찾기</a>
 
         </div>
-        <div class="google-login">
+        <div class="google-login" onclick="googleLogin()">
             <img src="..\img\google-logo.png" alt="Google">
             Google 계정으로 로그인
         </div>
     </div>
+
+
+
 
     <script src="../lib/jquery-3.7.1.min.js"></script>
     <script>
@@ -75,7 +78,7 @@
                         // window.location.href = '../Login/login.html';
 
 
-                        
+
                         // 사용자 정보 저장 (localStorage 또는 sessionStorage)
                         localStorage.setItem('loggedInUser', JSON.stringify(response.user));
 
@@ -96,6 +99,28 @@
             });
         }
     </script>
+
+
+
+
+
+    <script>
+        // Google 로그인 함수
+        function googleLogin() {
+            // 서버로 Google 로그인 요청
+            fetch('http://localhost:3000/api/users/login/google')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.redirectUrl) {
+                        window.location.href = data.redirectUrl; // 서버가 반환한 Google 인증 URL로 이동
+                    } else {
+                        alert('An error occurred while processing Google login');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    </script>
+    
 </body>
 
 </html>

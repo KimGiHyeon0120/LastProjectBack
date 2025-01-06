@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const router = express.Router();
+const axios = require('axios');
 
 // DB 연결 (server.js의 connection 객체 활용)
 const mysql = require('mysql2');
@@ -11,6 +12,19 @@ const connection = mysql.createConnection({
     password: '1234',
     database: 'project',
 });
+
+
+require('dotenv').config({ path: './routes/.env' }); // 정확한 경로로 수정
+
+const {
+    GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET,
+    GOOGLE_LOGIN_REDIRECT_URI,
+    GOOGLE_SIGNUP_REDIRECT_URI,
+} = process.env;
+
+const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
+const GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v2/userinfo';
 
 
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -211,6 +225,207 @@ router.post('/reset-password', async (req, res) => {
     }
 });
 
+
+
+
+
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// 구글 추가
+
+
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+// 메인 페이지
+router.get('/', (req, res) => {
+    res.send(`
+        <h1>OAuth</h1>
+        <a href="/google/login">Log in</a>
+        <a href="/google/signup">Sign up</a>
+    `);
+});
+
+
+
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+// 로그인 요청
+router.get('/login/google', (req, res) => {
+    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${GOOGLE_LOGIN_REDIRECT_URI}&response_type=code&scope=email profile`;
+    res.json({ redirectUrl: url }); // Google 인증 URL 반환
+});
+
+
+
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+// 회원가입 요청
+router.get('/signup', (req, res) => {
+    console.log('Google Signup Request Initiated');
+    let url = 'https://accounts.google.com/o/oauth2/v2/auth';
+    url += `?client_id=${GOOGLE_CLIENT_ID}`;
+    console.log(`Client ID: ${GOOGLE_CLIENT_ID}`); // 디버깅
+    url += `&redirect_uri=${GOOGLE_SIGNUP_REDIRECT_URI}`;
+    console.log(`Redirect URI: ${GOOGLE_SIGNUP_REDIRECT_URI}`); // 디버깅
+    url += '&response_type=code';
+    url += '&scope=email profile';
+    console.log(`Generated Google Auth URL: ${url}`); // 디버깅
+    res.redirect(url);
+});
+
+
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+// 로그인 리디렉션 처리
+router.get('/googlelogin/redirect', async (req, res) => {
+    const { code } = req.query;
+
+    if (!code) {
+        return res.status(400).send('Authorization code not provided');
+    }
+
+    try {
+        // Access Token 요청
+        const tokenResponse = await axios.post(GOOGLE_TOKEN_URL, {
+            code,
+            client_id: GOOGLE_CLIENT_ID,
+            client_secret: GOOGLE_CLIENT_SECRET,
+            redirect_uri: GOOGLE_LOGIN_REDIRECT_URI,
+            grant_type: 'authorization_code',
+        });
+
+        const accessToken = tokenResponse.data.access_token;
+
+        // Google 사용자 정보 요청
+        const userInfoResponse = await axios.get(GOOGLE_USERINFO_URL, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        });
+
+        const { name, email, picture } = userInfoResponse.data;
+
+        // DB에서 사용자 정보 확인 및 저장
+        const checkQuery = 'SELECT * FROM Users WHERE user_email = ?';
+        connection.query(checkQuery, [email], (checkErr, checkResults) => {
+            if (checkErr) {
+                console.error('Database error:', checkErr.message);
+                return res.status(500).send('Database error occurred');
+            }
+
+            if (checkResults.length > 0) {
+                // 기존 사용자 → 지정된 페이지로 이동
+                return res.redirect('http://127.0.0.1:5500/Front/project/board_main.html');
+            } else {
+                // 새 사용자 등록 후 이동
+                const insertQuery = `
+                    INSERT INTO Users (user_name, user_email, user_profile_image, user_is_active, role_id)
+                    VALUES (?, ?, ?, 1, 2)
+                `;
+                connection.query(insertQuery, [name, email, picture], (insertErr) => {
+                    if (insertErr) {
+                        console.error(insertErr);
+                        return res.status(500).send('Database error occurred while registering user');
+                    }
+                    // 새 사용자도 지정된 페이지로 이동
+                    return res.redirect('http://127.0.0.1:5500/Front/project/board_main.html');
+                });
+            }
+        });
+    } catch (error) {
+        console.error('Error during Google login process:', error.message);
+        res.status(500).send('An error occurred during the login process');
+    }
+});
+
+
+
+
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+
+// 회원가입 리디렉션 처리
+router.get('/googlesignup/redirect', async (req, res) => {
+    const { code } = req.query;
+    console.log(`Google Signup Redirect Hit`);
+    console.log(`Received Authorization Code: ${code}`); // 디버깅
+    if (!code) {
+        console.error('Authorization code not provided!');
+        return res.status(400).send('No authorization code provided');
+    }
+
+    try {
+        console.log('Requesting Access Token from Google...');
+        const tokenResponse = await axios.post(GOOGLE_TOKEN_URL, {
+            code,
+            client_id: GOOGLE_CLIENT_ID,
+            client_secret: GOOGLE_CLIENT_SECRET,
+            redirect_uri: GOOGLE_SIGNUP_REDIRECT_URI,
+            grant_type: 'authorization_code',
+        });
+
+        console.log('Received Access Token:', tokenResponse.data.access_token); // 디버깅
+        const accessToken = tokenResponse.data.access_token;
+
+        console.log('Requesting User Info from Google...');
+        const userInfoResponse = await axios.get(GOOGLE_USERINFO_URL, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        });
+
+        console.log('Received User Info:', userInfoResponse.data); // 디버깅
+        res.json(userInfoResponse.data);
+    } catch (error) {
+        console.error('Error during signup redirect:', error.message); // 디버깅
+        res.status(500).send('An error occurred during the signup process');
+    }
+});
 
 
 

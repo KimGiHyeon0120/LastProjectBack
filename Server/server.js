@@ -5,14 +5,13 @@ const cors = require('cors');
 const mysql = require('mysql2');
 
 // 라우터 가져오기
-const userRoutes = require('./routes/user');
+const userRoutes = require('./routes/users');
 const projectRoutes = require('./routes/project');
 const scriptRoutes = require('./routes/script');
 const tesksRoutes = require('./routes/tasks');
 const mentionsRoutes = require('./routes/mentions');
 const commentRoutes = require('./routes/comment');
 const notifiRoutes = require('./routes/notification');
-const googleRouter = require('./routes/google');
 
 
 const app = express();
@@ -31,7 +30,6 @@ app.use('/api/tasks', tesksRoutes);
 app.use('/api/mentions', mentionsRoutes);
 app.use('/api/comment', commentRoutes);
 app.use('/api/notification', notifiRoutes);
-app.use('/api/google', googleRouter);
 
 
 
