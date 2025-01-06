@@ -76,13 +76,6 @@ body {
 }
 
 /* 폼 관련 스타일 */
-.login-form {
-    margin-top: 10px;
-}
-/*
-    ID 입력 칸과 멘트가 너무 붙어있어 margin으로 여백 추가
-*/
-
 .form-group {
     position: relative;
     margin-bottom: 15px;

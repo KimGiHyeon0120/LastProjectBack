@@ -62,7 +62,7 @@
         }
 
         /* 사이드바 */
-        .sidebar {
+        .sidebar2 {
             width: 0;
             height: 100%;
             position: fixed;
@@ -76,12 +76,12 @@
             z-index: 1000;
         }
 
-        .sidebar h3 {
+        .sidebar2 h3 {
             margin: 20px;
             color: #605678;
         }
 
-        .sidebar a {
+        .sidebar2 a {
             display: block;
             padding: 10px 20px;
             text-decoration: none;
@@ -89,13 +89,13 @@
             font-size: 15px;
         }
 
-        .sidebar a:hover {
+        .sidebar2 a:hover {
             background-color: #D3EE98;
             color: #8ABFA3;
             font-weight: bold;
         }
 
-        .sidebar .closebtn {
+        .sidebar2 .closebtn {
             color: #605678;
             text-decoration: none;
             font-size: 24px;
@@ -143,7 +143,7 @@
     </header>
 
     <!-- 사이드바 -->
-    <div id="mySidebar" class="sidebar">
+    <div id="mySidebar" class="sidebar2">
         <!-- 닫기 버튼 -->
         <a class="closebtn" onclick="closeNav()">←</a>
         <h3>내 칸반 프로젝트</h3>
@@ -164,6 +164,7 @@
         // 사이드바 닫기
         function closeNav() {
             document.getElementById("mySidebar").style.width = "0px";
+
         }
     </script>
 </body>
