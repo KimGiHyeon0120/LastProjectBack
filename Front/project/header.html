@@ -99,6 +99,15 @@
             text-decoration: none;
             cursor: pointer;
         }
+
+        .header_part .nav-right {
+            margin-right: 20px;
+        }
+
+        .header_part > .nav-right > a:hover {
+            font-weight: bold;
+            font-size: 30px;
+        }
     </style>
     
     <script src="/proj/assets/lib/jquery-3.7.1.min.js"></script>
@@ -108,7 +117,7 @@
 
 <body>
     <header style="background-color: #8ABFA3; padding: 10px 20px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; justify-content: space-between; align-items: center;" class="header_part">
             <!-- 햄버거 메뉴 -->
             <div class="hamburger" onclick="openNav()" style="font-size: 24px; cursor: pointer; color: white;">☰</div>
     
@@ -132,12 +141,12 @@
         <!-- 뒤로가기 버튼 -->
         <a onclick="closeNav()" style="color: #605678; text-decoration: none; font-size: 24px; position: absolute; top: 10px; left: 10px; cursor: pointer;">←</a>
         <h3 style="margin: 20px; color: #605678;">내 칸반 프로젝트</h3>
-        <a href="#" style="display: block; padding: 10px 20px; text-decoration: none; color: #605678;">요약</a>
-        <a href="#" style="display: block; padding: 10px 20px; text-decoration: none; color: #605678;">타임라인</a>
-        <a href="#" style="display: block; padding: 10px 20px; text-decoration: none; color: #605678;">보드</a>
-        <a href="#" style="display: block; padding: 10px 20px; text-decoration: none; color: #605678;">목록</a>
-        <a href="#" style="display: block; padding: 10px 20px; text-decoration: none; color: #605678;">목표</a>
-        <a href="#" style="display: block; padding: 10px 20px; text-decoration: none; color: #605678;">보기 추가</a>
+        <a href="/Front/project/summary.html" style="display: block; padding: 10px 20px; text-decoration: none; color: #605678;">요약</a>
+        <a href="/Front/project/timeline.html" style="display: block; padding: 10px 20px; text-decoration: none; color: #605678;">타임라인</a>
+        <a href="/Front/project/board_main.html" style="display: block; padding: 10px 20px; text-decoration: none; color: #605678;">보드</a>
+        <a href="/Front/project/list.html" style="display: block; padding: 10px 20px; text-decoration: none; color: #605678;">목록</a>
+        <a href="/Front/project/goals.html" style="display: block; padding: 10px 20px; text-decoration: none; color: #605678;">목표</a>
+        <a href="/Front/project/add_view.html" style="display: block; padding: 10px 20px; text-decoration: none; color: #605678;">보기 추가</a>
     </div>
 
     <script>
@@ -148,7 +157,7 @@
 
         // 사이드바 닫기
         function closeNav() {
-            document.getElementById("mySidebar").style.width = "0";
+            document.getElementById("mySidebar").style.width = "0px";
         }
     </script>
 </body>
