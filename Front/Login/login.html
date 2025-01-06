@@ -72,6 +72,10 @@
 
                         // 환영 메시지 출력
                         alert(`${response.user.user_name}님 환영합니다!`);
+                        // window.location.href = '../Login/login.html';
+
+
+                        
                         // 사용자 정보 저장 (localStorage 또는 sessionStorage)
                         localStorage.setItem('loggedInUser', JSON.stringify(response.user));
 
@@ -91,8 +95,6 @@
                 }
             });
         }
-        /*───────────────────────────────────────────────────────────────────────────────────────────*/
-
     </script>
 </body>
 

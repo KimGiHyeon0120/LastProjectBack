@@ -163,8 +163,8 @@
                 <span class="span-text">영문으로 시작하는 4~24자의 영문+숫자로 입력해주세요.</span>
             </div>
             <div class="form-group">
-                <input type="text" id="name" name="name" placeholder="" oninput="validateField(this)">
-                <label for="name">이름</label>
+                <input type="text" id="user_name" name="user_name" placeholder="" oninput="validateField(this)">
+                <label for="user_name">이름</label>
                 <span class="span-text">이름을 입력하세요.</span>
             </div>
             <div class="form-group">
@@ -184,10 +184,64 @@
             </div>
             <div class="form-actions">
                 <button type="button" class="prev-btn" onclick="goBack()">이전</button>
-                <button type="submit" class="next-btn">회원가입</button>
+                <button type="button" class="next-btn" onclick="join()">회원가입</button>
             </div>
         </form>
     </div>
+
+
+
+
+
+
+
+
+    <script src="../lib/jquery-3.7.1.min.js"></script>
+    <script>
+        /*───────────────────────────────────────────────────────────────────────────────────────────*/
+        /*회원가입 버튼*/
+        function join() {
+            let userId = document.getElementById('username').value.trim();
+            let userName = document.getElementById('user_name').value.trim();
+            let userEmail = document.getElementById('email').value.trim();
+            let userPassword = document.getElementById('password').value.trim();
+            let confirmPassword = document.getElementById('confirm-password').value.trim();
+        
+            if (!userId || !userName || !userEmail || !userPassword) {
+                return;
+            }
+        
+            if (userPassword !== confirmPassword) {
+                return;
+            }
+        
+            let requestData = {
+                userId: userId,
+                userName: userName,
+                userEmail: userEmail,
+                userPassword: userPassword
+            };
+        
+            $.ajax({
+                url: 'http://localhost:3000/api/users/register',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(requestData),
+                success: function (response) {
+                    if (response.message === '회원가입 성공') {
+                        window.location.href = '../Login/login.html';
+                    }
+                },
+                error: function (xhr) {
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        alert(xhr.responseJSON.message);
+                    } else {
+                        alert('서버 통신 오류');
+                    }
+                }
+            });
+        }
+    </script>
 </body>
 
 </html>
