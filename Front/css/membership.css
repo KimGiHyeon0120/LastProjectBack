@@ -1,70 +1,193 @@
+* {
+    box-sizing: border-box;
+}
+
 body {
     font-family: Arial, sans-serif;
+    background-color: white;
     margin: 0;
     padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #f4f5f7;
 }
+
+
+.logo {
+    text-align: center; /* 가운데 정렬 */
+    margin-bottom: 30px;
+}
+
+.logo img {
+    display: block; /* 블록 요소로 설정하여 이미지가 한 줄에 배치 */
+    margin: 0 auto; /* 가로 정렬 중앙 */
+    width: 100px; /* 로고 크기 */
+    height: auto;
+    margin-bottom: 30px;
+}
+
+.tagline {
+    font-size: 16px; /* 멘트 글씨 크기 */
+    color: #666; /* 멘트 색상 */
+    font-weight: 500; /* 글씨 두께 */
+    margin-top: 10px; /* 로고와 멘트 간 간격 */
+    white-space: nowrap; /* 한 줄 유지 */
+}
+
 
 .container {
     background: white;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    width: 350px;
-    padding: 20px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    padding: 30px 20px;
+    text-align: center;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
 }
 
 .container h2 {
-    text-align: center;
-    margin-bottom: 20px;
     font-size: 20px;
     color: #333;
+    margin-bottom: 20px;
 }
 
+/* 폼 그룹 스타일 */
 .form-group {
+    position: relative;
     margin-bottom: 15px;
+    text-align: left;
 }
 
 .form-group label {
-    display: block;
-    margin-bottom: 5px;
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
     font-size: 14px;
-    color: #555;
+    color: #666;
+    transition: all 0.3s ease;
+    pointer-events: none;
 }
 
 .form-group input {
     width: 100%;
-    padding: 10px;
-    font-size: 14px;
+    padding: 20px 10px 5px;
+    font-size: 16px;
     border: 1px solid #ddd;
-    border-radius: 4px;
+    border-radius: 8px;
     box-sizing: border-box;
+    outline: none;
+    transition: all 0.3s ease;
 }
 
 .form-group input:focus {
-    border-color: #0079bf;
-    outline: none;
+    border: 2px solid rgb(35, 131, 226);
 }
 
+.form-group input:focus + label,
+.form-group input:not(:placeholder-shown) + label {
+    top: 10px;
+    font-size: 12px;
+}
+
+.form-group input:focus + label + .span-text {
+    display: inline-block;
+    font-size: 12px;
+    color: rgb(35, 131, 226);
+    margin-top: 5px;
+}
+
+.form-group .span-text {
+    display: none;
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+}
+
+/* 유효성 검사 실패 시 스타일 */
+.invalid {
+    border-color: #ff6666; /* 잘못된 입력에 대해 연한 빨간색 테두리 */
+}
+
+.invalid + .span-text {
+    color: #ff6666; /* 잘못된 입력에 대해 빨간색 경고문 */
+}
+/* 유효성 검사 실패 시 라벨 위치를 변경 */
+.form-group .invalid + label {
+    top: 35%;
+    color: lightcoral;
+}
+
+/* 버튼 스타일 */
 .form-actions {
     margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
 }
 
 .form-actions button {
-    width: 100%;
-    padding: 10px;
+    width: 48%;  /* 버튼을 양쪽으로 배치 */
+    padding: 12px;
     font-size: 14px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    background-color: #0079bf;
     color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
-.form-actions button:hover {
-    opacity: 0.9;
+.form-actions .prev-btn {
+    background-color: #ccc;  /* 회색 배경 */
+}
+
+.form-actions .prev-btn:hover {
+    background-color: #999;  /* 호버 시 어두운 회색 */
+}
+
+.form-actions .next-btn {
+    background-color: rgb(35, 131, 226);  /* 파란색 배경 */
+}
+
+.form-actions .next-btn:hover {
+    background-color: rgb(30, 115, 200);  /* 호버 시 어두운 파란색 */
+}
+
+/* 구분 링크 */
+.links {
+    display: flex;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+.links a {
+    font-size: 12px;
+    color: #666;
+    text-decoration: none;
+    margin: 0 8px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    position: relative;
+}
+
+.links a:hover {
+    color: black;
+    background-color: #f4f4f4;
+}
+
+.links a:not(:last-child)::after {
+    content: '|';
+    margin-left: 14px;
+    color: #eee;
+    position: absolute;
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    padding: 0;
+    transition: none;
+}
+
+.links a:hover::after {
+    background: none;
 }

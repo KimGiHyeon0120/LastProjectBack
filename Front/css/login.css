@@ -105,8 +105,9 @@ body {
 }
 
 .form-group input:focus {
-    border-color: #0079bf;
-    box-shadow: 0 0 5px rgba(0, 121, 191, 0.5);
+ 
+    border: 2px solid rgb(35, 131, 226);
+
 }
 
 .form-group input:focus + label,
@@ -118,7 +119,8 @@ body {
 .form-group input:focus + label + .span-text {
     display: inline-block;
     font-size: 12px;
-    color: #0079bf;
+    color: rgb(35, 131, 226);
+
     margin-top: 5px;
 }
 
@@ -137,7 +139,8 @@ body {
     width: 100%;
     padding: 12px;
     font-size: 14px;
-    background-color: #0079bf;
+    background-color: rgb(35, 131, 226);
+
     color: white;
     border: none;
     border-radius: 8px;
@@ -146,7 +149,8 @@ body {
 }
 
 .form-actions .login:hover {
-    background-color: #005f9e;
+    background-color: rgb(35, 131, 226);
+
 }
 
 /* 링크들 간의 구분 기호와 간격 조정 */
@@ -156,22 +160,37 @@ body {
     margin-top: 15px;
 }
 
+/* 링크들 간의 구분 기호와 간격 조정 */
 .links a {
     font-size: 12px; /* 글씨 크기 줄이기 */
     color: #666;
     text-decoration: none;
-    transition: color 0.2s;
+    transition: color 0.2s, background-color 0.2s; /* 배경색 전환 애니메이션 추가 */
     margin: 0 8px; /* 간격을 좁혀줌 */
+    padding: 5px 10px; /* 배경색 효과를 위해 여백 추가 */
+    border-radius: 4px; /* 둥근 모서리 추가 */
+    position: relative; /* ::after를 위해 위치 속성 설정 */
 }
 
 .links a:hover {
     color: black;
+    background-color: #f4f4f4; /* 배경색 추가 */
 }
 
-/* 구분 기호 스타일 */
 .links a:not(:last-child)::after {
     content: '|'; /* 구분 기호 추가 */
     margin-left: 14px;
-    color: #eee ;
+    color: #eee;
+    position: absolute; /* 링크의 배경과 분리 */
+    right: -10px; /* 적절한 위치 조정 */
+    top: 50%;
+    transform: translateY(-50%);
+    background: none; /* 배경 제거 */
+    padding: 0; /* ::after 자체 여백 제거 */
+    transition: none; /* ::after에 애니메이션 제거 */
 }
 
+/* 링크에 마우스를 올렸을 때 ::after에 배경색이 추가되지 않도록 설정 */
+.links a:hover::after {
+    background: none; /* 배경색 제거 */
+}
