@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>아이디 찾기</title>
+    <link rel="stylesheet" href="../css/id-passwrod.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- 로고 영역 -->
+        <div class="logo">
+            <img src="../img/logo.png" alt="로고">
+            <p class="tagline">등록된 이메일을 입력하시면 아이디를 확인하실 수 있습니다.</p>
+        </div>
+
+
+        <!-- Form 영역 -->
+        <form action="/find-id" method="POST">
+            <div class="form-group">
+                <input type="email" id="email" placeholder=" " >
+                <label for="email">이메일</label>
+            </div>
+            <button type="submit">아이디 찾기</button>
+        </form>
+    </div>
+</body>
+
+</html>
