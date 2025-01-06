@@ -7,19 +7,6 @@
             box-sizing: border-box;
         }
 
-        /* 스크롤바 */
-        html::-webkit-scrollbar {
-            width: 20px;
-        }
-
-        html::-webkit-scrollbar-thumb {
-            background: #BFFF00;
-        }
-
-        html::-webkit-scrollbar-track {
-            background: #000000;
-        }
-
         body {
             font-family: Arial, sans-serif;
             background-color: #ffffff;
@@ -28,249 +15,140 @@
 
         /* 상단 네비게이션 */
         header {
-            background-color: #000000;
-            padding: 5px 0;
+            background: linear-gradient(90deg, #8ABFA3, #605678);
+            padding: 10px 20px;
             position: fixed;
             width: 100%;
             z-index: 100;
             top: 0;
-        }
-
-        .nav-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 0 auto;
-            padding: 0 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
         .hamburger {
-            font-size: 25px;
+            font-size: 24px;
             color: white;
             cursor: pointer;
         }
 
-        .logo {
-            font-size: 50px;
-            color: white;
+        .logo-container {
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .logo-container img {
+            max-height: 50px;
+            width: auto;
         }
 
         .nav-right {
-            margin-left: auto;
             display: flex;
-            justify-content: flex-end;
-            align-items: center;
+            gap: 15px;
         }
 
         .nav-right a {
-            margin-left: 15px;
             text-decoration: none;
             color: white;
+            font-size: 16px;
         }
-
-        .nav-right a img {
-            width: 25px;
-        }
-
 
         /* 사이드바 */
         .sidebar {
             height: 100%;
             width: 0;
             position: fixed;
-            z-index: 1000;
             top: 0;
             left: 0;
-            background-color: #BFFF00;
+            background: linear-gradient(180deg, #8ABFA3, #D3EE98);
             overflow-x: hidden;
-            transition: 0.5s;
+            transition: 0.3s;
             padding-top: 60px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+            z-index: 1000; /* 사이드바를 최상위로 설정 */
+        }
+        .sidebar.hidden {
+            opacity: 0; /* 닫힐 때 완전히 숨기기 */
         }
 
         .sidebar h3 {
-            width: 230px;
-            margin-left: 25px;
-            margin-top: 20px;
-            margin-bottom: 10px;
+            margin: 20px;
+            color: #605678;
+            white-space: nowrap;
         }
 
         .sidebar a {
-            width: 230px;
-            padding: 8px 8px 8px 32px;
-            text-decoration: none;
-            font-size: 15px;
-            color: #000000;
             display: block;
-            transition: 0.3s;
+            padding: 10px 20px;
+            text-decoration: none;
+            color: #605678;
+            font-size: 15px;
+            white-space: nowrap;
         }
 
         .sidebar a:hover {
-            background-color: #000000;
+            background-color: #D3EE98;
+            color: #8ABFA3;
             font-weight: bold;
-            color: #ffffff;
         }
 
-        .sidebar .closebtn {
+        .sidebar a.closebtn {
             position: absolute;
-            top: 0;
-            right: 25px;
-            font-size: 36px;
-        }
-
-        /* -------------------- */
-
-        svg {
-            font-family: 'KOHIBaeum';
-            font-size: 140px;
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            text-transform: uppercase;
-            animation-iteration-count: infinite;
-            fill: black;
-        }
-
-        
-
-
-
-
-        /* 호버 효과 */
-        .scroll-to-top-btn:hover {
-            color: #ffffff;
-            background-color: #000000;
-            /* 호버 시 배경색 변경 */
-            border: 2px solid #BFFF00;
-            transform: scale(1.1);
-            /* 호버 시 약간 확대 */
-        }
-
-        /* 버튼이 화면에 보일 때 애니메이션 효과 추가 */
-        .scroll-to-top-btn.show {
-            display: flex;
-            /* 버튼 보이기 */
-            opacity: 1;
-            animation: fadeIn 0.5s;
-            /* 페이드 인 애니메이션 */
-        }
-
-        /* 페이드 인 애니메이션 */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-                /* 아래에서 위로 이동 */
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-
-
-
-        body.prev_loading {
-            overflow: hidden;
-        }
-
-        
-
-        #spinner {
-            position: fixed;
-        }
-
-        .loading span {
-            display: inline-block;
-            width: 15px;
-            height: 15px;
-            background-color: gray;
-            border-radius: 50%;
-            animation: loading 1s 0s linear infinite;
-            margin-right: 5px;
-        }
-
-        .loading span:nth-child(1) {
-            animation-delay: 0s;
-            background-color: #BFFF00;
-        }
-
-        .loading span:nth-child(2) {
-            animation-delay: 0.2s;
-            background-color: rgb(0, 0, 0);
-        }
-
-        .loading span:nth-child(3) {
-            animation-delay: 0.4s;
-            background-color: #BFFF00;
-        }
-
-        @keyframes loading {
-
-            0%,
-            100% {
-                opacity: 0;
-                transform: scale(0.5);
-            }
-
-            50% {
-                opacity: 1;
-                transform: scale(1.2);
-            }
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            color: #605678;
+            text-decoration: none;
+            cursor: pointer;
         }
     </style>
+    
     <script src="/proj/assets/lib/jquery-3.7.1.min.js"></script>
 </head>
 
-<body class="prev_loading">
 
 
-    <header>
-        <div class="nav-container">
-            <div class="hamburger" onclick="openNav()">☰</div> <!-- 햄버거 아이콘 -->
-
-            <div class="nav-right">
-                <a href="#"><img src="#" alt="Login">내 작업</a>
-                <a href="#"><img src="#" alt="Login">프로젝트</a>
-                <a href="#"><img src="#" alt="Login">설정</a>
-                <a href="#"><img src="#" alt="Login">로그인</a>
+<body>
+    <header style="background-color: #8ABFA3; padding: 10px 20px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <!-- 햄버거 메뉴 -->
+            <div class="hamburger" onclick="openNav()" style="font-size: 24px; cursor: pointer; color: white;">☰</div>
+    
+            <!-- 로고 -->
+            <div style="flex-grow: 1; text-align: center;">
+                <img src="../img/logo-backg.png" alt="Plan It 로고" style="max-height: 50px; width: auto;">
+            </div>
+    
+            <!-- 네비게이션 링크 -->
+            <div class="nav-right" style="display: flex; gap: 15px;">
+                <a href="#" style="text-decoration: none; color: white; font-size: 16px;">내 작업</a>
+                <a href="#" style="text-decoration: none; color: white; font-size: 16px;">프로젝트</a>
+                <a href="#" style="text-decoration: none; color: white; font-size: 16px;">설정</a>
+                <a href="#" style="text-decoration: none; color: white; font-size: 16px;">로그인</a>
             </div>
         </div>
-        <div style="height: 70px;">
-            <svg viewBox="0 0 1320 300">
-                <a href="#">
-                    <text x="50%" y="21%" dy="40px" text-anchor="middle">로고 이름</text>
-                </a>
-            </svg>
-        </div>
-        <div id="mySidebar" class="sidebar">
-
-            <h3>장르별 검색</h3>
-            <a href="#">요약</a>
-            <a href="#">타임라인</a>
-            <a href="#">보드</a>
-            <a href="#">목록</a>
-            <a href="#">목표</a>
-            <a href="#">보기 추가</a>
-        </div>
-
-
     </header>
-
+    
+    <!-- 사이드바 -->
+    <div id="mySidebar" class="sidebar" style="width: 0; height: 100%; position: fixed; top: 0; left: 0; background-color: #D3EE98; overflow-x: hidden; transition: 0.3s; padding-top: 60px; box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);">
+        <!-- 뒤로가기 버튼 -->
+        <a onclick="closeNav()" style="color: #605678; text-decoration: none; font-size: 24px; position: absolute; top: 10px; left: 10px; cursor: pointer;">←</a>
+        <h3 style="margin: 20px; color: #605678;">내 칸반 프로젝트</h3>
+        <a href="#" style="display: block; padding: 10px 20px; text-decoration: none; color: #605678;">요약</a>
+        <a href="#" style="display: block; padding: 10px 20px; text-decoration: none; color: #605678;">타임라인</a>
+        <a href="#" style="display: block; padding: 10px 20px; text-decoration: none; color: #605678;">보드</a>
+        <a href="#" style="display: block; padding: 10px 20px; text-decoration: none; color: #605678;">목록</a>
+        <a href="#" style="display: block; padding: 10px 20px; text-decoration: none; color: #605678;">목표</a>
+        <a href="#" style="display: block; padding: 10px 20px; text-decoration: none; color: #605678;">보기 추가</a>
+    </div>
 
     <script>
+        // 사이드바 열기
+        function openNav() {
+            document.getElementById("mySidebar").style.width = "250px";
+        }
 
-
-            // 사이드바 열기
-            function openNav() {
-                document.getElementById("mySidebar").style.width = "250px";
-            }
-
-            // 사이드바 닫기
-            function closeNav() {
-                document.getElementById("mySidebar").style.width = "0";
-            }
-
+        // 사이드바 닫기
+        function closeNav() {
+            document.getElementById("mySidebar").style.width = "0";
+        }
     </script>
 </body>
