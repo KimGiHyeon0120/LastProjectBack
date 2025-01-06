@@ -18,14 +18,62 @@
 
 
         <!-- Form 영역 -->
-        <form action="/find-id" method="POST">
+        <form>
             <div class="form-group">
                 <input type="email" id="email" placeholder=" " >
                 <label for="email">이메일</label>
             </div>
-            <button type="submit">아이디 찾기</button>
+            <button type="button" onclick="findId()">아이디 찾기</button>
         </form>
     </div>
+
+
+
+
+
+
+
+
+
+    <script src="../lib/jquery-3.7.1.min.js"></script>
+    <script>
+        function findId() {
+            const emailInput = document.getElementById('email');
+            const userEmail = emailInput.value.trim();
+        
+            if (!userEmail) {
+                alert('이메일을 입력해주세요.');
+                emailInput.focus();
+                return;
+            }
+        
+            console.log("전송된 이메일:", userEmail); // 디버깅용 출력
+        
+            $.ajax({
+                url: 'http://localhost:3000/api/users/find-id', // 서버의 API URL
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ userEmail: userEmail }),
+                success: function (response) {
+                    console.log("서버 응답:", response); // 디버깅용 출력
+                    //성공시
+                    //alert(`아이디는: ${response.userId} 입니다.`);
+                },
+                error: function (xhr) {
+                    console.error("오류 상태 코드:", xhr.status);
+                    console.error("오류 메시지:", xhr.responseText || xhr.responseJSON);
+                    if (xhr.status === 404) {
+                        //실패시
+                        //alert('등록된 사용자가 없습니다.');
+                    } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                        //alert(xhr.responseJSON.message);
+                    } else {
+                        //alert('아이디 찾기에 실패했습니다. 다시 시도해주세요.');
+                    }
+                }
+            });
+        }
+    </script>
 </body>
 
 </html>
