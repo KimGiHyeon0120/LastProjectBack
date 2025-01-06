@@ -5,21 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WBS 진행 보드</title>
     <link rel="stylesheet" href="../css/sample_01.css">
-    <script>
-        function loadHTML(file) {
-            var rawFile = new XMLHttpRequest();
-            rawFile.open("GET", file, false);
-            rawFile.onreadystatechange = function () {
-                if (rawFile.readyState === 4) {
-                    if (rawFile.status === 200 || rawFile.status == 0) {
-                        var allText = rawFile.responseText;
-                        document.write(allText);
-                    }
-                }
-            }
-            rawFile.send(null);
-        }
-    </script>
+
+    <script src="/proj/assets/lib/jquery-3.7.1.min.js"></script>
+    <script src="/Server/script/header.js"></script>
 </head>
 <body>
         <!-- 헤더 영역 -->

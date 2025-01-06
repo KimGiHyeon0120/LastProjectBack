@@ -7,7 +7,6 @@
     <title>login</title>
     <link rel="stylesheet" href="../css/login.css">
 </head>
-
 <body>
     <div class="container">
         <!-- 로고와 멘트 추가 부분 -->
@@ -16,7 +15,7 @@
             <div class="tagline">팀워크의 힘을 더하는 스마트한 작업 관리 시스템</div>
         </div>
 
-        <form>
+        <form class="login-form">
             <div class="form-group">
                 <input type="text" id="username" placeholder=" " oninput="checkForm()">
                 <label for="username">아이디</label>
@@ -40,10 +39,12 @@
             <a href="membership.html">회원가입</a>
             <a href="find-account.html">계정 찾기</a>
         </div>
+
         <div class="google-login" onclick="googleLogin()">
             <img src="..\img\google-logo.png" alt="Google">
             Google 계정으로 로그인
         </div>
+        
     </div>
 
 
