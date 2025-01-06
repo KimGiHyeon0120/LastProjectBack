@@ -1,0 +1,115 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: white;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.logo {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.logo img {
+    display: block;
+    margin: 0 auto;
+    width: 100px;
+    height: auto;
+    margin-bottom: 30px;
+}
+.tagline {
+    font-size: 16px;
+    color: #666;
+    font-weight: 500;
+    margin-top: 10px;
+    white-space: normal; /* 줄바꿈 허용 */
+    line-height: 1.5; /* 줄 간격 조절 */
+    text-align: center; /* 텍스트 중앙 정렬 */
+}
+
+
+.container {
+    background: white;
+    width: 400px;
+    padding: 30px 20px;
+    text-align: center;
+ 
+ ;
+ 
+}
+
+/* Form 관련 스타일 */
+.form-group {
+    position: relative;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-group label {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: #666;
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 15px 10px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-sizing: border-box;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus {
+    border: 2px solid rgb(35, 131, 226);
+}
+
+.form-group input:focus + label,
+.form-group input:not(:placeholder-shown) + label {
+    top: 10px;
+    font-size: 12px;
+    color: rgb(35, 131, 226);
+}
+
+.form-group .span-text {
+    display: none;
+    font-size: 12px;
+    color: rgb(35, 131, 226);
+    margin-top: 5px;
+}
+
+.form-group input:focus + label + .span-text {
+    display: inline-block;
+}
+
+/* 버튼 스타일 */
+button {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    background-color: rgb(35, 131, 226);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: rgb(25, 101, 196);
+}
