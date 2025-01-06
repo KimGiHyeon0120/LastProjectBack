@@ -7,18 +7,19 @@
     <title>Membership</title>
     <link rel="stylesheet" href="../css/membership.css">
     <script>
-        // 유효성 검사 함수
+
         function validateField(input) {
             let isValid = true;
             let username = document.getElementById('username');
-            let name = document.getElementById('name');
+            let name = document.getElementById('user_name');
             let email = document.getElementById('email');
             let password = document.getElementById('password');
             let confirmPassword = document.getElementById('confirm-password');
-        
+            let joinBtn = document.querySelector('.join-btn');  // 버튼 요소 추가
+
+            // 아이디 검증
             if (input === username) {
-                // 아이디 필드 유효성 검사
-                let usernamePattern = /^[a-zA-Z][a-zA-Z0-9]{3,}$/; // 영문으로 시작하고, 4자 이상, 영문과 숫자 조합
+                let usernamePattern = /^[a-zA-Z][a-zA-Z0-9]{3,}$/;
                 if (username.value.trim() === "") {
                     setInvalid(username, "값을 입력해 주세요");
                     isValid = false;
@@ -32,9 +33,9 @@
                     setValid(username);
                 }
             }
-        
+
+            // 이름 검증
             if (input === name) {
-                // 이름 필드 유효성 검사 (빈 값 체크)
                 if (name.value.trim() === "") {
                     setInvalid(name, "이름을 입력하세요.");
                     isValid = false;
@@ -42,9 +43,9 @@
                     setValid(name);
                 }
             }
-        
+
+            // 이메일 검증
             if (input === email) {
-                // 이메일 필드 유효성 검사
                 let emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
                 if (!emailPattern.test(email.value)) {
                     setInvalid(email, "올바른 이메일을 입력하세요.");
@@ -53,11 +54,11 @@
                     setValid(email);
                 }
             }
-        
+
+            // 비밀번호 및 비밀번호 확인 검증
             if (input === password || input === confirmPassword) {
-                // 비밀번호 필드 유효성 검사
                 let passwordPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/;
-        
+
                 if (password.value.trim() === "") {
                     setInvalid(password, "비밀번호를 입력해 주세요");
                     isValid = false;
@@ -77,17 +78,18 @@
                     setValid(password);
                 }
 
-                // 비밀번호 확인 필드 유효성 검사
                 if (confirmPassword.value !== password.value && confirmPassword.value !== "") {
                     setInvalid(confirmPassword, "비밀번호가 일치하지 않습니다.");
                     isValid = false;
-                } else if (confirmPassword.value === "") {
-                    setValid(confirmPassword); // 비밀번호 확인 필드가 비어 있을 경우 유효성 검사 하지 않음
                 } else {
                     setValid(confirmPassword);
                 }
             }
-        
+
+            // 버튼 상태 업데이트
+            let allFieldsValid = username.value && name.value && email.value && password.value && confirmPassword.value && password.value === confirmPassword.value;
+            joinBtn.disabled = !allFieldsValid;  // 모든 필드가 유효하면 버튼 활성화
+
             return isValid;
         }
 
@@ -95,33 +97,31 @@
         function setInvalid(input, message) {
             let parent = input.parentElement;
             let span = parent.querySelector('.span-text');
-        
+
             input.classList.add('invalid');
             input.classList.remove('valid');
-            
-    
-            input.style.border = '2px solid lightcoral';  // 테두리 두께 2px로 설정
-            input.style.backgroundColor = '#fdd';  // 배경 색상 변경
-        
+
+            input.style.border = '2px solid lightcoral';
+            input.style.backgroundColor = '#fdd';
+
             span.style.color = 'lightcoral';
             span.textContent = message;
-            span.style.display = 'block';  // 오류 메시지 계속 표시
+            span.style.display = 'block';
         }
-        
+
         function setValid(input) {
             let parent = input.parentElement;
             let span = parent.querySelector('.span-text');
-        
+
             input.classList.add('valid');
             input.classList.remove('invalid');
-        
-            // 기본 스타일로 되돌리기
-            input.style.border = '';  // 기본 테두리로 되돌림
-            input.style.backgroundColor = '';  // 기본 배경 색상으로 되돌림
-        
-            span.style.color = '';  // 기본 텍스트 색상으로 되돌림
-            span.textContent = '';  // 오류 메시지 제거
-            span.style.display = 'none';  // 오류 메시지 숨김
+
+            input.style.border = '';
+            input.style.backgroundColor = '';
+
+            span.style.color = '';
+            span.textContent = '';
+            span.style.display = 'none';
         }
 
         // 폼 제출 시 로그인 페이지로 이동
@@ -135,16 +135,17 @@
             });
 
             if (isFormValid) {
-                window.location.href = "login.html"; // 성공적으로 유효성 검사 통과 시 login.html로 이동
+                window.location.href = "login.html";
             }
 
-            return false; // 폼 제출을 막고 자바스크립트로 이동 처리
+            return false;
         }
 
         // 이전 페이지로 돌아가기
         function goBack() {
-            window.history.back(); // 이전 페이지로 이동
+            window.history.back();
         }
+
     </script>
 </head>
 
@@ -155,7 +156,7 @@
             <img src="..\img\logo.png" alt="Logo" />
             <div class="tagline">회원가입 후 다양한 서비스를 즐겨보세요.</div>
         </div>
-    
+
         <form id="signup-form" onsubmit="return validateForm()">
             <div class="form-group">
                 <input type="text" id="username" name="username" placeholder="" oninput="validateField(this)">
@@ -178,50 +179,41 @@
                 <span class="span-text">8자리 이상의 영문, 숫자, 특수문자 조합을 입력하세요.</span>
             </div>
             <div class="form-group">
-                <input type="password" id="confirm-password" name="confirm-password" placeholder="" oninput="validateField(this)">
+                <input type="password" id="confirm-password" name="confirm-password" placeholder=""
+                    oninput="validateField(this)">
                 <label for="confirm-password">비밀번호 확인</label>
                 <span class="span-text">비밀번호를 다시 입력하세요.</span>
             </div>
             <div class="form-actions">
                 <button type="button" class="prev-btn" onclick="goBack()">이전</button>
-                <button type="button" class="next-btn" onclick="join()">회원가입</button>
+                <button type="button" class="join-btn" onclick="join()" disabled>회원가입</button>
             </div>
         </form>
     </div>
-
-
-
-
-
-
-
-
     <script src="../lib/jquery-3.7.1.min.js"></script>
     <script>
-        /*───────────────────────────────────────────────────────────────────────────────────────────*/
-        /*회원가입 버튼*/
         function join() {
             let userId = document.getElementById('username').value.trim();
             let userName = document.getElementById('user_name').value.trim();
             let userEmail = document.getElementById('email').value.trim();
             let userPassword = document.getElementById('password').value.trim();
             let confirmPassword = document.getElementById('confirm-password').value.trim();
-        
+
             if (!userId || !userName || !userEmail || !userPassword) {
                 return;
             }
-        
+
             if (userPassword !== confirmPassword) {
                 return;
             }
-        
+
             let requestData = {
                 userId: userId,
                 userName: userName,
                 userEmail: userEmail,
                 userPassword: userPassword
             };
-        
+
             $.ajax({
                 url: 'http://localhost:3000/api/users/register',
                 type: 'POST',
@@ -241,7 +233,7 @@
                 }
             });
         }
-        
+
     </script>
 >>>>>>> main
 </body>
