@@ -202,6 +202,7 @@ a {
     padding-inline-end: 2pc;
     gap: 24px;
     grid-template-columns: repeat(12, minmax(0, 1fr));
+    align-items: flex-start;
 }
 
 .text-div1-inner {
@@ -261,6 +262,7 @@ a {
     grid-template-columns: minmax(0, 1fr);
     padding-inline-start: 60px;
     padding-inline-end: 60px;
+    align-items: flex-start;
 }
 
 .tap-group-button-select {
@@ -305,4 +307,108 @@ a {
     padding-right: 0;
     padding-bottom: 1pc;
     padding-left: 0;
+}
+
+.tap-panels-inner-layout {
+    width: 100%;
+    align-items: stretch;
+    display: grid;
+    justify-content: space-between;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-right: auto;
+    margin-left: auto;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding-inline-start: 2pc;
+    padding-inline-end: 2pc;
+    gap: 24px;
+    grid-template-columns: minmax(0, 1fr);
+    padding-inline-start: 60px;
+    padding-inline-end: 60px;
+    align-items: flex-start;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.layout-left-first {
+    margin-right: auto;
+    margin-left: auto;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-top: 0;
+    margin-bottom: 24px;
+    grid-column-start: 1;
+    grid-column-end: 5;
+}
+
+.layout-text-section {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.text-section-p {
+    margin-top: 0;
+    margin-right: 0;
+    margin-bottom: 24px;
+    margin-left: 0;
+    margin-block-end: 24px;
+    font-size: 1.25rem;
+    font-weight: normal;
+    letter-spacing: .3px;
+    line-height: 1.4;
+}
+
+.layout-text-section2 {
+    padding-left: 0;
+    padding-top: 30px;
+    padding-right: 50px;
+    padding-bottom: 30px;
+    margin-top: 0;
+    margin-right: 0;
+    margin-left: 0;
+    margin-bottom: 24px;
+    text-align: left;
+    background-image: linear-gradient(90deg, transparent, #0065ff);
+    border-radius: 0 150px 150px 0;
+}
+
+.layout-img {
+    width: 45px;
+}
+
+.quote-sample1 {
+    line-height: 1.2;
+    margin-inline-start: 0;
+    font-size: 1.2rem;
+}
+
+.quote-sample2 {
+    font-size: .875rem;
+    line-height: 1.25;
+    width: 75%;
+    font-weight: bold;
+    margin-top: 20px;
+    margin-right: 0;
+    margin-bottom: 0;
+    margin-left: 0;
+    text-transform: uppercase;
+}
+.quote-sample3 {
+    font-size: .75rem !important;
+    line-height: 2;
+    width: 75%;
+    margin-top: 20px;
+    margin-right: 0;
+    margin-bottom: 0;
+    margin-left: 0;
+    text-transform: uppercase;
+} 
+
+.layout-left-first >:last-child {
+    grid-column-end: -1;
+}
+.layout-left-first >:last-child {
+    grid-column-start: 5;
 }
