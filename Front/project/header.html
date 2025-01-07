@@ -1,11 +1,7 @@
 <head>
-
     <link rel="stylesheet" href="/Front/css/header.css">
-    
     <script src="/proj/assets/lib/jquery-3.7.1.min.js"></script>
 </head>
-
-
 
 <body>
     <!-- 헤더 -->
@@ -24,7 +20,7 @@
                 <a href="#">내 작업</a>
                 <a href="#">프로젝트</a>
                 <a href="#">설정</a>
-                <a href="#">로그인</a>
+                <a id="login-logout-btn" href="#">로그인</a>
             </div>
         </div>
     </header>
@@ -45,14 +41,29 @@
     <script>
         // 사이드바 열기
         function openNav() {
-            document.getElementById("mySidebar").style.left = "0"
+            document.getElementById("mySidebar").style.left = "0";
         }
-
-        //width로 조절 시 글자가 구겨지는 현상 발생 -> left 값을 조절하여 sidebar를 옮기는 방향으로 수정
 
         // 사이드바 닫기
         function closeNav() {
             document.getElementById("mySidebar").style.left = "-250px";
         }
+
+        // 로그인 상태 확인 및 버튼 업데이트
+        $(document).ready(function () {
+            const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+
+            if (loggedInUser) {
+                // 로그인된 상태라면 "로그아웃" 버튼으로 변경
+                $("#login-logout-btn").text("로그아웃").attr("href", "#").on("click", function () {
+                    // 로그아웃 동작
+                    localStorage.removeItem("loggedInUser"); // localStorage에서 로그인 정보 제거
+                    window.location.href = "../Login/login.html"; // 로그인 페이지로 리다이렉트
+                });
+            } else {
+                // 로그인되지 않은 상태라면 "로그인" 버튼
+                $("#login-logout-btn").text("로그인").attr("href", "../Login/login.html");
+            }
+        });
     </script>
 </body>
