@@ -16,80 +16,306 @@
         }
 
         .main {
-            padding: 20px;
+            padding: 15px;
             margin-top: 80px;
         }
 
-        /* 스프린트 보드 스타일 */
         .sprint-board {
-            margin-top: 20px;
+            margin-top: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
         }
 
         .sprint {
             border: 1px solid #ddd;
             background-color: #fff;
-            border-radius: 5px;
-            margin-bottom: 15px;
+            border-radius: 6px;
             padding: 10px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+            width: 700px;
+            /* 원하는 가로 크기 설정 */
+            max-width: 80%;
+            /* 반응형 디자인 설정 */
         }
 
         .sprint-header {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            text-align: center;
+            position: relative;
+            /* 삭제 버튼 위치 조정을 위한 기준 */
         }
 
         .sprint-header h3 {
             margin: 0;
             font-size: 16px;
-        }
-
-        .sprint-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .sprint-actions button {
-            background-color: #e9ecef;
-            color: #495057;
-            border: 1px solid #ced4da;
-            padding: 2px 8px;
-            /* 버튼 크기 조정 */
-            border-radius: 4px;
-            font-size: 12px;
-            /* 글꼴 크기 조정 */
-            cursor: pointer;
-        }
-
-        .sprint-actions button:hover {
-            background-color: #dee2e6;
-            border-color: #adb5bd;
+            color: #333;
+            text-align: center;
         }
 
         .sprint-content {
             padding: 10px 0;
         }
 
+
+
+        .task-name {
+            flex: 1;
+            font-weight: bold;
+        }
+
+        .task-priority {
+            flex-shrink: 0;
+            font-size: 12px;
+            color: #888;
+        }
+
         #addSprintBtn {
-            margin-top: 20px;
+            margin-top: 15px;
             display: inline-block;
-            background-color: #e9ecef;
-            color: #495057;
-            border: 1px solid #ced4da;
-            padding: 5px 10px;
-            /* 버튼 크기 조정 */
-            font-size: 14px;
-            /* 글꼴 크기 조정 */
+            background-color: #40a9ff;
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            font-size: 12px;
             border-radius: 4px;
             cursor: pointer;
             text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease;
         }
 
         #addSprintBtn:hover {
-            background-color: #dee2e6;
-            border-color: #adb5bd;
+            background-color: #1890ff;
+        }
+
+
+
+
+
+
+
+
+
+
+
+        /* 팝업 스타일 */
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .popup-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .popup-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .popup-form input {
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .popup-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+
+        .popup-buttons button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .popup-buttons .cancel-btn {
+            background-color: #ddd;
+        }
+
+        .popup-buttons .cancel-btn:hover {
+            background-color: #bbb;
+        }
+
+        .popup-buttons .create-btn {
+            background-color: #40a9ff;
+            color: #fff;
+        }
+
+        .popup-buttons .create-btn:hover {
+            background-color: #1890ff;
+        }
+
+        /* 팝업 배경 */
+        .popup-background {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.3);
+            z-index: 999;
+        }
+
+
+
+        /* 옵션 버튼 스타일 */
+        .sprint-header .options-btn {
+            background-color: transparent;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #333;
+        }
+
+        .sprint-header .options-btn:hover {
+            color: #888;
+        }
+
+        /* 드롭다운 메뉴 스타일 */
+        .options-menu {
+            display: none;
+            position: absolute;
+            right: 10px;
+            top: 100%;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            width: 120px;
+        }
+
+        .options-menu button {
+
+            display: block;
+            width: 100%;
+            padding: 8px;
+            background-color: transparent;
+            border: none;
+            text-align: left;
+            font-size: 14px;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .options-menu button:hover {
+            background-color: #f9f9f9;
+            color: #000;
+        }
+
+
+
+
+
+
+
+
+        /* 우선순위 및 상태 드롭다운 스타일 */
+        /* 드롭다운 기본 스타일 */
+        .priority-dropdown,
+        .status-dropdown {
+            -webkit-appearance: none; /* Chrome, Safari, Edge 등 웹킷 기반 브라우저 */
+            -moz-appearance: none; /* Firefox */
+            appearance: none; /* 최신 브라우저 */
+            width: auto;
+            /* 드롭다운의 너비를 조정 */
+            height: 30px;
+            /* 드롭다운의 높이를 조정 */
+            font-size: 14px;
+            /* 텍스트 크기 조정 */
+            padding: 4px;
+            /* 안쪽 여백 */
+            border: 1px solid #ddd;
+            /* 테두리 색상 */
+            border-radius: 4px;
+            /* 둥근 테두리 */
+            background-color: #fff;
+            /* 배경색 */
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+            /* 그림자 효과 */
+        }
+
+        /* 드롭다운 선택 시 스타일 */
+        .priority-dropdown:focus,
+        .status-dropdown:focus {
+            border-color: #40a9ff;
+            /* 선택 시 테두리 색상 변경 */
+            outline: none;
+            /* 기본 outline 제거 */
+            box-shadow: 0 0 4px rgba(24, 144, 255, 0.5);
+            /* 선택 시 그림자 효과 */
+        }
+
+        /* 드롭다운 호버 효과 */
+        .priority-dropdown:hover,
+        .status-dropdown:hover {
+            background-color: #f7faff;
+        }
+
+        .task-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #b3d9ff;
+            /* 연한 하늘색 테두리 */
+            border-radius: 4px;
+            /* 테두리에 약간의 곡선 추가 */
+            cursor: pointer;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            font-size: 14px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            /* 인터렉션 효과 추가 */
+        }
+        
+        /* 텍스트와 드롭다운 간의 정렬 */
+        .task-card p {
+            flex: 1; /* 텍스트가 가능한 공간을 차지 */
+            margin: 0; /* 기본 여백 제거 */
+            overflow: hidden; /* 텍스트가 넘칠 경우 숨김 */
+            text-overflow: ellipsis; /* 말줄임표 추가 */
+            white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+        }
+    
+        
+        /* 호버 효과 */
+        .task-card:hover {
+            background-color: #e6f7ff;
+            /* 연한 하늘색 배경 */
+            transform: scale(1.02);
+            /* 살짝 확대 */
         }
     </style>
 </head>
@@ -100,6 +326,11 @@
 
 
 <body>
+
+
+
+
+
     <!-- 헤더 영역 -->
     <header>
         <script>loadHTML("./header.html")</script>
@@ -113,10 +344,49 @@
 
 
 
+    <!-- 팝업 배경 -->
+    <div class="popup-background"></div>
+
+    <!-- 팝업 -->
+    <div class="popup" id="sprintPopup">
+        <div class="popup-header">스프린트 생성</div>
+        <form class="popup-form">
+            <label>스프린트 이름</label>
+            <input type="text" id="sprintName" placeholder="스프린트 이름을 입력하세요" required>
+
+            <label>시작 날짜</label>
+            <input type="date" id="startDate" required>
+
+            <label>종료 날짜</label>
+            <input type="date" id="endDate" required>
+
+            <div class="popup-buttons">
+                <button type="button" class="cancel-btn" id="cancelBtn">취소</button>
+                <button type="button" class="create-btn" id="createBtn">생성</button>
+            </div>
+        </form>
+    </div>
 
 
+    <!-- 편집 팝업 -->
+    <div class="popup" id="editSprintPopup">
+        <div class="popup-header">스프린트 편집</div>
+        <form class="popup-form">
+            <label>스프린트 이름</label>
+            <input type="text" id="editSprintName" required>
 
+            <label>시작 날짜</label>
+            <input type="date" id="editStartDate" required>
 
+            <label>종료 날짜</label>
+            <input type="date" id="editEndDate" required>
+
+            <div class="popup-buttons">
+                <button type="button" class="cancel-btn" id="editCancelBtn">취소</button>
+                <button type="button" class="create-btn" id="editSaveBtn">저장</button>
+            </div>
+        </form>
+    </div>
 
 
 
@@ -124,51 +394,63 @@
 
 
     <script>
+
+
         $(document).ready(function () {
-            // 프로젝트 ID는 URL에서 추출
             const urlParams = new URLSearchParams(window.location.search);
             const projectId = urlParams.get("projectId");
             const API_URL = "http://localhost:3000/api";
-    
+
+
+
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
             if (!projectId) {
                 return;
             }
-    
+
             // 드래그 앤 드롭 핸들러 정의
             window.allowDrop = function (event) {
-                event.preventDefault(); // 드래그 허용
+                event.preventDefault();
             };
-    
+
             window.dragTask = function (event) {
-                const taskId = event.target.dataset.taskId; // 드래그된 Task ID
-                event.dataTransfer.setData("text", taskId); // Task ID를 전송 데이터에 저장
+                const taskId = event.target.dataset.taskId;
+                event.dataTransfer.setData("text", taskId);
             };
-    
+
             window.dropTask = function (event, sprintId) {
-                event.preventDefault(); // 기본 동작 방지
-                const taskId = event.dataTransfer.getData("text"); // 드래그된 Task ID 가져오기
-    
-                // 서버에 Task 업데이트 요청
+                event.preventDefault();
+                const taskId = event.dataTransfer.getData("text");
+
                 $.ajax({
                     url: `${API_URL}/tasks/move-sprint`,
                     method: "PUT",
                     contentType: "application/json",
                     data: JSON.stringify({
                         taskId: taskId,
-                        newSprintId: sprintId, // 새로운 스프린트 ID
-                        changedBy: 1 // 변경 작업을 수행한 사용자 ID (로그인 세션에서 가져와야 함)
+                        newSprintId: sprintId,
+                        changedBy: 1 // 실제 로그인 사용자 ID로 대체 필요
                     }),
                     success: function () {
-                        fetchSprints(); // 스프린트 데이터 다시 로드
+                        fetchSprints();
                     },
                     error: function (err) {
-                    },
+                        console.error("작업 이동 오류:", err);
+                    }
                 });
             };
-    
+
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
             // 스프린트 및 태스크 불러오기
             function fetchSprints() {
-                console.log("스프린트 데이터 요청 시작");
                 $.ajax({
                     url: `${API_URL}/sprint/list-with-tasks`,
                     method: "GET",
@@ -177,49 +459,402 @@
                         renderSprints(sprints);
                     },
                     error: function (err) {
-                        
+                        console.error("스프린트 조회 오류:", err);
                     }
                 });
             }
-    
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+            $("#createBtn").off("click").on("click", function () {
+                const sprintName = $("#sprintName").val();
+                const startDate = $("#startDate").val();
+                const endDate = $("#endDate").val();
+
+                if (!sprintName || !startDate || !endDate) {
+                    return;
+                }
+
+                if (new Date(startDate) > new Date(endDate)) {
+                    return;
+                }
+
+                // 서버로 데이터 전송
+                $.ajax({
+                    url: `${API_URL}/sprint/create`, // API URL 확인
+                    method: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        projectId, // 프로젝트 ID
+                        sprintName,
+                        startDate,
+                        endDate,
+                    }),
+                    success: function (response) {
+                        $(".popup-background").fadeOut();
+                        $("#sprintPopup").fadeOut();
+                        fetchSprints(); // 목록 새로고침
+                    },
+                    error: function (err) {
+                    },
+                });
+            });
+
+
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
             // 스프린트 렌더링
             function renderSprints(sprints) {
                 const sprintBoard = $("#sprintBoard");
                 sprintBoard.empty();
-    
+
                 if (!sprints || sprints.length === 0) {
                     sprintBoard.append("<p>스프린트 데이터가 없습니다.</p>");
                     return;
                 }
-    
-                sprints.forEach(sprint => {
-                    const tasksHTML = sprint.tasks.map(task => `
-                        <div class="task-card" draggable="true" ondragstart="dragTask(event)" data-task-id="${task.taskId}">
-                            <p>${task.taskName} - 우선순위: ${task.priority}</p>
+
+                // "임시저장" 스프린트와 기타 스프린트 분리
+                const unassignedSprint = sprints.find(sprint => sprint.sprintName === "임시저장");
+                const otherSprints = sprints.filter(sprint => sprint.sprintName !== "임시저장");
+
+                // 스프린트를 렌더링
+                [...otherSprints, unassignedSprint].forEach(sprint => {
+                    if (!sprint) return;
+
+                    // 작업 카드 HTML 생성
+                    const tasksHTML = (sprint.tasks || []).map(task => `
+                    <div class="task-card" draggable="true" ondragstart="dragTask(event)" data-task-id="${task.taskId}">
+                        <p><strong>${task.taskName}</strong></p>
+                        <p>
+                            <select id="priorityDropdown-${task.taskId}" class="priority-dropdown" data-task-id="${task.taskId}">
+                                <option value="낮음" ${task.priority === '낮음' ? 'selected' : ''}>낮음</option>
+                                <option value="중간" ${task.priority === '중간' ? 'selected' : ''}>중간</option>
+                                <option value="높음" ${task.priority === '높음' ? 'selected' : ''}>높음</option>
+                                <option value="긴급" ${task.priority === '긴급' ? 'selected' : ''}>긴급</option>
+                            </select>
+                        </p>
+                        <p>
+                            <select id="statusDropdown-${task.taskId}" class="status-dropdown" data-task-id="${task.taskId}">
+                                <option value="">로딩 중...</option>
+                            </select>
+                        </p>
+                    </div>
+                `).join("");
+
+                    // 스프린트 옵션 메뉴 생성
+                    const optionsMenu = sprint.sprintName === "임시저장" ? "" : `
+                        <button class="options-btn">...</button>
+                        <div class="options-menu">
+                            <button class="edit-sprint-btn" data-sprint-id="${sprint.sprintId}">편집</button>
+                            <button class="delete-sprint-btn" data-sprint-id="${sprint.sprintId}">삭제</button>
                         </div>
-                    `).join("");
-    
+                    `;
+
+                    // 스프린트 HTML 생성
                     const sprintHTML = `
                         <div class="sprint" data-sprint-id="${sprint.sprintId}">
                             <div class="sprint-header">
-                                <h3>${sprint.sprintName} (${sprint.startDate.split("T")[0]} ~ ${sprint.endDate.split("T")[0]})</h3>
+                                <h3>${sprint.sprintName}</h3>
+                                ${optionsMenu}
                             </div>
                             <div class="sprint-content" ondragover="allowDrop(event)" ondrop="dropTask(event, ${sprint.sprintId})">
-                                ${tasksHTML || "<p>작업 없음</p>"}
+                                ${tasksHTML || "<p></p>"}
                             </div>
                         </div>
                     `;
+
                     sprintBoard.append(sprintHTML);
+
+                    // 각 작업의 상태 드롭다운 로드
+                    (sprint.tasks || []).forEach(task => {
+                        loadStatusDropdown(task);
+                    });
+                });
+
+                // 스프린트 관련 이벤트 바인딩
+                bindSprintEvents();
+            }
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+            // 마감일 포맷 함수
+            function formatDueDate(dueDate) {
+                const date = new Date(dueDate);
+                const month = (date.getMonth() + 1).toString().padStart(2, "0");
+                const day = date.getDate().toString().padStart(2, "0");
+                return `${month}-${day}`;
+            }
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+            function bindSprintEvents() {
+                // 옵션 버튼
+                $(".options-btn").off("click").on("click", function (e) {
+                    e.stopPropagation(); // 다른 클릭 이벤트 방지
+                    const menu = $(this).siblings(".options-menu");
+                    $(".options-menu").not(menu).hide(); // 다른 메뉴 닫기
+                    menu.toggle(); // 현재 메뉴 열기/닫기
+                });
+
+                $(document).off("click").on("click", function () {
+                    $(".options-menu").hide();
+                });
+
+                // 삭제 버튼
+                $(".delete-sprint-btn").off("click").on("click", function () {
+                    const sprintId = $(this).data("sprint-id");
+                    if (confirm("스프린트를 삭제하시겠습니까? 관련 작업은 '임시저장'으로 이동됩니다.")) {
+                        deleteSprint(sprintId);
+                    }
+                });
+
+                // 편집 버튼
+                $(".edit-sprint-btn").off("click").on("click", function () {
+                    const sprintId = $(this).data("sprint-id");
+                    openEditPopup(sprintId);
                 });
             }
-    
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+            // 삭제 요청
+            function deleteSprint(sprintId) {
+                $.ajax({
+                    url: `${API_URL}/sprint/delete`,
+                    method: "DELETE",
+                    contentType: "application/json",
+                    data: JSON.stringify({ sprintId, projectId }),
+                    success: function (response) {
+                        fetchSprints(); // 스프린트 목록 새로고침
+                    },
+                    error: function (err) {
+                    }
+                });
+            }
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+            // 편집 팝업 열기
+            function openEditPopup(sprintId) {
+                $.ajax({
+                    url: `${API_URL}/sprint/${sprintId}`,
+                    method: "GET",
+                    success: function (data) {
+                        // 팝업에 기존 데이터 채우기
+                        $("#editSprintName").val(data.sprintName);
+                        $("#editStartDate").val(data.startDate.split("T")[0]); // YYYY-MM-DD 형식
+                        $("#editEndDate").val(data.endDate.split("T")[0]);     // YYYY-MM-DD 형식
+
+                        // 저장 버튼에 스프린트 ID 저장
+                        $("#editSaveBtn").data("sprint-id", sprintId);
+
+                        // 팝업 열기
+                        $(".popup-background").fadeIn();
+                        $("#editSprintPopup").fadeIn();
+                    },
+                    error: function (err) {
+                        console.error(err);
+                    }
+                });
+            }
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+            $("#addSprintBtn").click(function () {
+                // 오늘 날짜 디폴트 값 설정
+                const today = getTodayDate();
+                $("#sprintName").val(""); // 스프린트 이름 초기화
+                $("#startDate").val(today); // 시작 날짜 초기화
+                $("#endDate").val(today);   // 종료 날짜 초기화
+
+                // 팝업 열기
+                $(".popup-background").fadeIn();
+                $("#sprintPopup").fadeIn();
+            });
+
+
+
+            // 오늘 날짜를 YYYY-MM-DD 형식으로 가져오는 함수
+            function getTodayDate() {
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 +1
+                const day = String(today.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+            function closePopup() {
+                $(".popup-background").fadeOut();
+                $(".popup").fadeOut();
+            }
+
+            $("#cancelBtn, #editCancelBtn").click(closePopup);
+
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+            $("#editSaveBtn").off("click").on("click", function () {
+                const sprintId = $(this).data("sprint-id");
+                const sprintName = $("#editSprintName").val();
+                const startDate = $("#editStartDate").val();
+                const endDate = $("#editEndDate").val();
+
+                if (!sprintName || !startDate || !endDate) {
+                    return;
+                }
+
+                if (new Date(startDate) > new Date(endDate)) {
+                    return;
+                }
+
+                $.ajax({
+                    url: `${API_URL}/sprint/update`,
+                    method: "PUT",
+                    contentType: "application/json",
+                    data: JSON.stringify({ sprintId, sprintName, startDate, endDate }),
+                    success: function (response) {
+                        closePopup();
+                        fetchSprints(); // 스프린트 목록 새로고침
+                    },
+                    error: function (err) {
+                        console.error(err);
+                    }
+                });
+            });
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+            function fetchSprints() {
+                $.ajax({
+                    url: `${API_URL}/sprint/list-with-tasks`,
+                    method: "GET",
+                    data: { projectId },
+                    success: function (sprints) {
+                        renderSprints(sprints); // 렌더링
+                        bindSprintEvents();    // 이벤트 바인딩
+                    },
+                    error: function (err) {
+                        console.error("스프린트 조회 오류:", err);
+                    }
+                });
+            }
+
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+            $(document).on("change", ".status-dropdown", function () {
+                const taskId = $(this).closest(".task-card").data("task-id");
+                const newStatus = $(this).val();
+                const changedBy = 1; // 로그인 사용자 ID
+                const taskName = $(this).closest(".task-card").find("p strong").text(); // 작업 이름
+
+                const requestData = {
+                    taskId,
+                    taskName,
+                    status: newStatus,
+                    changedBy
+                };
+
+
+                // AJAX 요청
+                $.ajax({
+                    url: `${API_URL}/tasks/update`,
+                    method: "PUT",
+                    contentType: "application/json",
+                    data: JSON.stringify(requestData),
+                    success: function (response) {
+                    },
+                    error: function (err) {
+                    }
+                });
+            });
+
+
+            $(document).on("change", ".priority-dropdown", function () {
+                const taskId = $(this).data("task-id") || $(this).attr("id").split("-")[1]; // taskId 추출
+                const newPriority = $(this).val(); // 새 우선순위 값
+                const changedBy = 1; // 로그인 사용자 ID
+
+                if (!taskId) {
+                    console.error("taskId가 정의되지 않았습니다. data-task-id 속성을 확인하세요.");
+                    return; // taskId가 없으면 요청을 보내지 않음
+                }
+
+                const requestData = {
+                    taskId,
+                    priority: newPriority,
+                    changedBy
+                };
+
+
+                // AJAX 요청
+                $.ajax({
+                    url: `${API_URL}/tasks/update`,
+                    method: "PUT",
+                    contentType: "application/json",
+                    data: JSON.stringify(requestData),
+                    success: function (response) {
+                    },
+                    error: function (err) {
+                        ;
+                    }
+                });
+            });
+
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+            function loadStatusDropdown(task) {
+                $.ajax({
+                    url: `${API_URL}/tasks/status-list`, // 상태 목록 API 호출
+                    method: "GET",
+                    success: function (statuses) {
+                        // 상태 목록 데이터를 옵션으로 변환
+                        const statusOptions = statuses.map(status => `
+                <option value="${status.id}" ${task.statusId === status.id ? 'selected' : ''}>
+                    ${status.name}
+                </option>
+            `).join("");
+
+                        // 드롭다운 업데이트
+                        $(`#statusDropdown-${task.taskId}`).html(statusOptions);
+                    },
+                    error: function (err) {
+                    }
+                });
+            }
+
+
+
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
             // 초기 데이터 로드
             fetchSprints();
         });
     </script>
-    
-    
-    
+
+
+
 </body>
 
 </html>

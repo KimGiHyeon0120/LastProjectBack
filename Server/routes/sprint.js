@@ -126,26 +126,54 @@ router.put('/update', async (req, res) => {
 
 // 스크립트 삭제
 router.delete('/delete', async (req, res) => {
-    const { sprintId } = req.body;
+    const { sprintId, projectId } = req.body;
 
-    if (!sprintId) {
-        return res.status(400).json({ message: 'sprintId를 제공해주세요.' });
+    if (!sprintId || !projectId) {
+        return res.status(400).json({ message: 'sprintId와 projectId는 필수입니다.' });
     }
 
     try {
-        const [result] = await connection.promise().query(
+        // 1. Unassigned Sprint 확인 또는 생성
+        const [unassignedSprint] = await connection.promise().query(
+            `SELECT sprint_id FROM Sprints WHERE project_id = ? AND sprint_name = '임시저장'`,
+            [projectId]
+        );
+
+        let unassignedSprintId;
+        if (unassignedSprint.length === 0) {
+            const [result] = await connection.promise().query(
+                `INSERT INTO Sprints (project_id, sprint_name) VALUES (?, '임시저장')`,
+                [projectId]
+            );
+            unassignedSprintId = result.insertId;
+        } else {
+            unassignedSprintId = unassignedSprint[0].sprint_id;
+        }
+
+        // 2. Tasks 이동
+        const [taskUpdateResult] = await connection.promise().query(
+            `UPDATE Tasks SET sprint_id = ? WHERE sprint_id = ?`,
+            [unassignedSprintId, sprintId]
+        );
+
+        console.log(`${taskUpdateResult.affectedRows}개의 작업이 "임시저장"으로 이동되었습니다.`);
+
+        // 3. Sprint 삭제
+        const [deleteResult] = await connection.promise().query(
             `DELETE FROM Sprints WHERE sprint_id = ?`,
             [sprintId]
         );
 
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ message: '삭제할 스크립트를 찾을 수 없습니다.' });
+        if (deleteResult.affectedRows === 0) {
+            return res.status(404).json({ message: '삭제할 스프린트를 찾을 수 없습니다.' });
         }
 
-        res.status(200).json({ message: '스크립트가 성공적으로 삭제되었습니다.' });
+        res.status(200).json({
+            message: '스프린트가 성공적으로 삭제되었으며 관련 작업은 "임시저장"으로 이동되었습니다.',
+        });
     } catch (err) {
-        console.error('스크립트 삭제 오류:', err);
-        res.status(500).json({ message: '스크립트 삭제 중 오류가 발생했습니다.' });
+        console.error('스프린트 삭제 오류:', err);
+        res.status(500).json({ message: '스프린트 삭제 중 오류가 발생했습니다.' });
     }
 });
 
@@ -189,7 +217,27 @@ router.get('/list-with-tasks', async (req, res) => {
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
+router.get('/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const [result] = await connection.promise().query(
+            `SELECT sprint_name AS sprintName, start_date AS startDate, end_date AS endDate
+             FROM Sprints WHERE sprint_id = ?`, [id]
+        );
 
+        if (result.length === 0) {
+            return res.status(404).json({ message: "스프린트를 찾을 수 없습니다." });
+        }
+
+        res.status(200).json(result[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "스프린트 데이터 조회 중 오류가 발생했습니다." });
+    }
+});
+
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
 
