@@ -1,50 +1,225 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WBS 진행 보드</title>
-    <link rel="stylesheet" href="../css/sample_01.css">
-
-    <script src="/proj/assets/lib/jquery-3.7.1.min.js"></script>
+    <title>스프린트 보드</title>
+    <script src="../lib/jquery-3.7.1.min.js"></script>
     <script src="/Server/script/header.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f5f7;
+        }
+
+        .main {
+            padding: 20px;
+            margin-top: 80px;
+        }
+
+        /* 스프린트 보드 스타일 */
+        .sprint-board {
+            margin-top: 20px;
+        }
+
+        .sprint {
+            border: 1px solid #ddd;
+            background-color: #fff;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            padding: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .sprint-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .sprint-header h3 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .sprint-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .sprint-actions button {
+            background-color: #e9ecef;
+            color: #495057;
+            border: 1px solid #ced4da;
+            padding: 2px 8px;
+            /* 버튼 크기 조정 */
+            border-radius: 4px;
+            font-size: 12px;
+            /* 글꼴 크기 조정 */
+            cursor: pointer;
+        }
+
+        .sprint-actions button:hover {
+            background-color: #dee2e6;
+            border-color: #adb5bd;
+        }
+
+        .sprint-content {
+            padding: 10px 0;
+        }
+
+        #addSprintBtn {
+            margin-top: 20px;
+            display: inline-block;
+            background-color: #e9ecef;
+            color: #495057;
+            border: 1px solid #ced4da;
+            padding: 5px 10px;
+            /* 버튼 크기 조정 */
+            font-size: 14px;
+            /* 글꼴 크기 조정 */
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        #addSprintBtn:hover {
+            background-color: #dee2e6;
+            border-color: #adb5bd;
+        }
+    </style>
 </head>
+
+
+
+
+
+
 <body>
-        <!-- 헤더 영역 -->
-        <header>
-            <script>loadHTML("./header.html")</script>
-        </header>
+    <!-- 헤더 영역 -->
+    <header>
+        <script>loadHTML("./header.html")</script>
+    </header>
 
     <div class="main">
-        <div class="header">
-            <h1>KAN 보드</h1>
-            <div class="actions">
-                <button style="background: #fff; border: none; padding: 5px 8px; cursor: pointer; border-radius: 4px; font-size: 14px;">+ 만들기</button>
-            </div>
-        </div>
-        <div class="tabs">
-            <a href="#" class="active">할 일</a>
-            <a href="#">진행 중</a>
-            <a href="#">완료</a>
-        </div>
-        <div class="content">
-            <div class="board">
-                <div class="board-column">
-                    <h3>할 일</h3>
-                    <div class="task">123</div>
-                    <div class="task">KAN-1</div>
-                    <div class="add-task">+ 이슈 만들기</div>
-                </div>
-                <div class="board-column">
-                    <h3>진행 중</h3>
-                    <div class="add-task">+</div>
-                </div>
-                <div class="board-column">
-                    <h3>완료</h3>
-                    <div class="add-task">+</div>
-                </div>
-            </div>
-        </div>
+        <button id="addSprintBtn">스프린트 만들기</button>
+        <div id="sprintBoard" class="sprint-board"></div>
     </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <script>
+        $(document).ready(function () {
+            // 프로젝트 ID는 URL에서 추출
+            const urlParams = new URLSearchParams(window.location.search);
+            const projectId = urlParams.get("projectId");
+            const API_URL = "http://localhost:3000/api";
+    
+            if (!projectId) {
+                return;
+            }
+    
+            // 드래그 앤 드롭 핸들러 정의
+            window.allowDrop = function (event) {
+                event.preventDefault(); // 드래그 허용
+            };
+    
+            window.dragTask = function (event) {
+                const taskId = event.target.dataset.taskId; // 드래그된 Task ID
+                event.dataTransfer.setData("text", taskId); // Task ID를 전송 데이터에 저장
+            };
+    
+            window.dropTask = function (event, sprintId) {
+                event.preventDefault(); // 기본 동작 방지
+                const taskId = event.dataTransfer.getData("text"); // 드래그된 Task ID 가져오기
+    
+                // 서버에 Task 업데이트 요청
+                $.ajax({
+                    url: `${API_URL}/tasks/move-sprint`,
+                    method: "PUT",
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        taskId: taskId,
+                        newSprintId: sprintId, // 새로운 스프린트 ID
+                        changedBy: 1 // 변경 작업을 수행한 사용자 ID (로그인 세션에서 가져와야 함)
+                    }),
+                    success: function () {
+                        fetchSprints(); // 스프린트 데이터 다시 로드
+                    },
+                    error: function (err) {
+                    },
+                });
+            };
+    
+            // 스프린트 및 태스크 불러오기
+            function fetchSprints() {
+                console.log("스프린트 데이터 요청 시작");
+                $.ajax({
+                    url: `${API_URL}/sprint/list-with-tasks`,
+                    method: "GET",
+                    data: { projectId },
+                    success: function (sprints) {
+                        renderSprints(sprints);
+                    },
+                    error: function (err) {
+                        
+                    }
+                });
+            }
+    
+            // 스프린트 렌더링
+            function renderSprints(sprints) {
+                const sprintBoard = $("#sprintBoard");
+                sprintBoard.empty();
+    
+                if (!sprints || sprints.length === 0) {
+                    sprintBoard.append("<p>스프린트 데이터가 없습니다.</p>");
+                    return;
+                }
+    
+                sprints.forEach(sprint => {
+                    const tasksHTML = sprint.tasks.map(task => `
+                        <div class="task-card" draggable="true" ondragstart="dragTask(event)" data-task-id="${task.taskId}">
+                            <p>${task.taskName} - 우선순위: ${task.priority}</p>
+                        </div>
+                    `).join("");
+    
+                    const sprintHTML = `
+                        <div class="sprint" data-sprint-id="${sprint.sprintId}">
+                            <div class="sprint-header">
+                                <h3>${sprint.sprintName} (${sprint.startDate.split("T")[0]} ~ ${sprint.endDate.split("T")[0]})</h3>
+                            </div>
+                            <div class="sprint-content" ondragover="allowDrop(event)" ondrop="dropTask(event, ${sprint.sprintId})">
+                                ${tasksHTML || "<p>작업 없음</p>"}
+                            </div>
+                        </div>
+                    `;
+                    sprintBoard.append(sprintHTML);
+                });
+            }
+    
+            // 초기 데이터 로드
+            fetchSprints();
+        });
+    </script>
+    
+    
+    
 </body>
+
 </html>

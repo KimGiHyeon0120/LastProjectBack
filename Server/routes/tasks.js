@@ -191,5 +191,52 @@ router.delete('/delete', async (req, res) => {
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
+// Task 스프린트 이동
+router.put('/move-sprint', async (req, res) => {
+    const { taskId, newSprintId, changedBy } = req.body;
+
+    // 필수 데이터 검증
+    if (!taskId || !newSprintId || !changedBy) {
+        return res.status(400).json({ message: 'taskId, newSprintId, changedBy는 필수입니다.' });
+    }
+
+    try {
+        // 기존 작업 데이터 조회
+        const [taskData] = await connection.promise().query(
+            `SELECT sprint_id FROM Tasks WHERE task_id = ?`,
+            [taskId]
+        );
+
+        if (taskData.length === 0) {
+            return res.status(404).json({ message: '작업을 찾을 수 없습니다.' });
+        }
+
+        const oldSprintId = taskData[0].sprint_id;
+
+        // 스프린트 변경
+        const [updateResult] = await connection.promise().query(
+            `UPDATE Tasks SET sprint_id = ?, last_updated_by = ? WHERE task_id = ?`,
+            [newSprintId, changedBy, taskId]
+        );
+
+        if (updateResult.affectedRows === 0) {
+            return res.status(400).json({ message: '스프린트 이동 실패: 작업이 업데이트되지 않았습니다.' });
+        }
+
+        // 변경 이력 기록
+        await connection.promise().query(
+            `INSERT INTO Task_History (task_id, changed_field, old_value, new_value, changed_by)
+             VALUES (?, 'sprint_id', ?, ?, ?)`,
+            [taskId, oldSprintId, newSprintId, changedBy]
+        );
+
+        res.status(200).json({ message: '작업(Task)이 성공적으로 스프린트를 이동했습니다.' });
+    } catch (err) {
+        console.error('스프린트 이동 오류:', err);
+        res.status(500).json({ message: '스프린트 이동 중 오류가 발생했습니다.' });
+    }
+});
+
+
 
 module.exports = router;

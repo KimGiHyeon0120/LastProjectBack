@@ -68,7 +68,9 @@
                 }),
                 success: function (response) {
                     if (response.message === '로그인 성공') {
-                        localStorage.setItem('loggedInUser', JSON.stringify(response.user));
+                        sessionStorage.setItem('loggedInUser', JSON.stringify(response.user));
+                        window.location.href = '../project/projectList.html';
+
                     } else {
                         // 로그인 실패 시
                         pwd.value = ''; // 비밀번호 값 지우기
