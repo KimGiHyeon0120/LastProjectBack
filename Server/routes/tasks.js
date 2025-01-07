@@ -97,8 +97,8 @@ router.get('/list', async (req, res) => {
 router.put('/update', async (req, res) => {
     const { taskId, taskName, description, assignedTo, status, priority, dueDate, changedBy } = req.body;
 
-    if (!taskId || !taskName || !changedBy) {
-        return res.status(400).json({ message: '작업 ID, 이름, 변경자 ID는 필수입니다.' });
+    if (!taskId || !changedBy) {
+        return res.status(400).json({ message: '작업 ID와 변경자 ID는 필수입니다.' });
     }
 
     try {
@@ -114,13 +114,57 @@ router.put('/update', async (req, res) => {
 
         const oldData = oldTask[0];
 
+        // 업데이트할 필드 구성
+        const fieldsToUpdate = [];
+        const updateValues = [];
+
+        if (taskName) {
+            fieldsToUpdate.push("task_name = ?");
+            updateValues.push(taskName);
+        }
+
+        if (description !== undefined) {
+            fieldsToUpdate.push("description = ?");
+            updateValues.push(description || null);
+        }
+
+        if (assignedTo !== undefined) {
+            fieldsToUpdate.push("assigned_to = ?");
+            updateValues.push(assignedTo || null);
+        }
+
+        if (status !== undefined) {
+            fieldsToUpdate.push("Tasks_status_id = ?");
+            updateValues.push(status);
+        }
+
+        if (priority !== undefined) {
+            fieldsToUpdate.push("priority = ?");
+            updateValues.push(priority);
+        }
+
+        if (dueDate !== undefined) {
+            fieldsToUpdate.push("due_date = ?");
+            updateValues.push(dueDate || null);
+        }
+
+        fieldsToUpdate.push("last_updated_by = ?");
+        updateValues.push(changedBy);
+
+        updateValues.push(taskId);
+
+        // 필드가 없다면 400 에러 반환
+        if (fieldsToUpdate.length === 1) {
+            return res.status(400).json({ message: "업데이트할 데이터가 없습니다." });
+        }
+
         // 작업 업데이트
-        const [updateResult] = await connection.promise().query(
-            `UPDATE Tasks
-             SET task_name = ?, description = ?, assigned_to = ?, Tasks_status_id = ?, priority = ?, due_date = ?, last_updated_by = ?
-             WHERE task_id = ?`,
-            [taskName, description || null, assignedTo || null, status, priority, dueDate || null, changedBy, taskId]
-        );
+        const query = `
+            UPDATE Tasks
+            SET ${fieldsToUpdate.join(", ")}
+            WHERE task_id = ?
+        `;
+        const [updateResult] = await connection.promise().query(query, updateValues);
 
         if (updateResult.affectedRows === 0) {
             return res.status(404).json({ message: '작업 업데이트에 실패했습니다.' });
@@ -129,15 +173,19 @@ router.put('/update', async (req, res) => {
         // 변경 이력 삽입 데이터 생성
         const historyEntries = [];
 
-        if (oldData.Tasks_status_id !== status) {
+        if (status !== undefined && oldData.Tasks_status_id !== status) {
             historyEntries.push(['status', oldData.Tasks_status_id, status, changedBy]);
         }
 
-        if (oldData.assigned_to !== assignedTo) {
+        if (assignedTo !== undefined && oldData.assigned_to !== assignedTo) {
             historyEntries.push(['assigned_to', oldData.assigned_to, assignedTo, changedBy]);
         }
 
-        if (oldData.due_date !== dueDate) {
+        if (priority !== undefined && oldData.priority !== priority) {
+            historyEntries.push(['priority', oldData.priority, priority, changedBy]);
+        }
+
+        if (dueDate !== undefined && oldData.due_date !== dueDate) {
             historyEntries.push(['due_date', oldData.due_date, dueDate, changedBy]);
         }
 
@@ -156,6 +204,7 @@ router.put('/update', async (req, res) => {
         res.status(500).json({ message: '작업 수정 중 오류가 발생했습니다.' });
     }
 });
+
 
 
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -236,6 +285,29 @@ router.put('/move-sprint', async (req, res) => {
         res.status(500).json({ message: '스프린트 이동 중 오류가 발생했습니다.' });
     }
 });
+
+
+
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+router.get('/status-list', async (req, res) => {
+    try {
+        const [statuses] = await connection.promise().query(
+            `SELECT Tasks_status_id AS id, Tasks_status_name AS name FROM Tasks_status`
+        );
+        res.status(200).json(statuses);
+    } catch (err) {
+        console.error('상태 목록 조회 오류:', err);
+        res.status(500).json({ message: '상태 목록 조회 중 오류가 발생했습니다.' });
+    }
+});
+
+
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
 
