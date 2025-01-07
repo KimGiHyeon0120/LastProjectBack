@@ -74,17 +74,29 @@ router.get('/list-by-user', async (req, res) => {
     }
 
     try {
+        // 소유한 프로젝트 조회
         const [ownedProjects] = await connection.promise().query(
-            `SELECT p.project_id, p.project_name, p.created_at 
+            `SELECT 
+                p.project_id, 
+                p.project_name, 
+                p.created_at,
+                r.project_role_name AS role_name
              FROM Projects p
+             LEFT JOIN Project_Roles r ON r.project_role_id = 1
              WHERE p.user_idx = ?`,
             [userId]
         );
 
+        // 참여한 프로젝트 조회
         const [participatingProjects] = await connection.promise().query(
-            `SELECT DISTINCT p.project_id, p.project_name, p.created_at
+            `SELECT DISTINCT 
+                p.project_id, 
+                p.project_name, 
+                p.created_at,
+                r.project_role_name AS role_name
              FROM Projects p
              INNER JOIN Project_Members pm ON p.project_id = pm.project_id
+             LEFT JOIN Project_Roles r ON pm.project_role_id = r.project_role_id
              WHERE pm.user_idx = ? AND p.user_idx != ?`,
             [userId, userId]
         );
@@ -92,6 +104,7 @@ router.get('/list-by-user', async (req, res) => {
         res.status(200).json({
             ownedProjects,
             participatingProjects,
+            message: '프로젝트 목록 조회 성공',
         });
     } catch (err) {
         console.error('사용자별 프로젝트 목록 조회 오류:', err);
