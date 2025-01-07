@@ -82,6 +82,9 @@
                 error: function (xhr) {
                     // 서버에서 반환된 오류 메시지 출력
                     if (xhr.responseJSON && xhr.responseJSON.message) {
+                                      // 로그인 실패 시
+                                      pwd.value = ''; // 비밀번호 값 지우기
+                        userId.focus(); // 아이디 필드에 포커스 이동
                         setInvalid(userId, xhr.responseJSON.message);
                         setInvalid(pwd, xhr.responseJSON.message);
                     } else {

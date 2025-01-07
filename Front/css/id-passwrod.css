@@ -1,5 +1,13 @@
+/* 전체적인 박스 모델 설정 */
 * {
     box-sizing: border-box;
+}
+
+/* 타이머 스타일 */
+.timer {
+    font-size: 14px;
+    color: #666;
+    margin-top: 10px;
 }
 
 body {
@@ -10,6 +18,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+
     height: 100vh;
 }
 
@@ -31,9 +40,9 @@ body {
     color: #666;
     font-weight: 500;
     margin-top: 10px;
-    white-space: normal; /* 줄바꿈 허용 */
-    line-height: 1.5; /* 줄 간격 조절 */
-    text-align: center; /* 텍스트 중앙 정렬 */
+    white-space: normal;
+    line-height: 1.5;
+    text-align: center;
 }
 
 .container {
@@ -68,7 +77,7 @@ body {
 
 .form-group input {
     width: 100%;
-    padding: 20px 65px 10px 10px; /* 위 오른쪽 아래 왼*/  /* 위쪽 오왼 아래래*/
+    padding: 20px 65px 10px 10px;
     font-size: 16px;
     border: 1px solid #ddd;
     border-radius: 8px;
@@ -87,10 +96,29 @@ body {
     font-size: 12px;
 }
 
-/* 버튼 스타일 */
-button {
+/* 오류 메시지 출력용 */
+.span-text {
+    display: none;
+    font-size: 12px;
+    margin-top: 5px;
+    line-height: 1.2;
+    color: lightcoral;
+}
+
+/* 유효성 검사 실패 시 스타일 */
+.invalid {
+    border: 2px solid lightcoral !important;
+    background-color: #fdd !important;
+}
+.invalid ~ .span-text {
+    display: block;
+    color: lightcoral;
+}
+
+/* 발송 버튼 스타일 */
+.send-button {
     position: absolute;
-    right: 5px; /* 오른쪽 끝에 배치 */
+    right: 5px;
     top: 50%;
     transform: translateY(-50%);
     padding: 10px 15px;
@@ -103,6 +131,51 @@ button {
     transition: background-color 0.3s ease;
 }
 
-button:hover {
-    background-color: rgb(25, 101, 196);
+/* hover 상태에서 색상 변경 */
+.send-button:hover:not(:disabled) {
+    background-color: rgb(28, 113, 183); /* hover 시 색상 */
 }
+
+/* 비활성화된 버튼 스타일 */
+.send-button:disabled {
+    background-color: rgb(160, 194, 255); /* 비활성화된 버튼 */
+    cursor: not-allowed; /* 비활성화된 버튼에 클릭 불가 스타일 */
+}
+
+/* 아이디 찾기 버튼 스타일 (가로로 긴 버튼) */
+.find-id-button {
+    width: 100%; /* 버튼이 가로로 길게 */
+    padding: 12px;
+    font-size: 16px;
+    background-color: rgb(35, 131, 226);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  
+}
+
+/* hover 상태에서 색상 변경 */
+.find-id-button:hover:not(:disabled) {
+    background-color: rgb(28, 113, 183); /* hover 시 색상 */
+}
+
+/* 비활성화된 버튼 스타일 */
+.find-id-button:disabled {
+    background-color: rgb(160, 194, 255); /* 비활성화된 버튼 */
+    cursor: not-allowed; /* 비활성화된 버튼에 클릭 불가 스타일 */
+}
+
+/* 타이머 스타일 (입력 필드 안에 위치) */
+.timer {
+    position: absolute;
+    right: 10px; /* 오른쪽 끝에 위치 */
+    top: 50%; /* 수직 중앙 정렬 */
+    transform: translateY(-50%); /* 정확한 중앙 정렬 */
+    font-size: 0.9rem;
+    color: #555;
+    pointer-events: none; /* 타이머를 클릭할 수 없도록 설정 */
+}
+
+
