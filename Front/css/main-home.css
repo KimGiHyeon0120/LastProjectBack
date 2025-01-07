@@ -170,3 +170,139 @@ a {
 /* Login div 끝 */
 
 /*================================================================================*/
+
+.sec1 {
+    letter-spacing: .3px;
+}
+
+.sec1-div {
+    color: #fff;
+    padding-right: 0;
+    padding-left: 0;
+    padding-bottom: 4pc;
+    padding-top: 4pc;
+    background-image: linear-gradient(123.5deg, #091e42 78%, #0747a6 99.98%); /*백그라운드 색상*/
+    background-position: 50%;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.text-div1 {
+    width: 100%;
+    align-items: stretch;
+    display: grid;
+    justify-content: space-between;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding-inline-start: 2pc;
+    padding-inline-end: 2pc;
+    gap: 24px;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.text-div1-inner {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    grid-column-start: 2;
+    grid-column-end: 12;
+}
+
+.text-section {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+}
+
+.try-intent-wrapper {
+    margin-top: 0;
+    margin-right: 0;
+    margin-bottom: 24px;
+    margin-left: 0;
+}
+
+.contentBlock-linkFlex {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10%;
+    align-items: center;
+    justify-content: center;
+}
+
+.text-div-2 {
+    padding-right: 0;
+    padding-left: 0;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.tap-group {
+    max-width: 100%;
+}
+
+.tap-group-button-inner {
+    width: 100%;
+    align-items: stretch;
+    display: grid;
+    justify-content: space-between;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-right: auto;
+    margin-left: auto;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding-inline-start: 2pc;
+    padding-inline-end: 2pc;
+    gap: 24px;
+    grid-template-columns: minmax(0, 1fr);
+    padding-inline-start: 60px;
+    padding-inline-end: 60px;
+}
+
+.tap-group-button-select {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1pc;
+
+}
+
+.tap-button {
+    box-sizing: border-box;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    border-color: transparent;
+    border-style: solid;
+    border-radius: 50px;
+    background-clip: padding-box;
+    padding-right: 30px;
+    padding-left: 30px;
+    border-width: 2px;
+    letter-spacing: .04rem;
+    background-color: #57d9a3;
+    color: #091e42;
+    border: 1px solid transparent;
+    padding-top: 4px;
+    padding-right: 1pc;
+    padding-bottom: 4px;
+    padding-left: 1pc;
+}
+
+.tap-panels-inner {
+    margin-right: auto;
+    margin-left: auto;
+    margin-bottom: 0;
+    margin-top: 20px;
+    padding-top: 1pc;
+    padding-right: 0;
+    padding-bottom: 1pc;
+    padding-left: 0;
+}
