@@ -1,5 +1,5 @@
 <head>
-    
+
     <link rel="stylesheet" href="/Front/css/header.css">
     
     <script src="/proj/assets/lib/jquery-3.7.1.min.js"></script>
@@ -45,14 +45,14 @@
     <script>
         // 사이드바 열기
         function openNav() {
-            document.getElementById("mySidebar").style.width = "250px";
-            document.getElementById("mySidebar").classList.add = "open";
+            document.getElementById("mySidebar").style.left = "0"
         }
+
+        //width로 조절 시 글자가 구겨지는 현상 발생 -> left 값을 조절하여 sidebar를 옮기는 방향으로 수정
 
         // 사이드바 닫기
         function closeNav() {
-            document.getElementById("mySidebar").style.width = "0px";
-            document.getElementById("mySidebar").classList.remove = "open";
+            document.getElementById("mySidebar").style.left = "-250px";
         }
     </script>
 </body>
