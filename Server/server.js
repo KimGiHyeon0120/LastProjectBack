@@ -13,7 +13,6 @@ const mentionsRoutes = require('./routes/mentions');
 const commentRoutes = require('./routes/comment');
 const notifiRoutes = require('./routes/notification');
 
-
 const app = express();
 
 // CORS 설정
@@ -30,8 +29,6 @@ app.use('/api/tasks', tesksRoutes);
 app.use('/api/mentions', mentionsRoutes);
 app.use('/api/comment', commentRoutes);
 app.use('/api/notification', notifiRoutes);
-
-
 
 // 서버 시작
 const PORT = process.env.PORT || 3000;

@@ -133,9 +133,6 @@ router.post('/login', (req, res) => {
 // 아이디 찾기
 router.post('/find-id', (req, res) => {
     const { userEmail } = req.body;
-
-    console.log("Received email:", userEmail); // 전달된 userEmail 확인
-
     if (!userEmail) {
         return res.status(400).json({ message: '이메일을 입력해주세요.' });
     }
@@ -143,7 +140,6 @@ router.post('/find-id', (req, res) => {
     const query = `SELECT user_id FROM Users WHERE user_email = ?`;
     connection.query(query, [userEmail], (err, results) => {
         if (err) {
-            console.error(err);
             return res.status(500).json({ message: '아이디 찾기 실패' });
         }
 
@@ -181,7 +177,7 @@ router.post('/reset-password/request', (req, res) => {
         }
 
         // 비밀번호 재설정 링크 생성
-        const resetLink = `http://localhost:3000/auth/reset-password?email=${userEmail}`;
+        const resetLink = `http://localhost:3000/api/users/reset-password?email=${userEmail}`;
         res.status(200).json({ resetLink });
     });
 });
@@ -232,9 +228,32 @@ router.post('/reset-password', async (req, res) => {
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
+// idx찾기
+router.get('/get-idx', async (req, res) => {
+    const { userId } = req.query;
+    if (!userId) {
+        return res.status(400).json({ message: 'userId는 필수입니다.' });
+    }
 
+    try {
+        const [result] = await connection.promise().query(
+            'SELECT user_idx FROM Users WHERE user_id = ?',
+            [userId]
+        );
 
+        if (result.length === 0) {
+            return res.status(404).json({ message: '해당 user_id를 찾을 수 없습니다.' });
+        }
 
+        res.status(200).json({ user_idx: result[0].user_idx });
+    } catch (err) {
+        console.error('user_idx 조회 오류:', err);
+        res.status(500).json({ message: 'user_idx 조회 중 오류가 발생했습니다.' });
+    }
+});
+
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
 

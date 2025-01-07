@@ -1,12 +1,23 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WBS 진행 보드</title>
     <link rel="stylesheet" href="../css/project.css">
+
+
+    <script src="/proj/assets/lib/jquery-3.7.1.min.js"></script>
+    <script src="/Server/script/header.js"></script>
 </head>
+
 <body>
+
+    <!-- 헤더 영역 -->
+    <header>
+        <script>loadHTML("./header.html")</script>
+    </header>
     <div class="sidebar">
         <h2>내 칸반 프로젝트</h2>
         <ul>
@@ -22,4 +33,5 @@
         <!-- 페이지 내용은 각 파일에서 동적으로 로드 -->
     </div>
 </body>
+
 </html>
