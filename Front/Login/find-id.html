@@ -42,12 +42,10 @@
             const userEmail = emailInput.value.trim();
         
             if (!userEmail) {
-                alert('이메일을 입력해주세요.');
+                //alert('이메일을 입력해주세요.');
                 emailInput.focus();
                 return;
             }
-        
-            console.log("전송된 이메일:", userEmail); // 디버깅용 출력
         
             $.ajax({
                 url: 'http://localhost:3000/api/users/find-id', // 서버의 API URL
@@ -55,13 +53,10 @@
                 contentType: 'application/json',
                 data: JSON.stringify({ userEmail: userEmail }),
                 success: function (response) {
-                    console.log("서버 응답:", response); // 디버깅용 출력
                     //성공시
                     //alert(`아이디는: ${response.userId} 입니다.`);
                 },
                 error: function (xhr) {
-                    console.error("오류 상태 코드:", xhr.status);
-                    console.error("오류 메시지:", xhr.responseText || xhr.responseJSON);
                     if (xhr.status === 404) {
                         //실패시
                         //alert('등록된 사용자가 없습니다.');
