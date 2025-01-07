@@ -177,7 +177,7 @@ router.post('/reset-password/request', (req, res) => {
         }
 
         // 비밀번호 재설정 링크 생성
-        const resetLink = `http://localhost:3000/auth/reset-password?email=${userEmail}`;
+        const resetLink = `http://localhost:3000/api/users/reset-password?email=${userEmail}`;
         res.status(200).json({ resetLink });
     });
 });

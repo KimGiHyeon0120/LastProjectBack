@@ -45,6 +45,7 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
+    margin-top: 80px; /* 헤더 높이만큼 여백 추가 */
 }
 
 .header {
@@ -54,6 +55,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    
 }
 
 .header h1 {
