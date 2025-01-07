@@ -25,6 +25,7 @@ body {
     height: auto;
     margin-bottom: 30px;
 }
+
 .tagline {
     font-size: 16px;
     color: #666;
@@ -35,15 +36,11 @@ body {
     text-align: center; /* 텍스트 중앙 정렬 */
 }
 
-
 .container {
     background: white;
     width: 400px;
     padding: 30px 20px;
     text-align: center;
- 
- ;
- 
 }
 
 /* 폼 관련 스타일 */
@@ -64,9 +61,14 @@ body {
     pointer-events: none;
 }
 
+.input-container {
+    position: relative;
+    width: 100%;
+}
+
 .form-group input {
     width: 100%;
-    padding: 20px 10px 5px;
+    padding: 20px 65px 10px 10px; /* 위 오른쪽 아래 왼*/  /* 위쪽 오왼 아래래*/
     font-size: 16px;
     border: 1px solid #ddd;
     border-radius: 8px;
@@ -76,9 +78,7 @@ body {
 }
 
 .form-group input:focus {
- 
     border: 2px solid rgb(35, 131, 226);
-
 }
 
 .form-group input:focus + label,
@@ -89,9 +89,12 @@ body {
 
 /* 버튼 스타일 */
 button {
-    width: 100%;
-    padding: 12px;
-    font-size: 16px;
+    position: absolute;
+    right: 5px; /* 오른쪽 끝에 배치 */
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 10px 15px;
+    font-size: 14px;
     background-color: rgb(35, 131, 226);
     color: white;
     border: none;
