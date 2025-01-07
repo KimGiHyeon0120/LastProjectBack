@@ -46,7 +46,7 @@ router.post('/request-email-verification', async (req, res) => {
       from: 'no-reply@example.com',
       to: email,
       subject: '아이디 찾기 인증 코드',
-      text: `아이디 찾기 인증 코드: ${verificationCode}.`
+      text: `아이디 찾기 인증 코드: ${verificationCode}. 5분 이내에 입력해주세요.`
     });
 
     res.json({ message: '인증 이메일이 발송되었습니다.' });
@@ -62,19 +62,24 @@ router.post('/verify-id-code', async (req, res) => {
 
   try {
     // 이메일과 인증 코드 확인 (만료되지 않은 코드만 확인)
-    const [rows] = await db.query('SELECT * FROM users WHERE user_email = ? AND verification_code = ? AND verification_code_expiration > NOW()', [email, verificationCode]);
+    const [rows] = await db.query(
+      'SELECT user_id FROM users WHERE user_email = ? AND verification_code = ? AND verification_code_expiration > NOW()', 
+      [email, verificationCode]
+    );
+
 
     if (rows.length === 0) {
       return res.status(400).json({ error: '유효하지 않거나 만료된 인증 코드입니다.' });
     }
-
     // 인증이 완료된 후 유저 아이디 반환
     const userId = rows[0].user_id;
+
     res.json({ message: `아이디 찾기 성공! 유저 아이디는: ${userId}입니다.` });
   } catch (err) {
-    console.error(err);
+    console.error("서버 오류:", err);
     res.status(500).json({ error: '서버 오류가 발생했습니다.' });
   }
 });
+
 
 module.exports = router;

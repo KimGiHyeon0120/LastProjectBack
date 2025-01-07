@@ -140,7 +140,6 @@
         // 유효성 검사 실패 시 스타일 적용
         function setInvalid(input, message, span) {
             input.classList.add('invalid');
-            console.log(input);
             if (span) {
                 span.textContent = message; // 오류 메시지 설정
                 span.style.display = 'block'; // 오류 메시지 표시
