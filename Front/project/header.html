@@ -18,7 +18,7 @@
             <!-- 네비게이션 링크 -->
             <div class="nav-right">
                 <a href="#">내 작업</a>
-                <a href="#">프로젝트</a>
+                <a href="#" onclick="redirectToProjectList()">프로젝트</a>
                 <a href="#">설정</a>
                 <a id="login-logout-btn" href="#">로그인</a>
             </div>
@@ -39,6 +39,9 @@
     </div>
 
     <script>
+        function redirectToProjectList() {
+            window.location.href = '../project/projectList.html';
+        }
         // 사이드바 열기
         function openNav() {
             document.getElementById("mySidebar").style.left = "0";

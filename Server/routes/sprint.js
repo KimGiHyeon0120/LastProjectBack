@@ -153,6 +153,48 @@ router.delete('/delete', async (req, res) => {
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
+// 프로젝트 ID로 스프린트와 태스크 조회
+router.get('/list-with-tasks', async (req, res) => {
+    const { projectId } = req.query;
+
+    if (!projectId) {
+        return res.status(400).json({ message: 'projectId를 제공해주세요.' });
+    }
+
+    try {
+        const [sprints] = await connection.promise().query(
+            `SELECT sprint_id AS sprintId, sprint_name AS sprintName, start_date AS startDate, end_date AS endDate
+             FROM Sprints WHERE project_id = ? ORDER BY created_at DESC`,
+            [projectId]
+        );
+
+        for (const sprint of sprints) {
+            const [tasks] = await connection.promise().query(
+                `SELECT task_id AS taskId, task_name AS taskName, description, Tasks_status_id AS statusId, priority
+                 FROM Tasks WHERE sprint_id = ?`,
+                [sprint.sprintId]
+            );
+            sprint.tasks = tasks; // 스프린트에 태스크 추가
+        }
+
+        res.status(200).json(sprints);
+    } catch (err) {
+        console.error('스프린트와 태스크 조회 오류:', err);
+        res.status(500).json({ message: '스프린트와 태스크 조회 중 오류가 발생했습니다.' });
+    }
+});
+
+
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+
+
+
+
 
 
 module.exports = router;

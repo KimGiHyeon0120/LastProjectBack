@@ -7,7 +7,7 @@ const mysql = require('mysql2');
 // 라우터 가져오기
 const userRoutes = require('./routes/users');
 const projectRoutes = require('./routes/project');
-const scriptRoutes = require('./routes/script');
+const scriptRoutes = require('./routes/sprint');
 const tesksRoutes = require('./routes/tasks');
 const mentionsRoutes = require('./routes/mentions');
 const commentRoutes = require('./routes/comment');
@@ -24,7 +24,7 @@ app.use(bodyParser.json());
 // 라우터 연결
 app.use('/api/users', userRoutes);
 app.use('/api/project', projectRoutes);
-app.use('/api/script', scriptRoutes);
+app.use('/api/sprint', scriptRoutes);
 app.use('/api/tasks', tesksRoutes);
 app.use('/api/mentions', mentionsRoutes);
 app.use('/api/comment', commentRoutes);
