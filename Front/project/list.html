@@ -3,39 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="../css/sample_01.css">
+    <title>작업 진행 상태</title>
+    <style>
+        /* 고정 헤더 스타일 */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
 
-    <script src="/proj/assets/lib/jquery-3.7.1.min.js"></script>
+        /* 메인 컨텐츠 */
+        .main {
+            padding-top: 100px; /* 헤더 높이만큼 추가 */
+        }
+
+        /* 작업 진행 상태 보드 컨테이너 */
+        .board {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .board-column {
+            flex: 1;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            min-height: 300px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .board-column h3 {
+            margin-top: 0;
+            font-size: 18px;
+            color: #333;
+            text-align: center;
+        }
+
+        /* 작업 카드 */
+        .task {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            cursor: grab;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .task:hover {
+            background-color: #f0f9ff;
+            transform: translateY(-2px);
+        }
+
+        /* 작업 카드 내부 텍스트 */
+        .task p {
+            margin: 0;
+            color: #333;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+        }
+    </style>
+    <script src="../lib/jquery-3.7.1.min.js"></script>
     <script src="/Server/script/header.js"></script>
 </head>
 <body>
-        <!-- 헤더 영역 -->
-        <header>
-            <script>loadHTML("./header.html")</script>
-        </header>
+    <!-- 헤더 영역 -->
+    <header>
+        <script>loadHTML("./header.html")</script>
+    </header>
 
     <div class="main">
         <div class="header">
-            <h1>작업 목록</h1>
+            <h1>작업 진행 상태</h1>
         </div>
         <div class="content">
-            <div class="board">
-                <div class="board-column">
-                    <h3>할 일</h3>
-                    <div class="task">초기 기획 검토</div>
-                    <div class="task">팀 회의 진행</div>
-                </div>
-                <div class="board-column">
-                    <h3>진행 중</h3>
-                    <div class="task">디자인 개선</div>
-                </div>
-                <div class="board-column">
-                    <h3>완료</h3>
-                    <div class="task">로그인 페이지 설계</div>
-                </div>
+            <!-- 작업 진행 상태 보드 -->
+            <div class="board" id="sprintBoard">
+                <!-- 스프린트 및 작업 데이터가 동적으로 추가됩니다 -->
             </div>
         </div>
     </div>
+
+    
+    <script>
+        $(document).ready(function () {
+            const projectId = sessionStorage.getItem("projectId");
+            const API_URL = "http://localhost:3000/api";
+        
+            if (!projectId) {
+                alert("프로젝트 ID가 필요합니다.");
+                return;
+            }
+        
+            // 작업 상태와 작업 데이터를 가져오기
+            async function fetchTasksAndStatuses() {
+                try {
+                    // 작업 상태 목록 가져오기
+                    const statusResponse = await $.get(`${API_URL}/tasks/status-list`);
+                    const statuses = statusResponse;
+        
+                    // 작업 데이터 가져오기
+                    const taskResponse = await $.get(`${API_URL}/tasks/list`, { projectId });
+                    const tasks = taskResponse;
+        
+                    renderTasks(statuses, tasks);
+                } catch (err) {
+                    console.error("데이터 가져오기 오류:", err);
+                    alert("작업 데이터를 가져오는 중 오류가 발생했습니다.");
+                }
+            }
+        
+            // 작업 렌더링
+            function renderTasks(statuses, tasks) {
+                const sprintBoard = $("#sprintBoard");
+                sprintBoard.empty(); // 기존 데이터 초기화
+        
+                statuses.forEach(status => {
+                    const tasksForStatus = tasks.filter(task => task.statusId === status.id);
+                    const tasksHTML = tasksForStatus.map(task => `
+                        <div class="task" draggable="true" ondragstart="dragTask(event)" data-task-id="${task.taskId}">
+                            <p>${task.taskName}</p>
+                        </div>
+                    `).join("");
+        
+                    const columnHTML = `
+                        <div class="board-column" data-status="${status.name}">
+                            <h3>${status.name}</h3>
+                            <div class="tasks" ondragover="allowDrop(event)" ondrop="dropTask(event, '${status.id}')">
+                                ${tasksHTML}
+                            </div>
+                        </div>
+                    `;
+        
+                    sprintBoard.append(columnHTML); // 작업 상태 컬럼 추가
+                });
+            }
+        
+            // 작업 드래그 시작
+            window.dragTask = function (event) {
+                const taskId = event.target.dataset.taskId;
+                event.dataTransfer.setData("text", taskId);
+            };
+        
+            // 드래그 허용
+            window.allowDrop = function (event) {
+                event.preventDefault();
+            };
+        
+            // 작업 드롭
+            window.dropTask = function (event, newStatusId) {
+                event.preventDefault();
+                const taskId = event.dataTransfer.getData("text");
+        
+                $.ajax({
+                    url: `${API_URL}/tasks/update`,
+                    method: "PUT",
+                    contentType: "application/json",
+                    data: JSON.stringify({ taskId, status: newStatusId }),
+                    success: function () {
+                        fetchTasksAndStatuses(); // 데이터 새로고침
+                    },
+                    error: function (err) {
+                        console.error("작업 상태 변경 중 오류 발생:", err);
+                        alert("작업 상태를 변경하는 중 오류가 발생했습니다.");
+                    }
+                });
+            };
+        
+            // 초기 데이터 로드
+            fetchTasksAndStatuses();
+        });
+        
+        
+    </script>
 </body>
 </html>
