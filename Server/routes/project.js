@@ -456,6 +456,33 @@ router.delete('/delete-member', async (req, res) => {
 
 
 
+//팀장 찾기
+router.get('/role', async (req, res) => {
+    const { projectId, userIdx } = req.query;
+
+    if (!projectId || !userIdx) {
+        return res.status(400).json({ message: '프로젝트 ID와 사용자 ID는 필수입니다.' });
+    }
+
+    try {
+        const [result] = await connection.promise().query(
+            `SELECT pm.project_role_id, pr.project_role_name
+             FROM Project_Members pm
+             JOIN Project_Roles pr ON pm.project_role_id = pr.project_role_id
+             WHERE pm.project_id = ? AND pm.user_idx = ?`,
+            [projectId, userIdx]
+        );
+
+        if (result.length === 0) {
+            return res.status(404).json({ message: '해당 프로젝트에 대한 사용자 역할을 찾을 수 없습니다.' });
+        }
+
+        res.status(200).json(result[0]); // 역할 정보 반환
+    } catch (err) {
+        console.error('역할 확인 오류:', err);
+        res.status(500).json({ message: '역할 확인 중 오류가 발생했습니다.' });
+    }
+});
 
 
 
