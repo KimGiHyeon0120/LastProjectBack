@@ -29,7 +29,7 @@ a {
     align-items: center;
     padding-left: 95px;
     background-repeat: no-repeat;
-    background-image: linear-gradient(180deg, #253858, #091e42);
+    background-color: #FFFFFF;
     display: flex;
     justify-content: center;
     padding-bottom: 0;
@@ -46,7 +46,7 @@ a {
 
 .main-head {
     width: 100%;
-    color: #fff;
+    color: #000;
     max-width: 58pc;
     margin-top: 75pt;
     margin-right: 170px;
@@ -139,7 +139,7 @@ a {
     -webkit-transition: background 0.1s ease-out, box-shadow 0.15s cubic-bezier(0.47, 0.03, 0.49, 1.38);
     transition: background 0.1s ease-out, box-shadow 0.15s cubic-bezier(0.47, 0.03, 0.49, 1.38);
     white-space: nowrap;
-    background: var(--ds-background-warning-bold, #FFAB00);
+    background: var(--ds-background-warning-bold, #74efff);
     color: var(--ds-text-warning-inverse, #172B4D) !important;
     cursor: pointer;
     height: 2.2857142857142856em;
@@ -190,7 +190,7 @@ a {
     padding-left: 0;
     padding-bottom: 4pc;
     padding-top: 4pc;
-    background-image: linear-gradient(123.5deg, #091e42 78%, #0747a6 99.98%); /*백그라운드 색상*/
+    background-image: linear-gradient(123.5deg, #00cccc 58.55%, #1792a5 80.45%); /*백그라운드 색상*/
     background-position: 50%;
     background-repeat: no-repeat;
     background-size: cover;
@@ -350,7 +350,7 @@ a {
     padding-left: 30px;
     border-width: 2px;
     letter-spacing: .04rem;
-    background-color:#42526e; 
+    background-color:#091e42; 
     color: #dfe1e6;
     border: 1px solid transparent;
     padding-top: 4px;
@@ -428,7 +428,7 @@ a {
     margin-left: 0;
     margin-bottom: 24px;
     text-align: left;
-    background-image: linear-gradient(90deg, transparent, #0065ff);
+    background-image: linear-gradient(90deg, transparent, #091e42 90%);
     border-radius: 0 150px 150px 0;
 }
 
@@ -487,18 +487,22 @@ a {
 }
 
 .sec2-div1 {
-    align-items: stretch;
     display: grid;
-    justify-content: space-between;
+    grid-template-columns: 1fr 1fr; /* 두 개의 열을 동일한 비율로 배치 */
+    gap: 20px; /* 열 사이 간격 추가 */
+    margin: auto;
+    max-width: 100%;
+    width: 954pt;
+    box-sizing: border-box;
+}
+
+.sec2-img {
     margin-top: auto;
     margin-right: auto;
     margin-left: auto;
     margin-bottom: auto;
     max-width: 100%;
-    width: 954pt;
-    box-sizing: border-box;
-    grid-template-columns: minmax(0, 1fr);
-
+    
 }
 
 .integrations-content {
@@ -551,7 +555,7 @@ a {
     color: #fff;
     padding-right: 0;
     padding-left: 0;
-    background-color: #091e42;
+    background-color: #4c9ca7;
     padding-top: 2pc;
     padding-bottom: 2pc;
 }
