@@ -107,7 +107,7 @@ a {
 }
 
 .inner-plan-it {
-    font-weight: 500;
+    font-weight:  ;
     font-size: 17px;
 }
 
@@ -174,6 +174,12 @@ a {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.button-css:focus, .button-css:hover, .button-css:visited {
+    text-decoration-color: currentColor;
+    text-decoration-line: underline;
+    text-decoration-style: solid;
 }
 
 /* Login div 끝 */
@@ -455,9 +461,80 @@ a {
     grid-column-start: 5;
 }
 
+/* 설명 섹션1 */
+
+/*================================================================================*/
+
+.sec2 {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 2in;
+    padding-bottom: 2in;
+    background-color: #fff;
+}
+
+.sec2-div1 {
+    align-items: stretch;
+    display: grid;
+    justify-content: space-between;
+    margin-top: auto;
+    margin-right: auto;
+    margin-left: auto;
+    margin-bottom: auto;
+    max-width: 100%;
+    width: 954pt;
+    box-sizing: border-box;
+    grid-template-columns: minmax(0, 1fr);
+
+}
+
+.integrations-content {
+    max-width: 45pc;
+    padding-top: 1pc;
+    padding-right: 0;
+    padding-bottom: 1pc;
+    padding-left: 0;
+    width: 50%;
+    margin-top: 0;
+    margin-right: auto;
+    margin-bottom: 0;
+    margin-left: auto;
+}
+
+.integrations-content-textArea {
+    display: flex;
+    flex-direction: column;
+}
+
+.integrations-content h2 {
+    line-height: 1.16;
+    font-weight: 500;
+    margin-top: 0;
+    margin-right: 0;
+    margin-bottom: 24px;
+    margin-left: 0;
+
+}
 
 
-/*=========================================================*/
+.contentBlock-body {
+    line-height: 1.4;
+    margin-top: 0;
+    margin-right: 0;
+    margin-bottom: 24px;
+    margin-left: 0;
+    color: #091e42;
+    margin-block-end: 24px;
+    font-weight: normal;
+    font-size: 1rem;
+}
+
+/* 설명 섹션2 */
+
+/*================================================================================*/
 
 .main-footer {
     align-items: center;
@@ -465,6 +542,7 @@ a {
     justify-content: center;
     flex-direction: row;
     background-color: #fff;
+    margin-top: 10px;
 }
 
 .footer-inner {
