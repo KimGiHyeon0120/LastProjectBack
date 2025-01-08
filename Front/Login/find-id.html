@@ -184,7 +184,7 @@
                     if (data.error) {
                         setInvalid(code, '인증번호가 올바르지 않습니다.', verificationMessage);
                     } else {
-                        console.log(data.userId);
+                       
                         displayFindIdResult(data.userId);  // 결과를 화면에 표시
                         window.location.hash = 'FIND_ID_RESULT';  // URL의 해시를 변경하여 #FIND_ID_RESULT로 이동
                     }
