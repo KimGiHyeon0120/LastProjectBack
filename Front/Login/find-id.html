@@ -159,8 +159,8 @@
 
         // 아이디 찾기 요청 처리
         function findId() {
-            const email = document.getElementById('email').value;  // 이메일 값 가져오기
-            const verificationCode = document.getElementById('verificationCode').value;  // 인증번호 값 가져오기
+            const email = document.getElementById('email').value;
+            const verificationCode = document.getElementById('verificationCode').value;
             const code = document.getElementById('verificationCode');
             const verificationMessage = document.getElementById('verificationError');
             const findButton = document.getElementById('findIdButton');
@@ -168,25 +168,23 @@
             if (code.value.length !== 6) {
                 setInvalid(code, '인증번호 6자리를 입력해주세요.', verificationMessage);
                 findButton.disabled = true;
-                return;  // 유효성 검사 실패 시 아이디 찾기 요청 중지
+                return;
             }
 
-            // 인증번호와 이메일을 서버로 전송
             fetch('http://localhost:3000/api/userVerification/verify-id-code', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ email, verificationCode }) // 서버가 기대하는 데이터 형식에 맞춰 전송
+                body: JSON.stringify({ email, verificationCode })
             })
-                .then(response => response.json())  // 서버 응답 처리
+                .then(response => response.json())
                 .then(data => {
                     if (data.error) {
                         setInvalid(code, '인증번호가 올바르지 않습니다.', verificationMessage);
                     } else {
-                       
-                        displayFindIdResult(data.userId);  // 결과를 화면에 표시
-                        window.location.hash = 'FIND_ID_RESULT';  // URL의 해시를 변경하여 #FIND_ID_RESULT로 이동
+                        // 인증 성공 후 페이지 이동
+                        window.location.href = '/LastProjectBack/Front/Login/find_id-result.html';  // 인증 성공 후 페이지 이동
                     }
                 })
                 .catch(error => {
@@ -194,45 +192,9 @@
                 });
         }
 
-        function displayFindIdResult(userId) {
-            // 결과 표시
-            const resultSection = document.getElementById('FIND_ID_RESULT');
-            resultSection.style.display = 'block'; // 결과 영역 표시
-            resultSection.innerHTML = `
-        <p class="password-reset">비밀번호를 잊으셨나요?</p>
-        <p class="reset-instruction">아래 버튼을 클릭하면 비밀번호를 재설정할 수 있습니다.</p>
-        <div class="result-btn">
-            아이디: <strong>${userId}</strong>
-        </div>
-        <p class="account-not-found">계정이 안보이나요?</p>
-        <p class="google-account-info">구글 로그인을 이용한 계정일 수 있습니다. 해당 계정으로 다시 시도해 보세요.</p>
-        <button class="login-btn" onclick="goToLogin()">로그인 하러가기</button>
-    `;
-
-            // 로고 영역의 텍스트 변경
-            const tagline = document.querySelector('.logo .tagline');
-            if (tagline) {
-                tagline.textContent = "내 명의로 가입된 계정입니다.";
-            }
-
-            // 입력 및 인증 관련 요소 숨기기
-            const emailFormGroup = document.querySelector('.container .form-group');
-            if (emailFormGroup) emailFormGroup.style.display = 'none'; // 이메일 입력 및 발송
-            const verificationSection = document.getElementById('verificationSection');
-            if (verificationSection) verificationSection.style.display = 'none'; // 인증번호 입력란
-            const findIdButton = document.getElementById('findIdButton');
-            if (findIdButton) findIdButton.style.display = 'none'; // 아이디 찾기 버튼
-        }
-
-        // 로그인 하러가기 버튼 동작 함수
-        function goToLogin() {
-            window.location.href = '/LastProjectBack/Front/Login/login.html'; // 로그인 페이지로 이동
-        }
-
-
 
     </script>
 
 </body>
 
-</html>`
+</html>

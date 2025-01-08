@@ -121,30 +121,45 @@ router.post('/verify-user-password-email', async (req, res) => {
     res.status(500).json({ error: '서버 오류가 발생했습니다.' });
   }
 });
+
 // 인증 번호 확인 후 아이디 반환 (아이디 찾기)
 router.post('/verify-id-code', async (req, res) => {
   const { email, verificationCode } = req.body;
 
   try {
     // 이메일과 인증 코드 확인 (만료되지 않은 코드만 확인)
-    const [rows] = await db.query(
-      'SELECT user_id FROM users WHERE user_email = ? AND verification_code = ? AND verification_code_expiration > NOW()', 
-      [email, verificationCode]
-    );
 
+   const [rows] = await db.query(
+    'SELECT user_id FROM users WHERE user_email = ? AND verification_code = ? AND verification_code_expiration > NOW()', 
+    [email, verificationCode]
+  );
 
     if (rows.length === 0) {
       return res.status(400).json({ error: '유효하지 않거나 만료된 인증 코드입니다.' });
     }
-    // 인증이 완료된 후 유저 아이디 반환
+
+    // 인증이 완료된 후 유저 아이디를 세션에 저장
     const userId = rows[0].user_id;
 
-    res.json({ userId } );
-  } catch (err) {
+    // 세션에 userId 저장 (로그인하지 않은 상태에서 아이디 찾기)
+    req.session.userId = userId;
 
+    // 인증이 성공하면 페이지 이동
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: '서버 오류가 발생했습니다.' });
   }
 });
+// 세션에서 userId를 반환하는 API
+router.get('/getUserId', (req, res) => {
+  if (req.session.userId) {
+      res.json({ userId: req.session.userId });
+  } else {
+      res.json({ error: '세션이 만료되었습니다.' });
+  }
+});
+
 // 인증 번호 확인 후 아이디 반환 (비밀번호 찾기)
 router.post('/verify-password-code', async (req, res) => {
   const { email, verificationCode } = req.body;
