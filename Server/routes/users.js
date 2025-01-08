@@ -101,7 +101,7 @@ router.post('/login', (req, res) => {
     const { userId, userPassword } = req.body;
 
     // 암호화된 비밀번호를 가져오기 위해 사용자를 조회
-    const query = `SELECT user_id, user_name, user_email, user_password FROM Users WHERE user_id = ?`;
+    const query = `SELECT user_idx,user_id, user_name, user_email, user_password FROM Users WHERE user_id = ?`;
     connection.query(query, [userId], async (err, results) => {
         if (err) {
             console.error(err);

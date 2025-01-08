@@ -69,6 +69,7 @@
                 success: function (response) {
                     if (response.message === '로그인 성공') {
                         sessionStorage.setItem('loggedInUser', JSON.stringify(response.user));
+                        sessionStorage.setItem('userIdx', response.user.user_idx); // user_idx 추가 저장
                         window.location.href = '../project/projectList.html';
 
                     } else {
