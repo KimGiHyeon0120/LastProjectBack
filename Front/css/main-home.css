@@ -29,7 +29,6 @@ a {
     align-items: center;
     padding-left: 95px;
     background-repeat: no-repeat;
-    background-image: linear-gradient(180deg, #253858, #091e42);
     display: flex;
     justify-content: center;
     padding-bottom: 0;
@@ -46,7 +45,7 @@ a {
 
 .main-head {
     width: 100%;
-    color: #fff;
+    color: #000000;
     max-width: 58pc;
     margin-top: 75pt;
     margin-right: 170px;
@@ -190,7 +189,7 @@ a {
     padding-left: 0;
     padding-bottom: 4pc;
     padding-top: 4pc;
-    background-image: linear-gradient(123.5deg, #091e42 78%, #0747a6 99.98%); /*백그라운드 색상*/
+    background-image: linear-gradient(123.5deg, #95dde797 78%, #7bddcc 99.98%); /*백그라운드 색상*/
     background-position: 50%;
     background-repeat: no-repeat;
     background-size: cover;
