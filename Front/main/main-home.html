@@ -8,6 +8,9 @@
 
     <link rel="stylesheet" href="/Front/css/main-home.css">
     <script src="../lib/jquery-3.7.1.min.js"></script>
+    <script src="../script/main-page.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
 </head>
 
 <body>
@@ -17,7 +20,7 @@
                 <img src="/Front/img/logo.png" class="head-img">
                 <h1>환영합니다</h1>
                 <p>미래를 향해 나가는 한 걸음, Plan It.</p>
-                <a href="#" class="main-head-login">
+                <a href="../Login/login.html" class="main-head-login">
                     <div class="main-head-login-icon">
                         <div class="login-icon-inner">
                             <div class="inner-plan-it">Plan It</div>
@@ -63,29 +66,29 @@
                         <div role="tablist" class="tap-group-button">
                             <div class="tap-group-button-inner">
                                 <div class="tap-group-button-select">
-                                    <button type="button" role="tab" value="#" aria-selected="true"
-                                        aria-controls="tab-#" id="tap-#" data-event-container="tabContent"
-                                        data-event="clicked" data-label="#" class="tap-button">버튼1
+                                    <button type="button" role="tab" value="part1" aria-selected="true"
+                                        aria-controls="tab-1" id="tap-1" data-event-container="tabContent"
+                                        data-event="clicked" data-label="#" data-target="part1" class="tap-button" >버튼1
                                     </button>
                                     <!--  .tap-button  -->
-                                    <button type="button" role="tab" value="#" aria-selected="false"
-                                        aria-controls="tab-#" id="tap-#" data-event-container="tabContent"
-                                        data-event="clicked" data-label="#" class="tap-button">버튼2
+                                    <button type="button" role="tab" value="part2" aria-selected="false"
+                                        aria-controls="tab-2" id="tap-2" data-event-container="tabContent"
+                                        data-event="clicked" data-label="#" data-target="part2" class="tap-button">버튼2
                                     </button>
                                     <!--  .tap-button  -->
-                                    <button type="button" role="tab" value="#" aria-selected="false"
-                                        aria-controls="tab-#" id="tap-#" data-event-container="tabContent"
-                                        data-event="clicked" data-label="#" class="tap-button">버튼3
+                                    <button type="button" role="tab" value="part3" aria-selected="false"
+                                        aria-controls="tab-3" id="tap-3" data-event-container="tabContent"
+                                        data-event="clicked" data-label="#" data-target="part3" class="tap-button">버튼3
                                     </button>
                                     <!--  .tap-button  -->
-                                    <button type="button" role="tab" value="#" aria-selected="false"
-                                        aria-controls="tab-#" id="tap-#" data-event-container="tabContent"
-                                        data-event="clicked" data-label="#" class="tap-button">버튼4
+                                    <button type="button" role="tab" value="part4" aria-selected="false"
+                                        aria-controls="tab-4" id="tap-4" data-event-container="tabContent"
+                                        data-event="clicked" data-label="#" data-target="part4" class="tap-button">버튼4
                                     </button>
                                     <!--  .tap-button  -->
-                                    <button type="button" role="tab" value="#" aria-selected="false"
-                                        aria-controls="tab-#" id="tap-#" data-event-container="tabContent"
-                                        data-event="clicked" data-label="#" class="tap-button">버튼5
+                                    <button type="button" role="tab" value="part5" aria-selected="false"
+                                        aria-controls="tab-5" id="tap-5" data-event-container="tabContent"
+                                        data-event="clicked" data-label="#" data-target="part5" class="tap-button">버튼5
                                     </button>
                                     <!--  .tap-button -->
                                 </div>
@@ -95,35 +98,9 @@
                         </div>
                         <!--  .tap-group-button  -->
                         <div class="tap-panels">
-                            <div class="tap-panels-inner">
-                                <div class="tap-panels-inner-layout">
-                                    <div class="panels-inner-layout-start">
-                                    <div class="layout-left-first">
-                                        <div class="text-section">
-                                            <h3>Text</h3>
-                                            <p class="text-section-p">누가 너를 모욕하더라도 앙갚음하려 들지 말라. 강가에 앉아 있노라면 머지 않아 그의 시체가 떠내려가는 것을 보게 되리라.</p>
-                                        </div>
-                                        <!--  .layout-text-section  -->
-                                        <div class="layout-text-section2">
-                                            <img src="/Front/img/sample-img.png" alt="sample" class="layout-img"
-                                                style="max-width: 100%;">
-                                            <p class="quote-sample1">qwertyuiopasdfghjkl</p>
-                                            <p class="quote-sample2">빈칸2</p>
-                                            <p class="quote-sample3">기현이형바보</p>
-                                        </div>
-                                        <!--  .layout-text-section2  -->
-                                    </div>
-                                    <!--  .layout-left-first  -->
-                                    </div>
-                                    <!--  .panels-inner-layout-start  -->
-                                    <video playsinline preload="auto" poster="#" autoplay muted loop
-                                        style="max-width: 100%;">
-                                        <source src="../video/sample-video.mp4" type="video/mp4">
-                                    </video>
-                                </div>
-                                <!--  .tap-panels-inner-layout  -->
-                            </div>
-                            <!--  .tap-panels-inne  -->
+
+                            <!--  버튼 클릭 시 tap-panels 안으로 들어옴  -->
+
                         </div>
                         <!--  .tap-panels  -->
                     </div>
@@ -146,9 +123,11 @@
                 <div class="integrations-content">
                     <div class="integrations-content-textArea">
                         <div class="text-section">
-                            <h2>저희는 기현이형이 좋습니다.</h2>
+                            <h2>구의 증명</h2>
                             <p class="contentBlock-body">
-                                "그 이유를 묻는다면 답할 수 없습니다. 누군가를 좋아한다는 것엔 이유가 중요하지 않기 때문입니다."
+                                "희망은 해롭다. 그것은 미래니까. 잡을 수 없으니까. 기대와 실망을 동시에 끌어들이니까. 욕심을 만드니까. 신기루 같은 거니까.
+                                이 말을 왜 해주고 싶었냐면, 나는 아무 희망 없이 살면서도 끝까지, 죽는 순간에도 어떻게든 살고 싶었는데, 그건 바로 담이 너 때문에.
+                                희망 없는 세상에선 살 수 있었지만 너 없는 세상에선 살고 싶지가 않아서. 죽음은 너 없는 세상이고 그래서 나는 정말 죽고 싶지 않았어."
                             </p>
                             <!-- .contentBlock-body -->
                         </div>
@@ -170,9 +149,11 @@
                     <div class="sec3-text-part">
                         <div class="content-block">
                             <div class="text-section">
-                                <h2>집에가고싶어요</h2>
+                                <h2>최진영, 내가 되는 꿈(9)</h2>
                                 <p class="content-block">
-                                    "저는집이너무나도그립고집에가고싶어요"
+                                    "편지는 이상하다. 봉투를 열고 편지지를 펼치면 내가 전혀 몰랐던 마음이 펼쳐진다. 말은 사라지고
+                                    기억은 희미해져도 글자는 남는다. 비밀스러운 마음이 선명하게 남아 버린다. 내게 그걸 주면 나는
+                                    가진다. 편지를 쓸 때의 그 마음을 나는 확실히 가진다."
                                 </p>
                                 <!--  .content-block  -->
                             </div>

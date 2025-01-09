@@ -1,0 +1,74 @@
+/* 폼 그룹 스타일 */
+.button-group  {
+    position: relative;
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.button-group label {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: #666;
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+/* 버튼 그룹 스타일 */
+.button-group input {
+    width: 100%;
+    padding: 20px 65px 10px 10px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-sizing: border-box;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.button-group input:focus {
+    border: 2px solid rgb(35, 131, 226);
+}
+
+.button-group input:focus + label,
+.button-group input:not(:placeholder-shown) + label {
+    top: 10px;
+    font-size: 12px;
+}
+
+.button-group input:focus + label + .span-text {
+    display: inline-block;
+    font-size: 12px;
+    color: rgb(35, 131, 226);
+    margin-top: 5px;
+}
+
+/* 오류 메시지 출력용 */
+.button-group .span-text {
+    display: none;
+    font-size: 12px;
+    margin-top: 5px;
+    line-height: 1.2;
+    color: lightcoral;
+}
+
+/* 유효성 검사 실패 시 스타일 */
+.button-group .invalid {
+    border: 2px solid lightcoral !important;
+    background-color: #fdd !important;
+}
+
+/* 유효성 검사 실패 시 오류 메시지 표시 */
+.button-group .invalid ~ .span-text {
+    display: block;
+    color: lightcoral;
+}
+
+/* 유효성 검사 실패 시 라벨 위치를 변경 */
+.button-group .invalid ~ label {
+    top: 50%;
+    color: lightcoral;
+}
+

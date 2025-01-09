@@ -7,11 +7,19 @@
 body _{
     padding: 0;
     margin: 0;
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px; /* 기본 폰트 크기 */
+    line-height: 1.5; /* 기본 줄 간격 */
+    color: #101214; /* 기본 텍스트 색상 */
 }
 
 a {
     color: inherit;
     text-decoration: none;
+}
+
+h1, h2, h3, h4, h5, h6, p, a, span, li, button {
+    font-family: 'Roboto', sans-serif;
 }
 
 /*================================================================================*/
@@ -139,7 +147,7 @@ a {
     -webkit-transition: background 0.1s ease-out, box-shadow 0.15s cubic-bezier(0.47, 0.03, 0.49, 1.38);
     transition: background 0.1s ease-out, box-shadow 0.15s cubic-bezier(0.47, 0.03, 0.49, 1.38);
     white-space: nowrap;
-    background: var(--ds-background-warning-bold, #74efff);
+    background: var(--ds-background-warning-bold, #c0e7fe);
     color: var(--ds-text-warning-inverse, #172B4D) !important;
     cursor: pointer;
     height: 2.2857142857142856em;
@@ -190,7 +198,8 @@ a {
     padding-left: 0;
     padding-bottom: 4pc;
     padding-top: 4pc;
-    background-image: linear-gradient(123.5deg, #00cccc 58.55%, #1792a5 80.45%); /*백그라운드 색상*/
+
+    background-image: linear-gradient(123.5deg, #a3a3a3 58.55%, #7f7f7f 80.45%); /*백그라운드 색상*/
     background-position: 50%;
     background-repeat: no-repeat;
     background-size: cover;
@@ -344,7 +353,7 @@ a {
     cursor: pointer;
     border-color: transparent;
     border-style: solid;
-    border-radius: 50px;
+    border-radius: 30px;
     background-clip: padding-box;
     padding-right: 30px;
     padding-left: 30px;
@@ -357,6 +366,12 @@ a {
     padding-right: 1pc;
     padding-bottom: 4px;
     padding-left: 1pc;
+}
+
+.tap-button.active {
+    background-color: #3072b9;
+    color: white;
+    border-color: #007BFF;
 }
 
 .tap-panels-inner {
@@ -428,8 +443,7 @@ a {
     margin-left: 0;
     margin-bottom: 24px;
     text-align: left;
-    background-image: linear-gradient(90deg, transparent, #091e42 90%);
-    border-radius: 0 150px 150px 0;
+    background-image: linear-gradient(90deg, transparent, #071735 90%);
 }
 
 .layout-img {
@@ -439,11 +453,11 @@ a {
 .quote-sample1 {
     line-height: 1.2;
     margin-inline-start: 0;
-    font-size: 1.2rem;
+    font-size: 1.5rem;
 }
 
 .quote-sample2 {
-    font-size: .875rem;
+    font-size: 1.25rem;
     line-height: 1.25;
     width: 75%;
     font-weight: bold;
@@ -454,7 +468,7 @@ a {
     text-transform: uppercase;
 }
 .quote-sample3 {
-    font-size: .75rem !important;
+    font-size: 1.1rem !important;
     line-height: 2;
     width: 75%;
     margin-top: 20px;
@@ -543,7 +557,7 @@ a {
     color: #091e42;
     margin-block-end: 24px;
     font-weight: normal;
-    font-size: 1rem;
+    font-size: 1.25rem;
 }
 
 /* 설명 섹션2 */
@@ -555,7 +569,7 @@ a {
     color: #fff;
     padding-right: 0;
     padding-left: 0;
-    background-color: #00afaf;
+    background-color: #aaaaaa;
     padding-top: 2pc;
     padding-bottom: 2pc;
 }
@@ -589,6 +603,7 @@ a {
 .content-block {
     display: flex;
     flex-direction: column;
+    font-size: 1.15rem;
 }
 
 .sec3-text-part .text-section {
@@ -878,12 +893,71 @@ a {
 }
 
 @media (min-width: 64rem) {
+    .main-head h1 {
+        font-size: 2rem; /* 작은 화면에서는 폰트 크기 축소 */
+        line-height: 1.2;
+    }
+
+    .main-head p {
+        font-size: 1rem;
+        line-height: 1.4;
+    }
+}
+
+@media (min-width: 64rem) {
+    .main-head h1 {
+        font-size: 3rem; /* 큰 화면에서는 폰트 크기 확대 */
+        line-height: 1.5;
+    }
+
+    .main-head p {
+        font-size: 1.25rem;
+        line-height: 1.6;
+    }
+}
+
+@media (max-width: 768px) {
+    .tap-button {
+        font-size: 1rem; /* 작은 화면에서 폰트 크기 축소 */
+        padding: 8px 16px;
+    }
+}
+
+@media (min-width: 769px) {
+    .tap-button {
+        font-size: 1.25rem; /* 큰 화면에서 기본 크기 유지 */
+        padding: 12px 24px;
+    }
+}
+
+
+@media (min-width: 64rem) {
     .tap-panels-inner-layout {
         padding-inline-start: 60px;
         padding-inline-end: 60px;
         grid-template-columns: repeat(12, minmax(0, 1fr));
         width: 954pt;
         gap: 2pc;
+    }
+}
+
+@media (max-width: 768px) {
+    .text-div1-inner .text-section h2 {
+        font-size: 1.5rem; /* 작은 화면에서 폰트 크기 축소 */
+    }
+
+    .text-section-p {
+        font-size: 1rem;
+    }
+}
+
+@media (min-width: 769px) {
+    .text-div1-inner .text-section h2 {
+        font-size: 2.25rem; /* 큰 화면에서 기본 크기 유지 */
+    }
+
+    .text-section-p {
+        font-size: 1.25rem;
     }
 }
 
@@ -909,5 +983,49 @@ a {
 @media (min-width: 64rem) {
     video {
         max-width: 757.33px;
+    }
+}
+
+@media (max-width: 768px) {
+    .sec2-div1 {
+        gap: 10px; /* 작은 화면에서 간격 축소 */
+    }
+
+    .integrations-content h2 {
+        font-size: 1.5rem; /* 작은 화면에서 폰트 크기 축소 */
+    }
+
+    .contentBlock-body {
+        font-size: 1rem;
+    }
+}
+
+@media (min-width: 769px) {
+    .integrations-content h2 {
+        font-size: 2rem; /* 큰 화면에서 기본 크기 유지 */
+    }
+
+    .contentBlock-body {
+        font-size: 1.25rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .footer-li-a {
+        font-size: 0.875rem; /* 작은 화면에서 폰트 크기 축소 */
+    }
+
+    .textArea-h3 {
+        font-size: 0.9rem;
+    }
+}
+
+@media (min-width: 769px) {
+    .footer-li-a {
+        font-size: 1rem; /* 큰 화면에서 기본 크기 유지 */
+    }
+
+    .textArea-h3 {
+        font-size: 1.15rem;
     }
 }

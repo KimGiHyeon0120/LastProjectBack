@@ -3,12 +3,7 @@
     box-sizing: border-box;
 }
 
-/* 타이머 스타일 */
-.timer {
-    font-size: 14px;
-    color: #666;
-    margin-top: 10px;
-}
+
 
 body {
     font-family: Arial, sans-serif;
@@ -26,32 +21,41 @@ body {
     text-align: center;
     margin-bottom: 30px;
 }
+
 .result-btn {
     padding: 20px 30px;
     background-color: #f9f9f9;
     color: black;
     border: 1px solid #d1d1d1;
     border-radius: 4px;
-    cursor: default; /* 버튼처럼 보이지만 클릭되지 않도록 */
-    font-size: 18px; /* 글씨 크기 조정 */
-    font-weight: bold; /* 글씨 굵게 */
-    margin: 10px auto; /* 상하 간격 추가 및 가운데 정렬 */
-    width: 100%; /* 적절한 너비 설정 */
-    text-align: center; /* 텍스트 가운데 정렬 */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 약간의 그림자 추가 */
-    transition: box-shadow 0.3s ease;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    height: auto;
+    /* 기본 높이 설정 */
+    margin: 10px auto;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease, transform 0.3s ease, width 0.3s ease;
 }
+
+.result-btn:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+
 .password-reset {
     font-size: 1.25rem;
     font-weight: bold;
-    margin-bottom: 5px;
+    margin-bottom: px;
 }
 
 .reset-instruction {
     font-size: 14px;
     color: #aaa;
     font-weight: bold;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 .account-not-found {
@@ -65,14 +69,11 @@ body {
 
 .google-account-info {
     font-size: 0.75rem;
-    color: #aaa; /* 연한 회색 */
+    color: #aaa;
+    /* 연한 회색 */
     text-align: left;
 }
 
-
-.result-btn:hover {
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* hover 시 강조 효과 */
-}
 .logo img {
     display: block;
     margin: 0 auto;
@@ -80,10 +81,11 @@ body {
     height: auto;
     margin-bottom: 30px;
 }
+
 .login-btn {
     padding: 20px 30px;
     width: 100%;
-    
+
     background-color: rgb(35, 131, 226);
     color: white;
     border: none;
@@ -92,13 +94,38 @@ body {
     font-size: 1.25rem;
     font-weight: bold;
     text-align: center;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 약간의 그림자 추가 */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    /* 약간의 그림자 추가 */
     transition: box-shadow 0.3s ease;
 }
 
 .login-btn:hover {
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* hover 시 강조 효과 */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    /* hover 시 강조 효과 */
 }
+
+.back-btn {
+    padding: 20px 30px;
+    width: 100%;
+    margin-top: 20px;
+    background-color: white;
+    color: black;
+    border: 1px solid #d1d1d1;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1.25rem;
+    font-weight: bold;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    /* 약간의 그림자 추가 */
+    transition: box-shadow 0.3s ease;
+}
+
+.back-btn:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    /* hover 시 강조 효과 */
+}
+
 .tagline {
     font-size: 16px;
     color: #666;
@@ -139,46 +166,6 @@ body {
     width: 100%;
 }
 
-.form-group input {
-    width: 100%;
-    padding: 20px 65px 10px 10px;
-    font-size: 16px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-sizing: border-box;
-    outline: none;
-    transition: all 0.3s ease;
-}
-
-.form-group input:focus {
-    border: 2px solid rgb(35, 131, 226);
-}
-
-.form-group input:focus + label,
-.form-group input:not(:placeholder-shown) + label {
-    top: 10px;
-    font-size: 12px;
-}
-
-/* 오류 메시지 출력용 */
-.span-text {
-    display: none;
-    font-size: 12px;
-    margin-top: 5px;
-    line-height: 1.2;
-    color: lightcoral;
-}
-
-/* 유효성 검사 실패 시 스타일 */
-.invalid {
-    border: 2px solid lightcoral !important;
-    background-color: #fdd !important;
-}
-.invalid ~ .span-text {
-    display: block;
-    color: lightcoral;
-}
-
 /* 발송 버튼 스타일 */
 .send-button {
     position: absolute;
@@ -197,18 +184,22 @@ body {
 
 /* hover 상태에서 색상 변경 */
 .send-button:hover:not(:disabled) {
-    background-color: rgb(28, 113, 183); /* hover 시 색상 */
+    background-color: rgb(28, 113, 183);
+    /* hover 시 색상 */
 }
 
 /* 비활성화된 버튼 스타일 */
 .send-button:disabled {
-    background-color: rgb(160, 194, 255); /* 비활성화된 버튼 */
-    cursor: not-allowed; /* 비활성화된 버튼에 클릭 불가 스타일 */
+    background-color: rgb(160, 194, 255);
+    /* 비활성화된 버튼 */
+    cursor: not-allowed;
+    /* 비활성화된 버튼에 클릭 불가 스타일 */
 }
 
 /* 아이디 찾기 버튼 스타일 (가로로 긴 버튼) */
 .find-id-button {
-    width: 100%; /* 버튼이 가로로 길게 */
+    width: 100%;
+    /* 버튼이 가로로 길게 */
     padding: 12px;
     font-size: 16px;
     background-color: rgb(35, 131, 226);
@@ -217,29 +208,19 @@ body {
     border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-  
+
 }
 
 /* hover 상태에서 색상 변경 */
 .find-id-button:hover:not(:disabled) {
-    background-color: rgb(28, 113, 183); /* hover 시 색상 */
+    background-color: rgb(28, 113, 183);
+    /* hover 시 색상 */
 }
 
 /* 비활성화된 버튼 스타일 */
 .find-id-button:disabled {
-    background-color: rgb(160, 194, 255); /* 비활성화된 버튼 */
-    cursor: not-allowed; /* 비활성화된 버튼에 클릭 불가 스타일 */
+    background-color: rgb(160, 194, 255);
+    /* 비활성화된 버튼 */
+    cursor: not-allowed;
+    /* 비활성화된 버튼에 클릭 불가 스타일 */
 }
-
-/* 타이머 스타일 (입력 필드 안에 위치) */
-.timer {
-    position: absolute;
-    right: 10px; /* 오른쪽 끝에 위치 */
-    top: 50%; /* 수직 중앙 정렬 */
-    transform: translateY(-50%); /* 정확한 중앙 정렬 */
-    font-size: 0.9rem;
-    color: #555;
-    pointer-events: none; /* 타이머를 클릭할 수 없도록 설정 */
-}
-
-
