@@ -79,10 +79,6 @@ header {
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
 }
 
-.sidebar2 .open {
-    left: 0; /* 열린 상태 */
-}
-
 .sidebar2 h3 {
     margin: 20px;
     color: #605678;

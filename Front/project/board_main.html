@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>스프린트 보드</title>
     <script src="../lib/jquery-3.7.1.min.js"></script>
-    <script src="/Server/script/header.js"></script>
+    <script src="../script/header.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -906,8 +906,8 @@
 
         $(document).ready(function () {
             const urlParams = new URLSearchParams(window.location.search);
-            const projectId = urlParams.get("projectId"); // URL에서 projectId 가져오기
-            const userIdx = sessionStorage.getItem("userIdx"); // sessionStorage에서 userIdx 가져오기
+            const projectId = sessionStorage.getItem("projectId"); 
+            const userIdx = sessionStorage.getItem("userIdx");
             const API_URL = "http://localhost:3000/api";
 
             let userRole = null; // 초기값
@@ -967,7 +967,7 @@
                     data: JSON.stringify({
                         taskId: taskId,
                         newSprintId: sprintId,
-                        changedBy: userIdx // 실제 로그인 사용자 ID로 대체 필요
+                        changedBy: userIdx
                     }),
                     success: function () {
                         fetchSprints();
@@ -1101,25 +1101,27 @@
 
                     // 스프린트 HTML 생성
                     const sprintHTML = `
-                        <div class="sprint" data-sprint-id="${sprint.sprintId}">
-                            <div class="sprint-header">
-                                <h3>${sprint.sprintName}</h3>
-                                ${sprint.sprintName !== "임시저장"
-                            ? `<p class="sprint-dates">${formatDateToKorean(sprint.startDate)} ~ ${formatDateToKorean(sprint.endDate)}</p>`
-                            : ""}
-                                ${optionsMenu}
-                            </div>
-                            <div class="sprint-content" ondragover="allowDrop(event)" ondrop="dropTask(event, ${sprint.sprintId})">
-                                ${tasksHTML || "<p></p>"}
-                            </div>
-                            ${sprint.sprintName !== "임시저장" ? `
-                            <div class="add-task-btn-wrapper">
-                                <button class="add-task-btn" 
-                                        onclick="openAddTaskPopup(${sprint.sprintId}, '${sprint.endDate || ""}', '${sprint.sprintName}')">
-                                    + 추가
-                                </button>
-                            </div>` : ""}
-                        </div>`;
+                    <div class="sprint" data-sprint-id="${sprint.sprintId}">
+                        <div class="sprint-header">
+                            <h3>${sprint.sprintName}</h3>
+                            ${sprint.sprintName !== "임시저장"
+                                ? `<p class="sprint-dates">${formatDateToKorean(sprint.startDate)} ~ ${formatDateToKorean(sprint.endDate)}</p>`
+                                : ""}
+                            ${optionsMenu}
+                        </div>
+                        <div class="sprint-content" 
+                            ondragover="allowDrop(event)" 
+                            ondrop="dropTask(event, ${sprint.sprintId})">
+                            ${tasksHTML || "<p></p>"}
+                        </div>
+                        ${sprint.sprintName !== "임시저장" ? `
+                        <div class="add-task-btn-wrapper">
+                            <button class="add-task-btn" 
+                                    onclick="openAddTaskPopup(${sprint.sprintId}, '${sprint.endDate || ""}', '${sprint.sprintName}')">
+                                + 추가
+                            </button>
+                        </div>` : ""}
+                    </div>`;
                     sprintBoard.append(sprintHTML);
 
                     // 각 작업의 상태 드롭다운 로드
@@ -1541,6 +1543,7 @@
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
+
             // 초기 데이터 로드
             fetchSprints();
         });
@@ -1635,8 +1638,74 @@
 
 
 
-
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+        // 드래그 시작 이벤트
+        let draggedSprint = null;
+
+        window.dragSprint = function (event) {
+            draggedSprint = event.target; // 드래그 시작된 스프린트를 저장
+            event.target.style.opacity = "0.5"; // 시각적으로 반투명 처리
+        };
+
+        // 드래그 종료 이벤트
+        window.dragSprintEnd = function (event) {
+            event.target.style.opacity = "1"; // 투명도 복원
+            draggedSprint = null; // 드래그 완료 후 초기화
+        };
+
+        // 드롭 가능 영역 진입 이벤트
+        window.allowDropSprint = function (event) {
+            event.preventDefault(); // 기본 브라우저 동작 방지
+        };
+
+        // 드롭 이벤트
+        window.dropSprint = function (event) {
+            event.preventDefault();
+
+            const targetSprint = event.target.closest(".sprint"); // 드롭된 위치의 스프린트를 찾음
+            const sprintBoard = document.querySelector("#sprintBoard"); // 전체 스프린트 보드
+
+            if (targetSprint && draggedSprint !== targetSprint) {
+                const allSprints = Array.from(sprintBoard.children); // 모든 스프린트 가져오기
+                const draggedIndex = allSprints.indexOf(draggedSprint); // 드래그한 스프린트의 인덱스
+                const targetIndex = allSprints.indexOf(targetSprint); // 드롭 위치의 스프린트 인덱스
+
+                if (draggedIndex < targetIndex) {
+                    sprintBoard.insertBefore(draggedSprint, targetSprint.nextSibling); // 아래로 이동
+                } else {
+                    sprintBoard.insertBefore(draggedSprint, targetSprint); // 위로 이동
+                }
+
+                saveSprintOrder(); // 변경된 순서를 서버로 저장
+            }
+
+            draggedSprint.style.opacity = "1"; // 드래그한 스프린트 투명도 복원
+            draggedSprint = null; // 드래그한 스프린트 초기화
+        };
+
+        // 스프린트 순서를 서버에 저장
+        function saveSprintOrder() {
+            const sprintOrder = Array.from(document.querySelectorAll(".sprint")).map((el, index) => ({
+                sprintId: el.dataset.sprintId, // 스프린트 ID
+                order: index + 1, // 순서
+            }));
+
+            // 서버로 AJAX 요청 전송
+            $.ajax({
+                url: `${API_URL}/sprint/order`, // 서버의 API 엔드포인트
+                method: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(sprintOrder),
+                success: function () {
+                    console.log("스프린트 순서 저장 완료");
+                },
+                error: function (err) {
+                    console.error("스프린트 순서 저장 실패", err);
+                },
+            });
+        }
+
 
 
 

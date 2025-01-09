@@ -1,41 +1,884 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="../css/sample_01.css">
+    <title>작업 진행 상태</title>
+    <style>
+        /* 고정 헤더 스타일 */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
 
-    <script src="/proj/assets/lib/jquery-3.7.1.min.js"></script>
-    <script src="/Server/script/header.js"></script>
+        /* 메인 컨텐츠 */
+        .main {
+            padding-top: 100px;
+            /* 헤더 높이만큼 추가 */
+        }
+
+        /* 작업 진행 상태 보드 컨테이너 */
+        .board {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+            overflow: visible;
+            /* 드롭다운이 보일 수 있도록 설정 */
+            position: relative;
+            /* 자식 요소 절대 위치 계산을 위해 */
+        }
+
+        .board-column {
+            flex: 1;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            min-height: 300px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .board-column h3 {
+            margin-top: 0;
+            font-size: 18px;
+            color: #333;
+            text-align: center;
+        }
+
+        /* 작업 카드 */
+        .task {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            cursor: grab;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .task:hover {
+            background-color: #f0f9ff;
+            transform: translateY(-2px);
+        }
+
+        /* 작업 카드 내부 텍스트 */
+        .task p {
+            margin: 0;
+            color: #333;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        /* 작업 상태 칸 */
+        .tasks {
+            border-radius: 4px;
+            /* 모서리 둥글게 */
+            padding: 10px;
+            /* 여백 */
+            background-color: #f9f9f9;
+            transition: background-color 0.3s ease;
+            min-height: 100px;
+        }
+
+        .tasks.empty:hover {
+            background-color: #e6f7ff;
+            /* 드롭 가능 강조 */
+        }
+
+        /* 드롭다운 활성화 시 hover 효과 비활성화 */
+        .task.dropdown-active:hover {
+            background-color: initial;
+            /* 원래 배경색 유지 */
+            transform: none;
+            /* 움직임 제거 */
+        }
+
+
+        /*프로필 사진*/
+        .profile-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .profile-image {
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            transition: transform 0.2s ease;
+        }
+
+        .profile-image:hover {
+            transform: scale(1.1);
+        }
+
+
+        .assignee-section {
+            position: relative;
+            display: inline-block;
+        }
+
+        .assignee-dropdown {
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        /* 담당자 섹션 */
+        .assignee-section {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* 드롭다운 버튼 */
+        .assignee-dropdown {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        /* 드롭다운 내 이미지 */
+        .assignee-image {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+
+        /* 드롭다운 내 이름 */
+        .assignee-name {
+            font-size: 14px;
+            color: #333;
+        }
+
+        /* 드롭다운 옵션 */
+        .dropdown-options {
+            position: absolute;
+            /* 절대 위치 */
+            top: 60px;
+            /* 프로필 이미지 바로 아래로 위치 조정 */
+            left: 0;
+            z-index: 2000;
+            /* 높은 z-index 설정 */
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: none;
+            /* 기본적으로 숨김 */
+            padding: 10px;
+            min-width: 150px;
+            max-width: 200px;
+            overflow-y: auto;
+            /* 스크롤 가능 */
+            white-space: nowrap;
+        }
+
+        /* 드롭다운이 보일 때 */
+        .dropdown-options.show {
+            display: block;
+            z-index: 3000;
+            /* 드롭다운이 최상단으로 올라오도록 설정 */
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            padding: 5px;
+            cursor: pointer;
+            white-space: nowrap;
+            /* 텍스트 줄바꿈 방지 */
+        }
+
+        .dropdown-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .dropdown-image {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        /* 드롭다운 이미지 */
+        .dropdown-image {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        /* 드롭다운 이름 */
+        .dropdown-item span {
+            font-size: 14px;
+            color: #333;
+        }
+
+        /* 팝업 컨테이너 */
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            /* 더 뚜렷한 그림자 */
+            z-index: 1000;
+            /* 배경보다 위에 위치 */
+            padding: 20px;
+        }
+
+        /* 팝업 헤더 */
+        .popup-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #333;
+        }
+
+        /* 폼 내부 스타일 */
+        .popup-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* 입력 필드 스타일 */
+        .popup-form input,
+        .popup-form textarea,
+        .popup-form select {
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .popup-form input:focus,
+        .popup-form textarea:focus,
+        .popup-form select:focus {
+            outline: none;
+            border-color: #40a9ff;
+            box-shadow: 0 0 6px rgba(64, 169, 255, 0.5);
+        }
+
+        /* 텍스트 영역 스타일 */
+        .popup-form textarea {
+            resize: none;
+            height: 100px;
+        }
+
+        /* 버튼 섹션 */
+        .popup-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+
+        .popup-buttons button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* 취소 버튼 */
+        .popup-buttons .cancel-btn {
+            background-color: #ddd;
+            color: #333;
+        }
+
+        .popup-buttons .cancel-btn:hover {
+            background-color: #bbb;
+        }
+
+        /* 저장 버튼 */
+        .popup-buttons .save-btn {
+            background-color: #40a9ff;
+            color: #fff;
+        }
+
+        .popup-buttons .save-btn:hover {
+            background-color: #1890ff;
+        }
+
+        /* 팝업 배경 */
+        /* 팝업 배경 (오버레이) */
+        .popup-background {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            /* 어두운 반투명 배경 */
+            z-index: 999;
+            /* 팝업 아래에 위치 */
+        }
+
+        .popup .activity-tabs {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0;
+        }
+
+        .popup .tab-button {
+            flex: 1;
+            padding: 10px;
+            margin: 0 5px;
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .popup .tab-button.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .popup .activity-content {
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            background: #fafafa;
+        }
+    </style>
+    <script src="../lib/jquery-3.7.1.min.js"></script>
+    <script src="../script/header.js"></script>
 </head>
+
 <body>
-        <!-- 헤더 영역 -->
-        <header>
-            <script>loadHTML("./header.html")</script>
-        </header>
+    <!-- 헤더 영역 -->
+    <header>
+        <script>loadHTML("./header.html")</script>
+    </header>
 
     <div class="main">
         <div class="header">
-            <h1>작업 목록</h1>
+            <h1>작업 진행 상태</h1>
         </div>
         <div class="content">
-            <div class="board">
-                <div class="board-column">
-                    <h3>할 일</h3>
-                    <div class="task">초기 기획 검토</div>
-                    <div class="task">팀 회의 진행</div>
-                </div>
-                <div class="board-column">
-                    <h3>진행 중</h3>
-                    <div class="task">디자인 개선</div>
-                </div>
-                <div class="board-column">
-                    <h3>완료</h3>
-                    <div class="task">로그인 페이지 설계</div>
-                </div>
+            <!-- 작업 진행 상태 보드 -->
+            <div class="board" id="sprintBoard">
+                <!-- 스프린트 및 작업 데이터가 동적으로 추가됩니다 -->
             </div>
         </div>
     </div>
+
+    <!-- 맨션 팝업창 -->
+    <div class="popup" id="editTaskPopup">
+        <div class="popup-header">작업 확인 및 수정</div>
+        <form class="popup-form">
+            <label>작업 이름</label>
+            <input type="text" id="editTaskName" placeholder="작업 이름을 입력하세요" />
+
+            <label>작업 설명</label>
+            <textarea id="editTaskDescription" placeholder="작업 설명을 입력하세요"></textarea>
+
+            <label>마감 날짜</label>
+            <input type="date" id="editTaskDueDate" />
+
+            <label>맨션 추가</label>
+            <textarea id="mentionMessage" placeholder="맨션 내용을 입력하세요"></textarea>
+
+
+
+            <div class="activity-tabs">
+                <button type="button" class="tab-button active" data-tab="all">전체</button>
+                <button type="button" class="tab-button" data-tab="comments">댓글</button>
+                <button type="button" class="tab-button" data-tab="mentions">맨션</button>
+                <button type="button" class="tab-button" data-tab="logs">기록</button>
+            </div>
+
+            <div class="activity-content" id="activityContent">
+                <!-- 활동 로그 및 기록이 동적으로 표시됩니다 -->
+            </div>
+            <div class="popup-buttons">
+                <button type="button" class="cancel-btn" id="cancelEditTaskBtn">닫기</button>
+                <button type="button" class="save-btn" id="saveTaskBtn">저장</button>
+                <button type="button" class="mention-btn" id="sendMentionBtn">맨션 보내기</button>
+            </div>
+
+        </form>
+    </div>
+
+    <script>
+
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        const projectId = sessionStorage.getItem("projectId");
+        const userIdx = sessionStorage.getItem("userIdx"); // 로그인된 사용자 ID
+        const API_URL = "http://localhost:3000/api";
+
+        $(document).ready(function () {
+
+            if (!projectId) {
+                return;
+            }
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+            // 작업 상태 및 작업 데이터를 가져오기
+            async function fetchTasksAndMembers() {
+                try {
+                    // 작업 상태 목록 가져오기
+                    const statusResponse = await $.get(`${API_URL}/tasks/status-list`);
+                    const statuses = statusResponse;
+
+                    // 작업 데이터 가져오기
+                    const taskResponse = await $.get(`${API_URL}/tasks/list`, { projectId });
+                    const tasks = taskResponse;
+
+                    // 팀원 목록 가져오기
+                    const membersResponse = await $.get(`${API_URL}/project/members`, { projectId });
+                    const teamMembers = membersResponse;
+
+                    renderTasks(statuses, tasks, teamMembers);
+                } catch (err) {
+                }
+            }
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+            // 작업 렌더링
+            function renderTasks(statuses, tasks, teamMembers) {
+                const sprintBoard = $("#sprintBoard");
+                sprintBoard.empty(); // 기존 데이터 초기화
+
+                statuses.forEach(status => {
+                    const tasksForStatus = tasks.filter(task => task.statusId === status.id);
+
+                    const tasksHTML = tasksForStatus.map(task => `
+                    <div class="task" draggable="true" ondragstart="dragTask(event)" data-task-id="${task.taskId}">
+                        <p onclick="openEditTaskPopup(${task.taskId})">${task.taskName}</p>
+                        <div class="assignee-section">
+                            <!-- 담당자 선택 -->
+                            <div class="assignee-dropdown">
+                                <img src="${task.assignedToImage || '../profile/default-profile.png'}" 
+                                    class="assignee-image" alt="프로필" 
+                                    onclick="window.toggleAssigneeDropdown(${task.taskId})">
+                                <span class="assignee-name">${task.assignedTo || '담당자 없음'}</span>
+                            </div>
+                            <div class="dropdown-options hidden" id="dropdown_${task.taskId}">
+                                ${teamMembers.map(member => `
+                                    <div class="dropdown-item" 
+                                        onclick="window.selectAssignee(${task.taskId}, ${member.userId}, '${member.profileImage || '../profile/default-profile.png'}', '${member.userName}')">
+                                        <img src="${member.profileImage || '../profile/default-profile.png'}" 
+                                            class="dropdown-image" alt="프로필">
+                                        <span>${member.userName}</span>
+                                    </div>
+                                `).join("")}
+                                <div class="dropdown-item" 
+                                    onclick="window.selectAssignee(${task.taskId}, null, '../profile/default-profile.png', '담당자 없음')">
+                                    <img src="../profile/default-profile.png" class="dropdown-image" alt="프로필">
+                                    <span>담당자 없음</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join("");
+
+                    const columnHTML = `
+                        <div class="board-column" data-status="${status.name}">
+                            <h3>${status.name}</h3>
+                            <div class="tasks ${tasksForStatus.length === 0 ? "empty" : ""}" 
+                                 ondragover="allowDrop(event)" 
+                                 ondrop="dropTask(event, '${status.id}')">
+                                ${tasksHTML}
+                            </div>
+                        </div>
+                    `;
+
+                    sprintBoard.append(columnHTML); // 작업 상태 컬럼 추가
+                });
+            }
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+            window.dragTask = function (event) {
+                const taskId = event.target.dataset.taskId;
+                event.dataTransfer.setData("text", taskId);
+            };
+
+            // 드래그 허용
+            window.allowDrop = function (event) {
+                event.preventDefault();
+            };
+
+            // 작업 드롭
+            window.dropTask = function (event, newStatusId) {
+                event.preventDefault();
+                const taskId = event.dataTransfer.getData("text");
+
+                if (!userIdx) {
+                    return;
+                }
+
+                $.ajax({
+                    url: `${API_URL}/tasks/update_status`,
+                    method: "PUT",
+                    contentType: "application/json",
+                    data: JSON.stringify({ taskId, status: newStatusId, changedBy: userIdx }),
+                    success: function () {
+                        fetchTasksAndMembers(); // 데이터 새로고침
+                    },
+                    error: function (err) {
+                    }
+                });
+            };
+
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+            // 작업 할당
+            window.assignTask = function (dropdown) {
+                const taskId = dropdown.dataset.taskId;
+                const assignedTo = dropdown.value;
+
+                if (!taskId) {
+                    alert("Task ID가 필요합니다.");
+                    return;
+                }
+
+                $.ajax({
+                    url: `${API_URL}/tasks/assign`,
+                    method: "PUT",
+                    contentType: "application/json",
+                    data: JSON.stringify({ taskId, assignedTo, changedBy: userIdx }),
+                    success: function () {
+                        fetchTasksAndMembers(); // 새로고침
+                    },
+                    error: function (err) {
+                        console.error("작업 할당 중 오류 발생:", err);
+                    }
+                });
+            };
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+            window.toggleAssigneeDropdown = function (taskId) {
+                // 모든 드롭다운 닫기
+                document.querySelectorAll('.dropdown-options').forEach(dropdown => {
+                    dropdown.classList.remove('show');
+                    const taskElement = dropdown.closest('.task');
+                    if (taskElement) {
+                        taskElement.classList.remove('dropdown-active'); // 모든 task에서 dropdown-active 제거
+                    }
+                });
+
+                // 현재 드롭다운 열기
+                const currentDropdown = document.getElementById(`dropdown_${taskId}`);
+                if (!currentDropdown) {
+                    console.error(`드롭다운을 찾을 수 없습니다: dropdown_${taskId}`);
+                    return;
+                }
+
+                const taskElement = currentDropdown.closest('.task'); // 드롭다운이 속한 task 찾기
+
+                // 상태를 반대로 토글 (열림 <-> 닫힘)
+                const isDropdownOpen = currentDropdown.classList.contains('show');
+                if (isDropdownOpen) {
+                    currentDropdown.classList.remove('show');
+                    taskElement?.classList.remove('dropdown-active');
+                } else {
+                    currentDropdown.classList.add('show');
+                    taskElement?.classList.add('dropdown-active');
+                }
+            };
+
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+            window.selectAssignee = function (taskId, userId, profileImage, userName) {
+                // 드롭다운 닫기 및 상태 초기화 함수
+                const closeDropdown = (taskId) => {
+                    const dropdown = document.getElementById(`dropdown_${taskId}`);
+                    const taskElement = dropdown ? dropdown.closest('.task') : null;
+
+                    if (dropdown) {
+                        dropdown.classList.remove("show");
+                    }
+
+                    if (taskElement) {
+                        taskElement.classList.remove("dropdown-active");
+                    }
+                };
+
+                // 화면에서 즉시 UI 반영 (Ajax 요청 성공 여부와 무관하게 수행)
+                const updateDropdownUI = () => {
+                    const dropdown = document.getElementById(`dropdown_${taskId}`);
+                    const dropdownButton = dropdown?.previousElementSibling;
+
+                    if (dropdownButton) {
+                        dropdownButton.innerHTML = `
+                            <img src="${profileImage}" class="assignee-image" alt="프로필">
+                            <span class="assignee-name">${userName || '담당자 없음'}</span>
+                        `;
+                    }
+                };
+
+                // UI 즉시 반영
+                updateDropdownUI();
+
+                // 서버 요청
+                $.ajax({
+                    url: `${API_URL}/tasks/assign`,
+                    method: "PUT",
+                    contentType: "application/json",
+                    data: JSON.stringify({ taskId, assignedTo: userId, changedBy: userIdx }),
+                    success: function () {
+                        // 성공 시 드롭다운 닫기
+                        closeDropdown(taskId);
+                        console.log(`담당자 변경됨: Task ID ${taskId}, Assigned To ${userName}`);
+                    },
+                    error: function (err) {
+                        console.error("작업 할당 중 오류 발생:", err);
+                        alert("담당자 변경 중 오류가 발생했습니다.");
+                        // 실패 시 UI 복원
+                        fetchTasksAndMembers(); // 전체 데이터 재조회하여 복원
+                    },
+                });
+            };
+
+
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+            // 클릭 외 영역 클릭 시 드롭다운 닫기
+            document.addEventListener('click', function (e) {
+                if (!e.target.closest('.assignee-section')) {
+                    document.querySelectorAll('.dropdown-options').forEach(dropdown => {
+                        dropdown.classList.remove('show');
+                        const taskElement = dropdown.closest('.task');
+                        if (taskElement) {
+                            taskElement.classList.remove('dropdown-active'); // 모든 task에서 dropdown-active 제거
+                        }
+                    });
+                }
+            });
+
+
+
+
+
+
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+            // 팝업 열기
+            window.openEditTaskPopup = function (taskId) {
+                $.ajax({
+                    url: `${API_URL}/tasks/${taskId}`,
+                    method: "GET",
+                    success: function (task) {
+                        // 작업 데이터 설정
+                        $("#editTaskName").val(task.task_name || "");
+                        $("#editTaskDescription").val(task.description || "");
+                        $("#editTaskDueDate").val(task.due_date ? task.due_date.split("T")[0] : "");
+
+                        // 작업 상태 로드
+                        loadTaskStatus(task.Tasks_status_id);
+
+                        // 활동 로그 및 기록 불러오기
+                        loadActivityLogs(taskId);
+
+                        // 팝업과 배경 표시
+                        $(".popup-background").fadeIn();
+                        $("#editTaskPopup").fadeIn();
+
+                        // 저장 및 맨션 버튼에 작업 ID 설정
+                        $("#saveTaskBtn").data("task-id", taskId);
+                        $("#sendMentionBtn").data("task-id", taskId);
+                    },
+                    error: function (err) {
+                        console.error("작업 정보를 불러오는 중 오류 발생:", err);
+                    }
+                });
+            };
+
+            // 작업 상태 로드
+            function loadTaskStatus(selectedStatusId) {
+                $.ajax({
+                    url: `${API_URL}/tasks/status-list`,
+                    method: "GET",
+                    success: function (statuses) {
+                        const statusDropdown = $("#editTaskStatus");
+                        statusDropdown.empty();
+                        statuses.forEach(status => {
+                            const isSelected = status.id === selectedStatusId ? "selected" : "";
+                            statusDropdown.append(`<option value="${status.id}" ${isSelected}>${status.name}</option>`);
+                        });
+                    },
+                    error: function (err) {
+                        console.error("작업 상태 로드 오류:", err);
+                    }
+                });
+            }
+
+            // 활동 로그 및 기록 불러오기
+            function loadActivityLogs(taskId) {
+                $.ajax({
+                    url: `${API_URL}/tasks/history/task`,
+                    method: "GET",
+                    data: { taskId },
+                    success: function (logs) {
+                        const activityContent = $("#activityContent");
+                        activityContent.empty();
+            
+                        logs.forEach(log => {
+                            activityContent.append(`
+                                <div class="activity-log">
+                                    <p><strong>${log.log_type || '활동'}</strong>: ${log.log_message || '내용 없음'}</p>
+                                    <p class="log-time">${formatDate(log.changed_at)}</p>
+                                </div>
+                            `);
+                        });
+                    },
+                    error: function (err) {
+                        console.error("활동 로그 불러오기 오류:", err);
+                    }
+                });
+            }
+            
+            // 날짜 포맷 함수
+            function formatDate(dateString) {
+                const options = { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+                return new Date(dateString).toLocaleDateString('ko-KR', options);
+            }
+            
+
+            // 맨션 보내기
+            $("#sendMentionBtn").click(function () {
+                const taskId = $(this).data("task-id");
+                const mentionMessage = $("#mentionMessage").val();
+
+                if (!mentionMessage.trim()) {
+                    alert("맨션 내용을 입력하세요.");
+                    return;
+                }
+
+                $.ajax({
+                    url: `${API_URL}/tasks/mention`,
+                    method: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        taskId,
+                        mentionMessage,
+                        mentionedBy: userIdx // 로그인된 사용자 ID
+                    }),
+                    success: function () {
+                        alert("맨션이 성공적으로 전송되었습니다.");
+                        $("#mentionMessage").val("");
+                        loadActivityLogs(taskId); // 활동 로그 새로고침
+                    },
+                    error: function (err) {
+                        console.error("맨션 전송 오류:", err);
+                        alert("맨션 전송 중 오류가 발생했습니다.");
+                    }
+                });
+            });
+
+            // 작업 저장
+            $("#saveTaskBtn").click(function () {
+                const taskId = $(this).data("task-id");
+                const updatedTask = {
+                    taskId,
+                    taskName: $("#editTaskName").val(),
+                    description: $("#editTaskDescription").val(),
+                    dueDate: $("#editTaskDueDate").val(),
+                    changedBy: userIdx
+                };
+
+                $.ajax({
+                    url: `${API_URL}/tasks/update`,
+                    method: "PUT",
+                    contentType: "application/json",
+                    data: JSON.stringify(updatedTask),
+                    success: function () {
+                        alert("작업이 성공적으로 저장되었습니다.");
+                        $(".popup-background").fadeOut();
+                        $("#editTaskPopup").fadeOut();
+                    },
+                    error: function (err) {
+                        console.error("작업 저장 오류:", err);
+                        alert("작업 저장 중 오류가 발생했습니다.");
+                    }
+                });
+            });
+
+            // 팝업 닫기
+            $("#cancelEditTaskBtn").click(function () {
+                $("#editTaskPopup").fadeOut();
+                $(".popup-background").fadeOut();
+            });
+
+
+
+            // 탭 전환
+            $(".tab-button").click(function () {
+                $(".tab-button").removeClass("active");
+                $(this).addClass("active");
+
+                const tab = $(this).data("tab");
+                $("#activityContent").attr("data-tab", tab);
+            });
+
+
+
+
+
+
+
+
+            // 초기 데이터 로드
+            fetchTasksAndMembers();
+        });
+
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+
+
+    </script>
 </body>
+
 </html>
