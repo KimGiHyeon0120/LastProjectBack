@@ -360,6 +360,12 @@ a {
     padding-left: 1pc;
 }
 
+.tap-button.active {
+    background-color: #3072b9;
+    color: white;
+    border-color: #007BFF;
+}
+
 .tap-panels-inner {
     margin-right: auto;
     margin-left: auto;
