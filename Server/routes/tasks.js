@@ -326,7 +326,7 @@ router.put('/move-sprint', async (req, res) => {
 router.get('/status-list', async (req, res) => {
     try {
         const [statuses] = await connection.promise().query(
-            `SELECT Tasks_status_id AS id, Tasks_status_name AS name FROM Tasks_status`
+            `SELECT Tasks_status_id AS id, Tasks_status_name AS name FROM Tasks_status ORDER BY Tasks_status_id ASC`
         );
         res.status(200).json(statuses);
     } catch (err) {
