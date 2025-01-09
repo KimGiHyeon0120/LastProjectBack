@@ -151,41 +151,6 @@ router.post('/find-id', (req, res) => {
     });
 });
 
-
-
-
-// ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-// ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-// 비밀번호 찾기
-router.post('/reset-password/request', (req, res) => {
-    const { userEmail } = req.body;
-
-    if (!userEmail) {
-        return res.status(400).json({ message: '이메일을 입력해주세요.' });
-    }
-
-    const query = `SELECT user_id FROM Users WHERE user_email = ?`;
-    connection.query(query, [userEmail], (err, results) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ message: '비밀번호 재설정 요청 실패' });
-        }
-
-        if (results.length === 0) {
-            return res.status(404).json({ message: '등록된 사용자가 없습니다.' });
-        }
-
-        // 비밀번호 재설정 링크 생성
-        const resetLink = `http://localhost:3000/api/users/reset-password?email=${userEmail}`;
-        res.status(200).json({ resetLink });
-    });
-});
-
-
-
-
-
 // ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 // ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -193,36 +158,34 @@ router.post('/reset-password/request', (req, res) => {
 
 // 비밀번호 변경
 router.post('/reset-password', async (req, res) => {
-    const { userEmail, newPassword } = req.body;
+    const { userId, newPassword } = req.body;
+    console.log(userId, newPassword);  // 요청 받은 값 확인
 
-    if (!userEmail || !newPassword) {
-        return res.status(400).json({ message: '이메일과 새 비밀번호를 입력해주세요.' });
+    if (!userId || !newPassword) {
+        return res.status(400).json({ success: false, message: '아이디와 새 비밀번호를 입력해주세요.' });
     }
 
     try {
         const hashedPassword = await bcrypt.hash(newPassword, 10); // 비밀번호 암호화
 
-        const query = `UPDATE Users SET user_password = ? WHERE user_email = ?`;
-        connection.query(query, [hashedPassword, userEmail], (err, results) => {
+        const query = `UPDATE Users SET user_password = ? WHERE user_id = ?`;
+        connection.query(query, [hashedPassword, userId], (err, results) => {
             if (err) {
                 console.error(err);
-                return res.status(500).json({ message: '비밀번호 재설정 실패' });
+                return res.status(500).json({ success: false, message: '비밀번호 재설정 실패' });
             }
 
             if (results.affectedRows === 0) {
-                return res.status(404).json({ message: '등록된 사용자가 없습니다.' });
+                return res.status(404).json({ success: false, message: '등록된 사용자가 없습니다.' });
             }
 
-            res.status(200).json({ message: '비밀번호가 성공적으로 변경되었습니다.' });
+            res.status(200).json({ success: true, message: '비밀번호가 성공적으로 변경되었습니다.' });
         });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: '서버 오류 발생' });
+        res.status(500).json({ success: false, message: '서버 오류 발생' });
     }
 });
-
-
-
 
 
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
