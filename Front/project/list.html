@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,7 +19,8 @@
 
         /* 메인 컨텐츠 */
         .main {
-            padding-top: 100px; /* 헤더 높이만큼 추가 */
+            padding-top: 100px;
+            /* 헤더 높이만큼 추가 */
         }
 
         /* 작업 진행 상태 보드 컨테이너 */
@@ -71,10 +73,140 @@
             font-weight: bold;
             text-align: center;
         }
+
+        /* 작업 상태 칸 */
+        .tasks {
+            border-radius: 4px;
+            /* 모서리 둥글게 */
+            padding: 10px;
+            /* 여백 */
+            background-color: #f9f9f9;
+            transition: background-color 0.3s ease;
+            min-height: 100px;
+        }
+
+        .tasks.empty:hover {
+            background-color: #e6f7ff;
+            /* 드롭 가능 강조 */
+        }
+
+
+
+        /*프로필 사진*/
+        .profile-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .profile-image {
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            transition: transform 0.2s ease;
+        }
+
+        .profile-image:hover {
+            transform: scale(1.1);
+        }
+
+
+        .assignee-section {
+            position: relative;
+            display: inline-block;
+        }
+
+        .assignee-dropdown {
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        /* 담당자 섹션 */
+        .assignee-section {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* 드롭다운 버튼 */
+        .assignee-dropdown {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        /* 드롭다운 내 이미지 */
+        .assignee-image {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+
+        /* 드롭다운 내 이름 */
+        .assignee-name {
+            font-size: 14px;
+            color: #333;
+        }
+
+        /* 드롭다운 옵션 */
+        .dropdown-options {
+            position: absolute; /* 절대 위치 지정 */
+            top: 100%; /* 부모 요소 바로 아래 */
+            left: 0;
+            z-index: 2000; /* 높은 z-index로 설정 */
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: none; /* 기본적으로 숨김 */
+            padding: 10px;
+            max-width: 200px;
+        }
+        
+        .dropdown-options.show {
+            display: block; /* 보일 때 block 처리 */
+        }
+        
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            padding: 5px;
+            cursor: pointer;
+            white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+        }
+        
+        .dropdown-item:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .dropdown-image {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        /* 드롭다운 이미지 */
+        .dropdown-image {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        /* 드롭다운 이름 */
+        .dropdown-item span {
+            font-size: 14px;
+            color: #333;
+        }
     </style>
     <script src="../lib/jquery-3.7.1.min.js"></script>
     <script src="/Server/script/header.js"></script>
 </head>
+
 <body>
     <!-- 헤더 영역 -->
     <header>
@@ -93,97 +225,215 @@
         </div>
     </div>
 
-    
+
     <script>
+
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
         $(document).ready(function () {
             const projectId = sessionStorage.getItem("projectId");
+            const userIdx = sessionStorage.getItem("userIdx"); // 로그인된 사용자 ID
             const API_URL = "http://localhost:3000/api";
-        
+
             if (!projectId) {
-                alert("프로젝트 ID가 필요합니다.");
                 return;
             }
-        
-            // 작업 상태와 작업 데이터를 가져오기
-            async function fetchTasksAndStatuses() {
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+            // 작업 상태 및 작업 데이터를 가져오기
+            async function fetchTasksAndMembers() {
                 try {
                     // 작업 상태 목록 가져오기
                     const statusResponse = await $.get(`${API_URL}/tasks/status-list`);
                     const statuses = statusResponse;
-        
+
                     // 작업 데이터 가져오기
                     const taskResponse = await $.get(`${API_URL}/tasks/list`, { projectId });
                     const tasks = taskResponse;
-        
-                    renderTasks(statuses, tasks);
+
+                    // 팀원 목록 가져오기
+                    const membersResponse = await $.get(`${API_URL}/project/members`, { projectId });
+                    const teamMembers = membersResponse;
+
+                    renderTasks(statuses, tasks, teamMembers);
                 } catch (err) {
-                    console.error("데이터 가져오기 오류:", err);
-                    alert("작업 데이터를 가져오는 중 오류가 발생했습니다.");
                 }
             }
-        
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
             // 작업 렌더링
-            function renderTasks(statuses, tasks) {
+            function renderTasks(statuses, tasks, teamMembers) {
                 const sprintBoard = $("#sprintBoard");
                 sprintBoard.empty(); // 기존 데이터 초기화
-        
+
                 statuses.forEach(status => {
                     const tasksForStatus = tasks.filter(task => task.statusId === status.id);
+
                     const tasksHTML = tasksForStatus.map(task => `
-                        <div class="task" draggable="true" ondragstart="dragTask(event)" data-task-id="${task.taskId}">
-                            <p>${task.taskName}</p>
+                    <div class="task" draggable="true" ondragstart="dragTask(event)" data-task-id="${task.taskId}">
+                        <p>${task.taskName}</p>
+                        <div class="assignee-section">
+                            <!-- 담당자 선택 -->
+                            <div class="assignee-dropdown" onclick="window.toggleAssigneeDropdown(${task.taskId})">
+                                <img src="${task.assignedToImage || '../profile/default-profile.png'}" 
+                                    class="assignee-image" alt="프로필">
+                                <span class="assignee-name">${task.assignedToName || '담당자 없음'}</span>
+                            </div>
+                            <div class="dropdown-options hidden" id="dropdown_${task.taskId}">
+                                ${teamMembers.map(member => `
+                                    <div class="dropdown-item" onclick="window.selectAssignee(${task.taskId}, ${member.userId}, '${member.profileImage || '../profile/default-profile.png'}', '${member.userName}')">
+                                        <img src="${member.profileImage || '../profile/default-profile.png'}" 
+                                            class="dropdown-image" alt="프로필">
+                                        <span>${member.userName}</span>
+                                    </div>
+                                `).join("")}
+                                <div class="dropdown-item" onclick="window.selectAssignee(${task.taskId}, null, '../profile/default-profile.png', '담당자 없음')">
+                                    <img src="../profile/default-profile.png" class="dropdown-image" alt="프로필">
+                                    <span>담당자 없음</span>
+                                </div>
+                            </div>
                         </div>
-                    `).join("");
-        
+                    </div>
+                `).join("");
+
                     const columnHTML = `
                         <div class="board-column" data-status="${status.name}">
                             <h3>${status.name}</h3>
-                            <div class="tasks" ondragover="allowDrop(event)" ondrop="dropTask(event, '${status.id}')">
+                            <div class="tasks ${tasksForStatus.length === 0 ? "empty" : ""}" 
+                                 ondragover="allowDrop(event)" 
+                                 ondrop="dropTask(event, '${status.id}')">
                                 ${tasksHTML}
                             </div>
                         </div>
                     `;
-        
+
                     sprintBoard.append(columnHTML); // 작업 상태 컬럼 추가
                 });
             }
-        
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
             // 작업 드래그 시작
             window.dragTask = function (event) {
                 const taskId = event.target.dataset.taskId;
                 event.dataTransfer.setData("text", taskId);
             };
-        
+
             // 드래그 허용
             window.allowDrop = function (event) {
                 event.preventDefault();
             };
-        
+
             // 작업 드롭
             window.dropTask = function (event, newStatusId) {
                 event.preventDefault();
                 const taskId = event.dataTransfer.getData("text");
-        
+
+                if (!userIdx) {
+                    return;
+                }
+
                 $.ajax({
-                    url: `${API_URL}/tasks/update`,
+                    url: `${API_URL}/tasks/update_status`,
                     method: "PUT",
                     contentType: "application/json",
-                    data: JSON.stringify({ taskId, status: newStatusId }),
+                    data: JSON.stringify({ taskId, status: newStatusId, changedBy: userIdx }),
                     success: function () {
-                        fetchTasksAndStatuses(); // 데이터 새로고침
+                        fetchTasksAndMembers(); // 데이터 새로고침
                     },
                     error: function (err) {
-                        console.error("작업 상태 변경 중 오류 발생:", err);
-                        alert("작업 상태를 변경하는 중 오류가 발생했습니다.");
                     }
                 });
             };
-        
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+            // 작업 할당
+            window.assignTask = function (dropdown) {
+                const taskId = dropdown.dataset.taskId;
+                const assignedTo = dropdown.value;
+
+                if (!taskId) {
+                    alert("Task ID가 필요합니다.");
+                    return;
+                }
+
+                $.ajax({
+                    url: `${API_URL}/tasks/assign`,
+                    method: "PUT",
+                    contentType: "application/json",
+                    data: JSON.stringify({ taskId, assignedTo, changedBy: userIdx }),
+                    success: function () {
+                        fetchTasksAndMembers(); // 새로고침
+                    },
+                    error: function (err) {
+                        console.error("작업 할당 중 오류 발생:", err);
+                    }
+                });
+            };
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+            window.toggleAssigneeDropdown = function (taskId) {
+                // 모든 드롭다운 닫기
+                document.querySelectorAll('.dropdown-options').forEach(dropdown => {
+                    dropdown.classList.remove('show');
+                    dropdown.style.zIndex = '1000'; // 기본 z-index로 복구
+                });
+
+                // 현재 드롭다운 열기
+                const currentDropdown = document.getElementById(`dropdown_${taskId}`);
+                currentDropdown.classList.add('show');
+                currentDropdown.style.zIndex = '2000'; // 최상단 z-index 설정
+            };
+
+            window.selectAssignee = function (taskId, userId, profileImage, userName) {
+                // AJAX로 서버에 업데이트 요청
+                $.ajax({
+                    url: `${API_URL}/tasks/assign`,
+                    method: "PUT",
+                    contentType: "application/json",
+                    data: JSON.stringify({ taskId, assignedTo: userId, changedBy: userIdx }),
+                    success: function () {
+                        // 드롭다운 닫기
+                        const dropdown = document.getElementById(`dropdown_${taskId}`);
+                        dropdown.classList.remove("show");
+
+                        // 화면에서 즉시 변경 반영
+                        const dropdownButton = dropdown.previousElementSibling;
+                        dropdownButton.innerHTML = `
+                            <img src="${profileImage}" class="assignee-image" alt="프로필">
+                        `;
+
+                        console.log(`담당자 변경됨: Task ID ${taskId}, Assigned To ${userName}`);
+                    },
+                    error: function (err) {
+                        console.error("작업 할당 중 오류 발생:", err);
+                    }
+                });
+            };
+
+            // 클릭 외 영역 클릭 시 드롭다운 닫기
+            document.addEventListener('click', function (e) {
+                if (!e.target.closest('.assignee-section')) {
+                    document.querySelectorAll('.dropdown-options').forEach(dropdown => {
+                        dropdown.classList.remove('show');
+                        dropdown.style.zIndex = '1000'; // z-index 복구
+                    });
+                }
+            });
+
             // 초기 데이터 로드
-            fetchTasksAndStatuses();
+            fetchTasksAndMembers();
         });
-        
-        
+
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
     </script>
 </body>
+
 </html>
