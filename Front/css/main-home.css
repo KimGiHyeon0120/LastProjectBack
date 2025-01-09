@@ -139,7 +139,7 @@ a {
     -webkit-transition: background 0.1s ease-out, box-shadow 0.15s cubic-bezier(0.47, 0.03, 0.49, 1.38);
     transition: background 0.1s ease-out, box-shadow 0.15s cubic-bezier(0.47, 0.03, 0.49, 1.38);
     white-space: nowrap;
-    background: var(--ds-background-warning-bold, #74efff);
+    background: var(--ds-background-warning-bold, #c0e7fe);
     color: var(--ds-text-warning-inverse, #172B4D) !important;
     cursor: pointer;
     height: 2.2857142857142856em;
@@ -191,7 +191,7 @@ a {
     padding-bottom: 4pc;
     padding-top: 4pc;
 
-    background-image: linear-gradient(123.5deg, #00cccc 58.55%, #1792a5 80.45%); /*백그라운드 색상*/
+    background-image: linear-gradient(123.5deg, #a3a3a3 58.55%, #7f7f7f 80.45%); /*백그라운드 색상*/
     background-position: 50%;
     background-repeat: no-repeat;
     background-size: cover;
@@ -556,7 +556,7 @@ a {
     color: #fff;
     padding-right: 0;
     padding-left: 0;
-    background-color: #00bdbdc7;
+    background-color: #aaaaaa;
     padding-top: 2pc;
     padding-bottom: 2pc;
 }
