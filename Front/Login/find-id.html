@@ -16,6 +16,7 @@
             <img src="../img/logo.png" alt="로고">
             <p class="tagline">이메일 인증 후 아이디를 확인하실 수 있습니다.</p>
         </div>
+        <div id="FIND_ID_RESULT" style="display: none;"></div>
 
         <!-- 이메일 입력 및 발송 -->
         <div class="form-group">
@@ -74,7 +75,7 @@
             }
 
             // 이메일 전송 요청 코드...
-            fetch('http://localhost:3000/api/userVerification/request-email-verification', {
+            fetch('http://localhost:3000/api/userVerification/verify-user-id-email', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -158,9 +159,8 @@
 
         // 아이디 찾기 요청 처리
         function findId() {
-            const email = document.getElementById('email').value;  // 이메일 값 가져오기
-            const verificationCode = document.getElementById('verificationCode').value;  // 인증번호 값 가져오기
-            // 인증번호 유효성 검사
+            const email = document.getElementById('email').value;
+            const verificationCode = document.getElementById('verificationCode').value;
             const code = document.getElementById('verificationCode');
             const verificationMessage = document.getElementById('verificationError');
             const findButton = document.getElementById('findIdButton');
@@ -168,29 +168,30 @@
             if (code.value.length !== 6) {
                 setInvalid(code, '인증번호 6자리를 입력해주세요.', verificationMessage);
                 findButton.disabled = true;
-                return;  // 유효성 검사 실패 시 아이디 찾기 요청 중지
+                return;
             }
 
-            // 인증번호와 이메일을 서버로 전송
             fetch('http://localhost:3000/api/userVerification/verify-id-code', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ email, verificationCode }) // 서버가 기대하는 데이터 형식에 맞춰 전송
+                body: JSON.stringify({ email, verificationCode })
             })
-                .then(response => response.json())  // 서버 응답 처리
+                .then(response => response.json())
                 .then(data => {
                     if (data.error) {
                         setInvalid(code, '인증번호가 올바르지 않습니다.', verificationMessage);
                     } else {
-                        alert('아이디 찾기 성공');
+                        // 인증 성공 후 페이지 이동
+                        window.location.href = '/LastProjectBack/Front/Login/find_id-result.html';  // 인증 성공 후 페이지 이동
                     }
                 })
                 .catch(error => {
                     setInvalid(code, '서버 요청 중 오류가 발생했습니다.', verificationMessage);
                 });
         }
+
 
     </script>
 
