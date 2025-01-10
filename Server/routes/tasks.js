@@ -550,6 +550,29 @@ router.put('/assign', async (req, res) => {
     }
 });
 
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+// 작업 기록 추가
+router.post('/history/add', async (req, res) => {
+    const { taskId, changedBy, changedField, oldValue, newValue, logMessage, logType } = req.body;
+    if (!taskId || !changedBy || !changedField || !logMessage || !logType) {
+        return res.status(400).json({ message: '필수 필드를 모두 입력해주세요.' });
+    }
+
+    try {
+        await connection.promise().query(
+            `INSERT INTO Task_History (task_id, changed_by, changed_field, old_value, new_value, log_message, log_type) 
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [taskId, changedBy, changedField, oldValue, newValue, logMessage, logType]
+        );
+        res.status(201).json({ message: '작업 기록이 성공적으로 추가되었습니다.' });
+    } catch (err) {
+        console.error('작업 기록 추가 오류:', err);
+        res.status(500).json({ message: '작업 기록 추가 중 오류가 발생했습니다.' });
+    }
+});
 
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -582,36 +605,13 @@ router.get('/history/task', async (req, res) => {
 
 
 
-// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-
-// 작업 기록 추가
-router.post('/history/add', async (req, res) => {
-    const { taskId, changedBy, changedField, oldValue, newValue, logMessage, logType } = req.body;
-    if (!taskId || !changedBy || !changedField || !logMessage || !logType) {
-        return res.status(400).json({ message: '필수 필드를 모두 입력해주세요.' });
-    }
-
-    try {
-        await connection.promise().query(
-            `INSERT INTO Task_History (task_id, changed_by, changed_field, old_value, new_value, log_message, log_type) 
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [taskId, changedBy, changedField, oldValue, newValue, logMessage, logType]
-        );
-        res.status(201).json({ message: '작업 기록이 성공적으로 추가되었습니다.' });
-    } catch (err) {
-        console.error('작업 기록 추가 오류:', err);
-        res.status(500).json({ message: '작업 기록 추가 중 오류가 발생했습니다.' });
-    }
-});
 
 
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-// 작업 기록 및 액션 로그 조회
-router.get('/activity-logs/task', async (req, res) => {
+// 멘션과 작업 기록 함께 조회
+router.get('/activity/task', async (req, res) => {
     const { taskId } = req.query;
 
     if (!taskId) {
@@ -619,33 +619,40 @@ router.get('/activity-logs/task', async (req, res) => {
     }
 
     try {
-        const [logs] = await connection.promise().query(
-            `
-            SELECT h.history_id, h.task_id, h.changed_by, h.changed_field, h.old_value, h.new_value,
-                   h.log_message, h.log_type, h.changed_at,
-                   u.user_name AS changed_by_name
-            FROM Task_History h
-            JOIN Users u ON h.changed_by = u.user_idx
-            WHERE h.task_id = ?
-            UNION ALL
-            SELECT a.action_id AS history_id, a.task_id, a.performed_by AS changed_by, NULL AS changed_field, 
-                   NULL AS old_value, NULL AS new_value,
-                   a.action_message AS log_message, '액션 로그' AS log_type, a.performed_at AS changed_at,
-                   u.user_name AS changed_by_name
-            FROM Action_Logs a
-            JOIN Users u ON a.performed_by = u.user_idx
-            WHERE a.task_id = ?
-            ORDER BY changed_at DESC
-            `,
-            [taskId, taskId]
+        // 멘션 데이터
+        const [mentions] = await connection.promise().query(
+            `SELECT '맨션' AS log_type, m.message AS log_message, m.created_at, 
+                    u.user_name AS created_by_name
+             FROM Mentions m
+             JOIN Users u ON m.sent_by = u.user_idx
+             WHERE m.task_id = ?
+             ORDER BY m.created_at DESC`,
+            [taskId]
         );
 
-        res.status(200).json(logs);
+        // 작업 기록 데이터
+        const [history] = await connection.promise().query(
+            `SELECT h.log_type, h.log_message, h.changed_at, 
+                    u.user_name AS created_by_name
+             FROM Task_History h
+             JOIN Users u ON h.changed_by = u.user_idx
+             WHERE h.task_id = ?
+             ORDER BY h.changed_at DESC`,
+            [taskId]
+        );
+
+        // 멘션 + 기록 데이터 병합
+        const activities = [...mentions, ...history].sort((a, b) => new Date(b.changed_at) - new Date(a.changed_at));
+
+        res.status(200).json(activities);
     } catch (err) {
-        console.error('작업 기록 및 액션 로그 조회 오류:', err);
-        res.status(500).json({ message: '작업 기록 및 액션 로그 조회 중 오류가 발생했습니다.' });
+        console.error('멘션 및 작업 기록 조회 오류:', err);
+        res.status(500).json({ message: '멘션 및 작업 기록 조회 중 오류가 발생했습니다.' });
     }
 });
+
+
+
 
 
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
