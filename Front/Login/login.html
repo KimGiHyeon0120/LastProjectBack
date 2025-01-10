@@ -53,14 +53,15 @@
 
     <script src="../lib/jquery-3.7.1.min.js"></script>
     <script>
-        /*───────────────────────────────────────────────────────────────────────────────────────────*/
+
+/*───────────────────────────────────────────────────────────────────────────────────────────*/
         /*로그인버튼*/
         function login() {
             let userId = document.getElementById('username');
             let pwd = document.getElementById('password');
-
+            const API_URL = "http://192.168.20.37:3000/api";
             $.ajax({
-                url: 'http://localhost:3000/api/users/login',
+                url: `${API_URL}/users/login`,
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({
@@ -172,7 +173,7 @@
         // Google 로그인 함수
         function googleLogin() {
             // 서버로 Google 로그인 요청
-            fetch('http://localhost:3000/api/users/login/google')
+            fetch(`${API_URL}/users/login/google`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.redirectUrl) {
