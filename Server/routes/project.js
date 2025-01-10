@@ -508,6 +508,7 @@ router.get('/members', async (req, res) => {
             JOIN Users u ON pm.user_idx = u.user_idx
             JOIN Project_Roles pr ON pm.project_role_id = pr.project_role_id
             WHERE pm.project_id = ?
+            ;
         `;
         const [members] = await connection.promise().query(query, [projectId]);
 
@@ -522,8 +523,37 @@ router.get('/members', async (req, res) => {
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
+//팀원 검색
+router.get('/members/search', async (req, res) => {
+    const { projectId, query } = req.query;
 
 
+console.log(req.query)
+    try {
+        const searchQuery = query ? `%${query}%` : '%';
+        const sqlQuery = `
+            SELECT 
+                u.user_idx AS userId,
+                u.user_name AS userName,
+                u.user_profile_image AS profileImage,
+                pr.project_role_name AS roleName
+            FROM Project_Members pm
+            JOIN Users u ON pm.user_idx = u.user_idx
+            JOIN Project_Roles pr ON pm.project_role_id = pr.project_role_id
+            WHERE pm.project_id = ?
+            AND u.user_name LIKE ?
+        `;
+        const [members] = await connection.promise().query(sqlQuery, [projectId, searchQuery]);
+
+        res.status(200).json(members);
+    } catch (err) {
+        console.error('팀원 검색 오류:', err);
+        res.status(500).json({ message: '팀원 검색 중 오류가 발생했습니다.' });
+    }
+});
+
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
 

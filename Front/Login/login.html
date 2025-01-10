@@ -61,9 +61,9 @@
         function login() {
             let userId = document.getElementById('username');
             let pwd = document.getElementById('password');
-            const API_URL = "http://192.168.20.37:3000/api";
+       
             $.ajax({
-                url: `${API_URL}/users/login`,
+                url: 'http://192.168.20.37:3000/api/users/login',
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({
@@ -174,8 +174,8 @@
     <script>
         // Google 로그인 함수
         function googleLogin() {
-            // 서버로 Google 로그인 요청
-            fetch(`${API_URL}/users/login/google`)
+            // 서버로 Google 로그인 요청`
+            fetch('http://192.168.20.37:3000/api/users/login/google')
                 .then(response => response.json())
                 .then(data => {
                     if (data.redirectUrl) {
