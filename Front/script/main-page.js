@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // 초기화
-    loadContent(currentIndex);
+    loadContent(currentIndex = 0);
     startSlideShow();
 
     // 버튼 클릭 이벤트
