@@ -129,7 +129,7 @@ router.get('/user', async (req, res) => {
              ORDER BY m.created_at DESC`,
             [userId, taskId]
         );
-
+        console.log(mentions);
         res.status(200).json(mentions);
     } catch (err) {
         console.error('멘션 조회 오류:', err);
