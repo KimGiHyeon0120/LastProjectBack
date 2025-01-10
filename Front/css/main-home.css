@@ -1,16 +1,18 @@
-
 /* body */
 * {
     box-sizing: border-box;
 }
 
-body _{
+body _ {
     padding: 0;
     margin: 0;
     font-family: 'Roboto', sans-serif;
-    font-size: 16px; /* 기본 폰트 크기 */
-    line-height: 1.5; /* 기본 줄 간격 */
-    color: #101214; /* 기본 텍스트 색상 */
+    font-size: 16px;
+    /* 기본 폰트 크기 */
+    line-height: 1.5;
+    /* 기본 줄 간격 */
+    color: #101214;
+    /* 기본 텍스트 색상 */
 }
 
 a {
@@ -18,7 +20,17 @@ a {
     text-decoration: none;
 }
 
-h1, h2, h3, h4, h5, h6, p, a, span, li, button {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+a,
+span,
+li,
+button {
     font-family: 'Roboto', sans-serif;
 }
 
@@ -37,7 +49,7 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
     align-items: center;
     padding-left: 95px;
     background-repeat: no-repeat;
-    background-color: #FFFFFF;
+    background-image: linear-gradient(123.5deg, #a3a3a3 58.55%, #7f7f7f 80.45%);
     display: flex;
     justify-content: center;
     padding-bottom: 0;
@@ -60,13 +72,14 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
     margin-right: 170px;
     margin-bottom: 50px;
     margin-left: 170px;
+    text-align: center;
 }
 
 .main-head h1 {
     margin-block-end: 15px;
-    font-weight: 500;
+    font-weight: 1000;
     line-height: 56px;
-    font-size: 3pc;
+    font-size: 50px;
 }
 
 .main-head p {
@@ -109,7 +122,7 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
 }
 
 .inner-plan-it {
-    font-weight:  400;
+    font-weight: 400;
     font-size: 17px;
 }
 
@@ -140,7 +153,7 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
     font-family: inherit;
     font-weight: 500;
     max-width: 100%;
-    position: relative;
+    position: absolute;
     text-align: center;
     -webkit-text-decoration: none;
     text-decoration: none;
@@ -178,7 +191,9 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
     white-space: nowrap;
 }
 
-.button-css:focus, .button-css:hover, .button-css:visited {
+.button-css:focus,
+.button-css:hover,
+.button-css:visited {
     text-decoration-color: currentColor;
     text-decoration-line: underline;
     text-decoration-style: solid;
@@ -199,7 +214,8 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
     padding-bottom: 4pc;
     padding-top: 4pc;
 
-    background-image: linear-gradient(123.5deg, #a3a3a3 58.55%, #7f7f7f 80.45%); /*백그라운드 색상*/
+    background-color: #FFFFFF;
+    /*백그라운드 색상*/
     background-position: 50%;
     background-repeat: no-repeat;
     background-size: cover;
@@ -235,6 +251,7 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
     text-align: center;
     display: flex;
     flex-direction: column;
+    color: #000;
 }
 
 .text-div1-inner .text-section h2 {
@@ -359,7 +376,7 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
     padding-left: 30px;
     border-width: 2px;
     letter-spacing: .04rem;
-    background-color:#091e42; 
+    background-color: #091e42;
     color: #dfe1e6;
     border: 1px solid transparent;
     padding-top: 4px;
@@ -374,7 +391,16 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
     border-color: #007BFF;
 }
 
+.tap-panels {
+    position: relative;
+    overflow: hidden;
+    /* 콘텐츠가 영역을 벗어나지 않도록 설정 */
+    height: 670px;
+    /* 슬라이드 영역 고정 */
+}
+
 .tap-panels-inner {
+    position: relative;
     margin-right: auto;
     margin-left: auto;
     margin-bottom: 0;
@@ -383,6 +409,7 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
     padding-right: 0;
     padding-bottom: 1pc;
     padding-left: 0;
+    max-width: none;
 }
 
 .panels-inner-layout-start {
@@ -410,6 +437,17 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
     grid-template-columns: repeat(12, minmax(0, 1fr));
 }
 
+.tap-panels-inner-layout video {
+    width: 100%;
+    /* 부모 요소의 너비에 맞춤 */
+    max-width: 800px;
+    /* 최대 너비 제한 */
+    height: 500px;
+    /* 고정 높이 설정 */
+    object-fit: cover;
+    /* 비디오의 비율을 유지하며 잘림 처리 */
+    margin: 0 auto;
+}
 
 .layout-left-first {
     margin-right: auto;
@@ -429,10 +467,6 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
     text-align: left;
 }
 
-
-
-
-
 .layout-text-section2 {
     padding-left: 0;
     padding-top: 30px;
@@ -444,6 +478,7 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
     margin-bottom: 24px;
     text-align: left;
     background-image: linear-gradient(90deg, transparent, #071735 90%);
+    color: #000;
 }
 
 .layout-img {
@@ -467,6 +502,7 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
     margin-left: 0;
     text-transform: uppercase;
 }
+
 .quote-sample3 {
     font-size: 1.1rem !important;
     line-height: 2;
@@ -476,12 +512,13 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
     margin-bottom: 0;
     margin-left: 0;
     text-transform: uppercase;
-} 
+}
 
-.layout-left-first >:last-child {
+.layout-left-first>:last-child {
     grid-column-end: -1;
 }
-.layout-left-first >:last-child {
+
+.layout-left-first>:last-child {
     grid-column-start: 5;
 }
 
@@ -497,13 +534,15 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
     padding-right: 0;
     padding-top: 2in;
     padding-bottom: 2in;
-    background-color: #fff;
+    background-color: #7f7f7f;
 }
 
 .sec2-div1 {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* 두 개의 열을 동일한 비율로 배치 */
-    gap: 20px; /* 열 사이 간격 추가 */
+    grid-template-columns: 1fr 1fr;
+    /* 두 개의 열을 동일한 비율로 배치 */
+    gap: 20px;
+    /* 열 사이 간격 추가 */
     margin: auto;
     max-width: 100%;
     width: 954pt;
@@ -516,7 +555,7 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
     margin-left: auto;
     margin-bottom: auto;
     max-width: 100%;
-    
+
 }
 
 .integrations-content {
@@ -569,7 +608,7 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
     color: #fff;
     padding-right: 0;
     padding-left: 0;
-    background-color: #aaaaaa;
+    background-color: #fff;
     padding-top: 2pc;
     padding-bottom: 2pc;
 }
@@ -722,6 +761,26 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
     flex-direction: row;
     background-color: #fff;
     margin-top: 10px;
+    position: relative;
+    /* ::before 기준을 잡아줌 */
+}
+
+.main-footer::before {
+    content: "";
+    /* 반드시 설정 필요 */
+    display: block;
+    position: absolute;
+    /* 선 위치 조정 */
+    top: 0;
+    /* main-footer 상단에 배치 */
+    left: 0;
+    width: 100%;
+    /* 부모 요소 너비에 맞춤 */
+    height: 1px;
+    /* 선 두께 설정 */
+    background-color: #0000001a;
+    /* 원하는 색상 */
+    box-sizing: border-box;
 }
 
 .footer-inner {
@@ -730,6 +789,7 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
     flex-direction: column;
     padding-block: var(--ds-space-200);
     gap: var(--ds-space-200);
+    margin-top: 30px;
 }
 
 .inner-div1 {
@@ -774,7 +834,9 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
     height: 2pc;
 }
 
-.footer-logo a:focus, .footer-logo a:hover, .footer-logo a:visited {
+.footer-logo a:focus,
+.footer-logo a:hover,
+.footer-logo a:visited {
     font-weight: bold;
     text-decoration-color: currentColor;
     text-decoration-line: underline;
@@ -825,11 +887,13 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
     font-family: Charlie Text;
 
 }
+
 .textArea-body {
     list-style: none;
     padding-inline-start: 20px;
     margin-block-end: 0;
 }
+
 .textArea-li {
     font-size: 1rem;
     line-height: 14px;
@@ -861,7 +925,9 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
 }
 
 
-.li-link-a:focus, .li-link-a:hover, .li-link-a:visited {
+.li-link-a:focus,
+.li-link-a:hover,
+.li-link-a:visited {
     text-decoration-color: currentColor;
     text-decoration-line: underline;
     text-decoration-style: solid;
@@ -894,7 +960,8 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
 
 @media (min-width: 64rem) {
     .main-head h1 {
-        font-size: 2rem; /* 작은 화면에서는 폰트 크기 축소 */
+        font-size: 2rem;
+        /* 작은 화면에서는 폰트 크기 축소 */
         line-height: 1.2;
     }
 
@@ -906,7 +973,8 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
 
 @media (min-width: 64rem) {
     .main-head h1 {
-        font-size: 3rem; /* 큰 화면에서는 폰트 크기 확대 */
+        font-size: 3rem;
+        /* 큰 화면에서는 폰트 크기 확대 */
         line-height: 1.5;
     }
 
@@ -918,14 +986,16 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
 
 @media (max-width: 768px) {
     .tap-button {
-        font-size: 1rem; /* 작은 화면에서 폰트 크기 축소 */
+        font-size: 1rem;
+        /* 작은 화면에서 폰트 크기 축소 */
         padding: 8px 16px;
     }
 }
 
 @media (min-width: 769px) {
     .tap-button {
-        font-size: 1.25rem; /* 큰 화면에서 기본 크기 유지 */
+        font-size: 1.25rem;
+        /* 큰 화면에서 기본 크기 유지 */
         padding: 12px 24px;
     }
 }
@@ -943,7 +1013,8 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
 
 @media (max-width: 768px) {
     .text-div1-inner .text-section h2 {
-        font-size: 1.5rem; /* 작은 화면에서 폰트 크기 축소 */
+        font-size: 1.5rem;
+        /* 작은 화면에서 폰트 크기 축소 */
     }
 
     .text-section-p {
@@ -953,7 +1024,8 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
 
 @media (min-width: 769px) {
     .text-div1-inner .text-section h2 {
-        font-size: 2.25rem; /* 큰 화면에서 기본 크기 유지 */
+        font-size: 2.25rem;
+        /* 큰 화면에서 기본 크기 유지 */
     }
 
     .text-section-p {
@@ -962,7 +1034,7 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
 }
 
 @media (min-width: 48rem) {
-    .tap-panels-inner-layout >:first-of-type:not(style):not(:first-of-type:not(style)~*) {
+    .tap-panels-inner-layout>:first-of-type:not(style):not(:first-of-type:not(style)~*) {
         grid-column-start: 1;
         grid-column-end: 5;
     }
@@ -975,11 +1047,12 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
 }
 
 @media (min-width: 64rem) {
-    .tap-panels-inner-layout >:last-child{
+    .tap-panels-inner-layout>:last-child {
         grid-column-start: 5;
         grid-column-end: -1;
     }
 }
+
 @media (min-width: 64rem) {
     video {
         max-width: 757.33px;
@@ -988,11 +1061,13 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
 
 @media (max-width: 768px) {
     .sec2-div1 {
-        gap: 10px; /* 작은 화면에서 간격 축소 */
+        gap: 10px;
+        /* 작은 화면에서 간격 축소 */
     }
 
     .integrations-content h2 {
-        font-size: 1.5rem; /* 작은 화면에서 폰트 크기 축소 */
+        font-size: 1.5rem;
+        /* 작은 화면에서 폰트 크기 축소 */
     }
 
     .contentBlock-body {
@@ -1002,7 +1077,8 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
 
 @media (min-width: 769px) {
     .integrations-content h2 {
-        font-size: 2rem; /* 큰 화면에서 기본 크기 유지 */
+        font-size: 2rem;
+        /* 큰 화면에서 기본 크기 유지 */
     }
 
     .contentBlock-body {
@@ -1012,7 +1088,8 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
 
 @media (max-width: 768px) {
     .footer-li-a {
-        font-size: 0.875rem; /* 작은 화면에서 폰트 크기 축소 */
+        font-size: 0.875rem;
+        /* 작은 화면에서 폰트 크기 축소 */
     }
 
     .textArea-h3 {
@@ -1022,10 +1099,15 @@ h1, h2, h3, h4, h5, h6, p, a, span, li, button {
 
 @media (min-width: 769px) {
     .footer-li-a {
-        font-size: 1rem; /* 큰 화면에서 기본 크기 유지 */
+        font-size: 1rem;
+        /* 큰 화면에서 기본 크기 유지 */
     }
 
     .textArea-h3 {
         font-size: 1.15rem;
     }
+}
+
+:root {
+    
 }
