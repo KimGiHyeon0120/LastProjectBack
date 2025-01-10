@@ -115,11 +115,8 @@ router.post('/send', async (req, res) => {
 
 // 멘션 조회
 router.get('/user', async (req, res) => {
-    const { userId } = req.query;
+    const { userId, taskId} = req.query;
 
-    if (!userId) {
-        return res.status(400).json({ message: '사용자 ID는 필수입니다.' });
-    }
 
     try {
         const [mentions] = await connection.promise().query(
@@ -128,9 +125,9 @@ router.get('/user', async (req, res) => {
              FROM Mentions m
              LEFT JOIN Tasks t ON m.task_id = t.task_id
              JOIN Users u ON m.sent_by = u.user_idx
-             WHERE m.mentioned_user = ?
+             WHERE m.mentioned_user = ? AND m.task_id = ?
              ORDER BY m.created_at DESC`,
-            [userId]
+            [userId, taskId]
         );
 
         res.status(200).json(mentions);

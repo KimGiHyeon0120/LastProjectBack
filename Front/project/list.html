@@ -434,7 +434,8 @@
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
         const projectId = sessionStorage.getItem("projectId");
         const userIdx = sessionStorage.getItem("userIdx"); // 로그인된 사용자 ID
-        const API_URL = "http://localhost:3000/api";
+        const API_URL = "http://192.168.20.37:3000/api";
+
 
         $(document).ready(function () {
 
@@ -758,11 +759,7 @@
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
-            // 날짜 포맷 함수
-            function formatDate(dateString) {
-                const options = { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-                return new Date(dateString).toLocaleDateString('ko-KR', options);
-            }
+
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
             // 작업 저장
@@ -806,41 +803,44 @@
 
             // 탭 클릭 이벤트
             $(".tab-button").click(function () {
-                const tab = $(this).data("tab"); // 선택된 탭 유형
+                const tab = $(this).data("tab");
                 const activityContent = $("#activityContent");
                 const taskId = $("#editTaskPopup").data("task-id");
-                const userId = userIdx; // 현재 로그인한 사용자 ID
+                const userId = userIdx;
+            
 
-
-
+            
                 $(".tab-button").removeClass("active");
                 $(this).addClass("active");
-
-                // API URL 설정
+            
                 let apiUrl = `${API_URL}/tasks/activity/task`;
                 let requestData = { taskId };
-
+            
                 if (tab === "mentions") {
                     apiUrl = `${API_URL}/mentions/user`;
-                    requestData = { userId };
+                    requestData = { userId, taskId };
                 } else if (tab === "logs") {
                     apiUrl = `${API_URL}/tasks/history/task`;
                 }
-
-                // API 호출
+            
                 $.ajax({
                     url: apiUrl,
                     method: "GET",
                     data: requestData,
                     success: function (logs) {
+            
                         activityContent.empty();
                         logs.forEach(log => {
+                            const message = log.log_message || log.message || "내용 없음";
+                            const date = formatDate(log.changed_at || log.created_at || log.activity_date || new Date());
+                            const logType = log.log_type || "맨션";
+            
                             activityContent.append(`
-                    <div class="activity-log">
-                        <p><strong>${log.log_type || '활동'}</strong>: ${log.log_message || '내용 없음'}</p>
-                        <p class="log-time">${formatDate(log.created_at)}</p>
-                    </div>
-                `);
+                                <div class="activity-log">
+                                    <p><strong>${logType}</strong>: ${message}</p>
+                                    <p class="log-time">${date}</p>
+                                </div>
+                            `);
                         });
                     },
                     error: function (err) {
@@ -849,38 +849,11 @@
             });
 
 
-            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-
-            // 맨션 로그만 불러오기
-            function loadMentionLogs() {
-                const activityContent = $("#activityContent");
-
-                console.log("맨션 데이터 로드 요청"); // 디버깅: 요청 시작
-                $.ajax({
-                    url: `${API_URL}/mentions/user`,
-                    method: "GET",
-                    data: { userId: userIdx }, // 현재 사용자 ID를 기준으로 맨션 조회
-                    success: function (mentions) {
-
-                        activityContent.empty(); // 기존 내용 초기화
-
-                        mentions.forEach((mention, index) => {
-
-                            activityContent.append(`
-                    <div class="activity-log mention-log">
-                        <p><strong>맨션</strong>: ${mention.message}</p>
-                        <p class="log-time">${formatDate(mention.created_at)}</p>
-                    </div>
-                `);
-                        });
-                    },
-                    error: function (err) {
-                    }
-                });
+            // 날짜 포맷 함수
+            function formatDate(dateString) {
+                const options = { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+                return new Date(dateString).toLocaleDateString('ko-KR', options);
             }
-
-
 
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -891,7 +864,7 @@
             // 활동 로그 및 기록 불러오기
             function loadActivityLogs(taskId) {
                 $.ajax({
-                    url: `${API_URL}/tasks/history/task`, // Task_History를 사용하는 API
+                    url: `${API_URL}/tasks/activity/task`, // Task_History를 사용하는 API
                     method: "GET",
                     data: { taskId },
                     success: function (logs) {
@@ -899,20 +872,23 @@
                         activityContent.empty();
 
                         logs.forEach(log => {
+                            if (!log.log_message) return;
                             // "맨션"과 "기록" 구분
                             const logType = log.log_type === "맨션" ? "mentions" : "logs";
 
                             activityContent.append(`
                     <div class="activity-log" data-log-type="${logType}">
                         <p><strong>${log.log_type || '기록'}</strong>: ${log.log_message || '내용 없음'}</p>
-                        <p class="log-time">${formatDate(log.changed_at)}</p>
+                        <p class="log-time">${formatDate(log.changed_at || log.created_at || log.activity_date)}</p>
                     </div>
                 `);
+
                         });
                     },
                     error: function (err) {
                     }
                 });
+
             }
 
 

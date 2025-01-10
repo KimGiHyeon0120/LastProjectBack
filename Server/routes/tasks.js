@@ -619,30 +619,32 @@ router.get('/activity/task', async (req, res) => {
     }
 
     try {
-        // 멘션 데이터
-        const [mentions] = await connection.promise().query(
-            `SELECT '맨션' AS log_type, m.message AS log_message, m.created_at, 
-                    u.user_name AS created_by_name
-             FROM Mentions m
-             JOIN Users u ON m.sent_by = u.user_idx
-             WHERE m.task_id = ?
-             ORDER BY m.created_at DESC`,
-            [taskId]
-        );
+        const [activities] = await connection.promise().query(
+            `
+            SELECT 
+                '맨션' AS log_type, 
+                m.message AS log_message, 
+                m.created_at AS activity_date, 
+                u.user_name AS created_by_name
+            FROM Mentions m
+            JOIN Users u ON m.sent_by = u.user_idx
+            WHERE m.task_id = ?
 
-        // 작업 기록 데이터
-        const [history] = await connection.promise().query(
-            `SELECT h.log_type, h.log_message, h.changed_at, 
-                    u.user_name AS created_by_name
-             FROM Task_History h
-             JOIN Users u ON h.changed_by = u.user_idx
-             WHERE h.task_id = ?
-             ORDER BY h.changed_at DESC`,
-            [taskId]
-        );
+            UNION ALL
 
-        // 멘션 + 기록 데이터 병합
-        const activities = [...mentions, ...history].sort((a, b) => new Date(b.changed_at) - new Date(a.changed_at));
+            SELECT 
+                h.log_type, 
+                h.log_message, 
+                h.changed_at AS activity_date, 
+                u.user_name AS created_by_name
+            FROM Task_History h
+            JOIN Users u ON h.changed_by = u.user_idx
+            WHERE h.task_id = ?
+
+            ORDER BY activity_date DESC
+            `,
+            [taskId, taskId]
+        );
 
         res.status(200).json(activities);
     } catch (err) {
