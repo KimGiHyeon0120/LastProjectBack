@@ -413,7 +413,6 @@
 
             <div class="activity-tabs">
                 <button type="button" class="tab-button active" data-tab="all">전체</button>
-                <button type="button" class="tab-button" data-tab="comments">댓글</button>
                 <button type="button" class="tab-button" data-tab="mentions">맨션</button>
                 <button type="button" class="tab-button" data-tab="logs">기록</button>
             </div>
@@ -723,6 +722,8 @@
                         $(".popup-background").fadeIn();
                         $("#editTaskPopup").fadeIn();
 
+                        $("#editTaskPopup").data("task-id", taskId);
+
                         // 저장 및 맨션 버튼에 작업 ID 설정
                         $("#saveTaskBtn").data("task-id", taskId);
                         $("#sendMentionBtn").data("task-id", taskId);
@@ -732,6 +733,8 @@
                     }
                 });
             };
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
             // 작업 상태 로드
             function loadTaskStatus(selectedStatusId) {
@@ -752,68 +755,15 @@
                 });
             }
 
-            // 활동 로그 및 기록 불러오기
-            function loadActivityLogs(taskId) {
-                $.ajax({
-                    url: `${API_URL}/tasks/history/task`,
-                    method: "GET",
-                    data: { taskId },
-                    success: function (logs) {
-                        const activityContent = $("#activityContent");
-                        activityContent.empty();
-            
-                        logs.forEach(log => {
-                            activityContent.append(`
-                                <div class="activity-log">
-                                    <p><strong>${log.log_type || '활동'}</strong>: ${log.log_message || '내용 없음'}</p>
-                                    <p class="log-time">${formatDate(log.changed_at)}</p>
-                                </div>
-                            `);
-                        });
-                    },
-                    error: function (err) {
-                        console.error("활동 로그 불러오기 오류:", err);
-                    }
-                });
-            }
-            
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
             // 날짜 포맷 함수
             function formatDate(dateString) {
                 const options = { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
                 return new Date(dateString).toLocaleDateString('ko-KR', options);
             }
-            
-
-            // 맨션 보내기
-            $("#sendMentionBtn").click(function () {
-                const taskId = $(this).data("task-id");
-                const mentionMessage = $("#mentionMessage").val();
-
-                if (!mentionMessage.trim()) {
-                    alert("맨션 내용을 입력하세요.");
-                    return;
-                }
-
-                $.ajax({
-                    url: `${API_URL}/tasks/mention`,
-                    method: "POST",
-                    contentType: "application/json",
-                    data: JSON.stringify({
-                        taskId,
-                        mentionMessage,
-                        mentionedBy: userIdx // 로그인된 사용자 ID
-                    }),
-                    success: function () {
-                        alert("맨션이 성공적으로 전송되었습니다.");
-                        $("#mentionMessage").val("");
-                        loadActivityLogs(taskId); // 활동 로그 새로고침
-                    },
-                    error: function (err) {
-                        console.error("맨션 전송 오류:", err);
-                        alert("맨션 전송 중 오류가 발생했습니다.");
-                    }
-                });
-            });
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
             // 작업 저장
             $("#saveTaskBtn").click(function () {
@@ -842,6 +792,7 @@
                     }
                 });
             });
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
             // 팝업 닫기
             $("#cancelEditTaskBtn").click(function () {
@@ -850,16 +801,184 @@
             });
 
 
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-            // 탭 전환
+
+            // 탭 클릭 이벤트
             $(".tab-button").click(function () {
+                const tab = $(this).data("tab"); // 선택된 탭 유형
+                const activityContent = $("#activityContent");
+                const taskId = $("#editTaskPopup").data("task-id");
+                const userId = userIdx; // 현재 로그인한 사용자 ID
+
+
+
                 $(".tab-button").removeClass("active");
                 $(this).addClass("active");
 
-                const tab = $(this).data("tab");
-                $("#activityContent").attr("data-tab", tab);
+                // API URL 설정
+                let apiUrl = `${API_URL}/tasks/activity/task`;
+                let requestData = { taskId };
+
+                if (tab === "mentions") {
+                    apiUrl = `${API_URL}/mentions/user`;
+                    requestData = { userId };
+                } else if (tab === "logs") {
+                    apiUrl = `${API_URL}/tasks/history/task`;
+                }
+
+                // API 호출
+                $.ajax({
+                    url: apiUrl,
+                    method: "GET",
+                    data: requestData,
+                    success: function (logs) {
+                        activityContent.empty();
+                        logs.forEach(log => {
+                            activityContent.append(`
+                    <div class="activity-log">
+                        <p><strong>${log.log_type || '활동'}</strong>: ${log.log_message || '내용 없음'}</p>
+                        <p class="log-time">${formatDate(log.created_at)}</p>
+                    </div>
+                `);
+                        });
+                    },
+                    error: function (err) {
+                    }
+                });
             });
 
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+            // 맨션 로그만 불러오기
+            function loadMentionLogs() {
+                const activityContent = $("#activityContent");
+
+                console.log("맨션 데이터 로드 요청"); // 디버깅: 요청 시작
+                $.ajax({
+                    url: `${API_URL}/mentions/user`,
+                    method: "GET",
+                    data: { userId: userIdx }, // 현재 사용자 ID를 기준으로 맨션 조회
+                    success: function (mentions) {
+
+                        activityContent.empty(); // 기존 내용 초기화
+
+                        mentions.forEach((mention, index) => {
+
+                            activityContent.append(`
+                    <div class="activity-log mention-log">
+                        <p><strong>맨션</strong>: ${mention.message}</p>
+                        <p class="log-time">${formatDate(mention.created_at)}</p>
+                    </div>
+                `);
+                        });
+                    },
+                    error: function (err) {
+                    }
+                });
+            }
+
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+
+            // 활동 로그 및 기록 불러오기
+            function loadActivityLogs(taskId) {
+                $.ajax({
+                    url: `${API_URL}/tasks/history/task`, // Task_History를 사용하는 API
+                    method: "GET",
+                    data: { taskId },
+                    success: function (logs) {
+                        const activityContent = $("#activityContent");
+                        activityContent.empty();
+
+                        logs.forEach(log => {
+                            // "맨션"과 "기록" 구분
+                            const logType = log.log_type === "맨션" ? "mentions" : "logs";
+
+                            activityContent.append(`
+                    <div class="activity-log" data-log-type="${logType}">
+                        <p><strong>${log.log_type || '기록'}</strong>: ${log.log_message || '내용 없음'}</p>
+                        <p class="log-time">${formatDate(log.changed_at)}</p>
+                    </div>
+                `);
+                        });
+                    },
+                    error: function (err) {
+                    }
+                });
+            }
+
+
+
+
+
+
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+            // 맨션 보내기
+            $("#sendMentionBtn").click(function () {
+                const taskId = $(this).data("task-id");
+                const mentionMessage = $("#mentionMessage").val().trim();
+
+                if (!mentionMessage) {
+                    alert("메시지를 입력하세요.");
+                    return;
+                }
+
+                // @사용자명 추출
+                const mentionedUsers = extractMentionedUsers(mentionMessage);
+
+                // AJAX 요청으로 서버에 데이터 전송
+                $.ajax({
+                    url: `${API_URL}/mentions/send`,
+                    method: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        taskId,
+                        mentionMessage,
+                        mentionedUsers, // 추출한 사용자 이름 목록
+                        sentBy: userIdx, // 현재 로그인한 사용자 ID
+                    }),
+                    success: function () {
+                        alert("메시지가 성공적으로 전송되었습니다.");
+                        $("#mentionMessage").val(""); // 입력 필드 초기화
+                        loadActivityLogs(taskId); // 활동 로그 새로고침
+                    },
+                    error: function (err) {
+                        console.error("메시지 전송 오류:", err);
+                        alert("메시지 전송 중 오류가 발생했습니다.");
+                    }
+                });
+            });
+
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+            // @사용자명 추출 함수
+            function extractMentionedUsers(message) {
+                const mentionPattern = /@(\w+)/g; // @뒤에 단어 추출
+                const matches = [];
+                let match;
+                while ((match = mentionPattern.exec(message)) !== null) {
+                    matches.push(match[1]); // 사용자 이름 추가
+                }
+                return matches;
+            }
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
 

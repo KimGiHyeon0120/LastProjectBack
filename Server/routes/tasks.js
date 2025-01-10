@@ -550,6 +550,29 @@ router.put('/assign', async (req, res) => {
     }
 });
 
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+// 작업 기록 추가
+router.post('/history/add', async (req, res) => {
+    const { taskId, changedBy, changedField, oldValue, newValue, logMessage, logType } = req.body;
+    if (!taskId || !changedBy || !changedField || !logMessage || !logType) {
+        return res.status(400).json({ message: '필수 필드를 모두 입력해주세요.' });
+    }
+
+    try {
+        await connection.promise().query(
+            `INSERT INTO Task_History (task_id, changed_by, changed_field, old_value, new_value, log_message, log_type) 
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [taskId, changedBy, changedField, oldValue, newValue, logMessage, logType]
+        );
+        res.status(201).json({ message: '작업 기록이 성공적으로 추가되었습니다.' });
+    } catch (err) {
+        console.error('작업 기록 추가 오류:', err);
+        res.status(500).json({ message: '작업 기록 추가 중 오류가 발생했습니다.' });
+    }
+});
 
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -582,33 +605,52 @@ router.get('/history/task', async (req, res) => {
 
 
 
+
+
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
+// 멘션과 작업 기록 함께 조회
+router.get('/activity/task', async (req, res) => {
+    const { taskId } = req.query;
 
-// 작업 기록 추가
-router.post('/history/add', async (req, res) => {
-    const { taskId, changedBy, changedField, oldValue, newValue, logMessage, logType } = req.body;
-    if (!taskId || !changedBy || !changedField || !logMessage || !logType) {
-        return res.status(400).json({ message: '필수 필드를 모두 입력해주세요.' });
+    if (!taskId) {
+        return res.status(400).json({ message: '작업 ID는 필수입니다.' });
     }
 
     try {
-        await connection.promise().query(
-            `INSERT INTO Task_History (task_id, changed_by, changed_field, old_value, new_value, log_message, log_type) 
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [taskId, changedBy, changedField, oldValue, newValue, logMessage, logType]
+        // 멘션 데이터
+        const [mentions] = await connection.promise().query(
+            `SELECT '맨션' AS log_type, m.message AS log_message, m.created_at, 
+                    u.user_name AS created_by_name
+             FROM Mentions m
+             JOIN Users u ON m.sent_by = u.user_idx
+             WHERE m.task_id = ?
+             ORDER BY m.created_at DESC`,
+            [taskId]
         );
-        res.status(201).json({ message: '작업 기록이 성공적으로 추가되었습니다.' });
+
+        // 작업 기록 데이터
+        const [history] = await connection.promise().query(
+            `SELECT h.log_type, h.log_message, h.changed_at, 
+                    u.user_name AS created_by_name
+             FROM Task_History h
+             JOIN Users u ON h.changed_by = u.user_idx
+             WHERE h.task_id = ?
+             ORDER BY h.changed_at DESC`,
+            [taskId]
+        );
+
+        // 멘션 + 기록 데이터 병합
+        const activities = [...mentions, ...history].sort((a, b) => new Date(b.changed_at) - new Date(a.changed_at));
+
+        res.status(200).json(activities);
     } catch (err) {
-        console.error('작업 기록 추가 오류:', err);
-        res.status(500).json({ message: '작업 기록 추가 중 오류가 발생했습니다.' });
+        console.error('멘션 및 작업 기록 조회 오류:', err);
+        res.status(500).json({ message: '멘션 및 작업 기록 조회 중 오류가 발생했습니다.' });
     }
 });
 
-
-// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
 
