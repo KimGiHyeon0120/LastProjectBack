@@ -372,6 +372,27 @@
             padding: 10px;
             background: #fafafa;
         }
+
+        .mention-dropdown {
+            position: absolute;
+            border: 1px solid #ccc;
+            background-color: #fff;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none; /* 기본적으로 숨김 */
+            width: 100%;
+        }
+        
+        .mention-dropdown .dropdown-item {
+            padding: 8px;
+            cursor: pointer;
+        }
+        
+        .mention-dropdown .dropdown-item:hover {
+            background-color: #f0f0f0;
+        }
+
     </style>
     <script src="../lib/jquery-3.7.1.min.js"></script>
     <script src="../script/header.js"></script>
@@ -429,6 +450,12 @@
             </div>
 
         </form>
+    </div>
+
+
+    <div class="mention-container">
+        <textarea id="mentionMessage" placeholder="멘션 내용을 입력하세요"></textarea>
+        <div id="mentionDropdown" class="mention-dropdown hidden"></div>
     </div>
 
     <script>
@@ -809,40 +836,46 @@
                 const activityContent = $("#activityContent");
                 const taskId = $("#editTaskPopup").data("task-id");
                 const userId = userIdx;
-            
 
-            
+
+
                 $(".tab-button").removeClass("active");
                 $(this).addClass("active");
-            
+
                 let apiUrl = `${API_URL}/tasks/activity/task`;
                 let requestData = { taskId };
-            
+
                 if (tab === "mentions") {
                     apiUrl = `${API_URL}/mentions/user`;
                     requestData = { userId, taskId };
                 } else if (tab === "logs") {
                     apiUrl = `${API_URL}/tasks/history/task`;
                 }
-            
+
+
                 $.ajax({
                     url: apiUrl,
                     method: "GET",
                     data: requestData,
                     success: function (logs) {
-            
+
                         activityContent.empty();
-                        logs.forEach(log => {
+
+                        // 중복 데이터 필터링 (옵션)
+                        const uniqueLogs = [...new Map(logs.map(log => [log.log_message || log.message, log])).values()];
+
+                        uniqueLogs.forEach((log, index) => {
+
                             const message = log.log_message || log.message || "내용 없음";
                             const date = formatDate(log.changed_at || log.created_at || log.activity_date || new Date());
                             const logType = log.log_type || "맨션";
-            
+
                             activityContent.append(`
-                                <div class="activity-log">
-                                    <p><strong>${logType}</strong>: ${message}</p>
-                                    <p class="log-time">${date}</p>
-                                </div>
-                            `);
+                    <div class="activity-log">
+                        <p><strong>${logType}</strong>: ${message}</p>
+                        <p class="log-time">${date}</p>
+                    </div>
+                `);
                         });
                     },
                     error: function (err) {
@@ -865,6 +898,7 @@
 
             // 활동 로그 및 기록 불러오기
             function loadActivityLogs(taskId) {
+            
                 $.ajax({
                     url: `${API_URL}/tasks/activity/task`, // Task_History를 사용하는 API
                     method: "GET",
@@ -872,25 +906,33 @@
                     success: function (logs) {
                         const activityContent = $("#activityContent");
                         activityContent.empty();
+            
+            
+                        // 중복 제거 (필요할 경우)
+                        const uniqueLogs = [...new Map(logs.map(log => [log.log_message, log])).values()];
 
-                        logs.forEach(log => {
-                            if (!log.log_message) return;
+            
+                        uniqueLogs.forEach((log, index) => {
+
+            
+                            if (!log.log_message) {
+                                return;
+                            }
+            
                             // "맨션"과 "기록" 구분
                             const logType = log.log_type === "맨션" ? "mentions" : "logs";
-
+            
                             activityContent.append(`
-                    <div class="activity-log" data-log-type="${logType}">
-                        <p><strong>${log.log_type || '기록'}</strong>: ${log.log_message || '내용 없음'}</p>
-                        <p class="log-time">${formatDate(log.changed_at || log.created_at || log.activity_date)}</p>
-                    </div>
-                `);
-
+                                <div class="activity-log" data-log-type="${logType}">
+                                    <p><strong>${log.log_type || '기록'}</strong>: ${log.log_message || '내용 없음'}</p>
+                                    <p class="log-time">${formatDate(log.changed_at || log.created_at || log.activity_date)}</p>
+                                </div>
+                            `);
                         });
                     },
                     error: function (err) {
                     }
                 });
-
             }
 
 
@@ -930,7 +972,6 @@
                     success: function () {
                         alert("메시지가 성공적으로 전송되었습니다.");
                         $("#mentionMessage").val(""); // 입력 필드 초기화
-                        loadActivityLogs(taskId); // 활동 로그 새로고침
                     },
                     error: function (err) {
                         console.error("메시지 전송 오류:", err);
