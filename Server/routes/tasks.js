@@ -610,7 +610,42 @@ router.post('/history/add', async (req, res) => {
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
+// 작업 기록 및 액션 로그 조회
+router.get('/activity-logs/task', async (req, res) => {
+    const { taskId } = req.query;
 
+    if (!taskId) {
+        return res.status(400).json({ message: '작업 ID는 필수입니다.' });
+    }
+
+    try {
+        const [logs] = await connection.promise().query(
+            `
+            SELECT h.history_id, h.task_id, h.changed_by, h.changed_field, h.old_value, h.new_value,
+                   h.log_message, h.log_type, h.changed_at,
+                   u.user_name AS changed_by_name
+            FROM Task_History h
+            JOIN Users u ON h.changed_by = u.user_idx
+            WHERE h.task_id = ?
+            UNION ALL
+            SELECT a.action_id AS history_id, a.task_id, a.performed_by AS changed_by, NULL AS changed_field, 
+                   NULL AS old_value, NULL AS new_value,
+                   a.action_message AS log_message, '액션 로그' AS log_type, a.performed_at AS changed_at,
+                   u.user_name AS changed_by_name
+            FROM Action_Logs a
+            JOIN Users u ON a.performed_by = u.user_idx
+            WHERE a.task_id = ?
+            ORDER BY changed_at DESC
+            `,
+            [taskId, taskId]
+        );
+
+        res.status(200).json(logs);
+    } catch (err) {
+        console.error('작업 기록 및 액션 로그 조회 오류:', err);
+        res.status(500).json({ message: '작업 기록 및 액션 로그 조회 중 오류가 발생했습니다.' });
+    }
+});
 
 
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
