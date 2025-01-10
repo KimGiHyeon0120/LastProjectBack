@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Membership</title>
     <link rel="stylesheet" href="../css/membership.css">
+    <link rel="stylesheet" href="../css/form-group.css">
+    <link rel="icon" sizes="48x48" href="../img/android-icon-48x48.png">
+    <link rel="apple-touch-icon" sizes="48x48" href="../img/android-icon-48x48.png">
     <script>
 
         function validateField(input) {
@@ -192,6 +195,7 @@
     </div>
     <script src="../lib/jquery-3.7.1.min.js"></script>
     <script>
+        const API_URL = "http://192.168.20.37:3000/api";
         function join() {
             let userId = document.getElementById('username').value.trim();
             let userName = document.getElementById('user_name').value.trim();
@@ -215,7 +219,7 @@
             };
 
             $.ajax({
-                url: 'http://localhost:3000/api/users/register',
+                url: `${API_URL}/users/register`,
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(requestData),

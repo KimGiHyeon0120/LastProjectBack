@@ -52,72 +52,7 @@ body {
     margin-bottom: 20px;
 }
 
-/* 폼 그룹 스타일 */
-.form-group {
-    position: relative;
-    margin-bottom: 15px;
-    text-align: left;
-}
 
-.form-group label {
-    position: absolute;
-    top: 50%;
-    left: 10px;
-    transform: translateY(-50%);
-    font-size: 14px;
-    color: #666;
-    transition: all 0.3s ease;
-    pointer-events: none;
-}
-
-.form-group input {
-    width: 100%;
-    padding: 20px 10px 5px;
-    font-size: 16px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-sizing: border-box;
-    outline: none;
-    transition: all 0.3s ease;
-}
-
-.form-group input:focus {
-    border: 2px solid rgb(35, 131, 226);
-}
-
-.form-group input:focus + label,
-.form-group input:not(:placeholder-shown) + label {
-    top: 10px;
-    font-size: 12px;
-}
-
-.form-group input:focus + label + .span-text {
-    display: inline-block;
-    font-size: 12px;
-    color: rgb(35, 131, 226);
-    margin-top: 5px;
-}
-
-.form-group .span-text {
-    display: none;
-    font-size: 12px;
-    color: #666;
-    margin-top: 5px;
-}
-
-/* 유효성 검사 실패 시 스타일 */
-.invalid {
-    border-color: #ff6666; /* 잘못된 입력에 대해 연한 빨간색 테두리 */
-}
-
-.invalid + .span-text {
-    color: #ff6666; /* 잘못된 입력에 대해 빨간색 경고문 */
-}
-/* 유효성 검사 실패 시 라벨 위치를 변경 */
-.form-group .invalid + label {
-    top: 35%;
-    color: lightcoral;
-}
 
 /* 버튼 스타일 */
 .form-actions {
