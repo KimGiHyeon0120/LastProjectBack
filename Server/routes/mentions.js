@@ -116,8 +116,6 @@ router.post('/send', async (req, res) => {
 // 멘션 조회
 router.get('/user', async (req, res) => {
     const { userId, taskId} = req.query;
-
-
     try {
         const [mentions] = await connection.promise().query(
             `SELECT m.mention_id, m.message, m.created_at, 
@@ -129,7 +127,6 @@ router.get('/user', async (req, res) => {
              ORDER BY m.created_at DESC`,
             [userId, taskId]
         );
-        console.log(mentions);
         res.status(200).json(mentions);
     } catch (err) {
         console.error('멘션 조회 오류:', err);

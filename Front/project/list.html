@@ -372,6 +372,49 @@
             padding: 10px;
             background: #fafafa;
         }
+
+
+
+
+
+        #mentionDropdown {
+            position: absolute;
+            z-index: 2050; /* 팝업보다 높은 값 */
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 200px; /* 최대 높이 설정 */
+            overflow-y: auto; /* 스크롤 가능 */
+            display: none; /* 초기에는 숨김 */
+        }
+        
+        #mentionDropdown .dropdown-item {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+        
+        #mentionDropdown .dropdown-item:hover {
+            background: #f0f0f0;
+        }
+
+        #mentionDropdown .profile-img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .dropdown-item {
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+            background: #f0f0f0;
+        }
     </style>
     <script src="../lib/jquery-3.7.1.min.js"></script>
     <script src="../script/header.js"></script>
@@ -409,9 +452,12 @@
             <input type="date" id="editTaskDueDate" />
 
             <label>맨션 추가</label>
-            <textarea id="mentionMessage" placeholder="맨션 내용을 입력하세요"></textarea>
-
-
+            <div style="position: relative;">
+                <textarea id="mentionMessage" placeholder="맨션 내용을 입력하세요"></textarea>
+                <ul id="mentionDropdown" class="dropdown-menu" style="display: none; position: absolute;">
+                    <!-- 드롭다운 항목이 동적으로 추가됩니다 -->
+                </ul>
+            </div>
 
             <div class="activity-tabs">
                 <button type="button" class="tab-button active" data-tab="all">전체</button>
@@ -427,9 +473,10 @@
                 <button type="button" class="save-btn" id="saveTaskBtn">저장</button>
                 <button type="button" class="mention-btn" id="sendMentionBtn">맨션 보내기</button>
             </div>
-
         </form>
     </div>
+
+
 
     <script>
 
@@ -809,40 +856,46 @@
                 const activityContent = $("#activityContent");
                 const taskId = $("#editTaskPopup").data("task-id");
                 const userId = userIdx;
-            
 
-            
+
+
                 $(".tab-button").removeClass("active");
                 $(this).addClass("active");
-            
+
                 let apiUrl = `${API_URL}/tasks/activity/task`;
                 let requestData = { taskId };
-            
+
                 if (tab === "mentions") {
                     apiUrl = `${API_URL}/mentions/user`;
                     requestData = { userId, taskId };
                 } else if (tab === "logs") {
                     apiUrl = `${API_URL}/tasks/history/task`;
                 }
-            
+
+
                 $.ajax({
                     url: apiUrl,
                     method: "GET",
                     data: requestData,
                     success: function (logs) {
-            
+
                         activityContent.empty();
-                        logs.forEach(log => {
+
+                        // 중복 데이터 필터링 (옵션)
+                        const uniqueLogs = [...new Map(logs.map(log => [log.log_message || log.message, log])).values()];
+
+                        uniqueLogs.forEach((log, index) => {
+
                             const message = log.log_message || log.message || "내용 없음";
                             const date = formatDate(log.changed_at || log.created_at || log.activity_date || new Date());
                             const logType = log.log_type || "맨션";
-            
+
                             activityContent.append(`
-                                <div class="activity-log">
-                                    <p><strong>${logType}</strong>: ${message}</p>
-                                    <p class="log-time">${date}</p>
-                                </div>
-                            `);
+                    <div class="activity-log">
+                        <p><strong>${logType}</strong>: ${message}</p>
+                        <p class="log-time">${date}</p>
+                    </div>
+                `);
                         });
                     },
                     error: function (err) {
@@ -865,6 +918,7 @@
 
             // 활동 로그 및 기록 불러오기
             function loadActivityLogs(taskId) {
+
                 $.ajax({
                     url: `${API_URL}/tasks/activity/task`, // Task_History를 사용하는 API
                     method: "GET",
@@ -873,24 +927,32 @@
                         const activityContent = $("#activityContent");
                         activityContent.empty();
 
-                        logs.forEach(log => {
-                            if (!log.log_message) return;
+
+                        // 중복 제거 (필요할 경우)
+                        const uniqueLogs = [...new Map(logs.map(log => [log.log_message, log])).values()];
+
+
+                        uniqueLogs.forEach((log, index) => {
+
+
+                            if (!log.log_message) {
+                                return;
+                            }
+
                             // "맨션"과 "기록" 구분
                             const logType = log.log_type === "맨션" ? "mentions" : "logs";
 
                             activityContent.append(`
-                    <div class="activity-log" data-log-type="${logType}">
-                        <p><strong>${log.log_type || '기록'}</strong>: ${log.log_message || '내용 없음'}</p>
-                        <p class="log-time">${formatDate(log.changed_at || log.created_at || log.activity_date)}</p>
-                    </div>
-                `);
-
+                                <div class="activity-log" data-log-type="${logType}">
+                                    <p><strong>${log.log_type || '기록'}</strong>: ${log.log_message || '내용 없음'}</p>
+                                    <p class="log-time">${formatDate(log.changed_at || log.created_at || log.activity_date)}</p>
+                                </div>
+                            `);
                         });
                     },
                     error: function (err) {
                     }
                 });
-
             }
 
 
@@ -930,7 +992,6 @@
                     success: function () {
                         alert("메시지가 성공적으로 전송되었습니다.");
                         $("#mentionMessage").val(""); // 입력 필드 초기화
-                        loadActivityLogs(taskId); // 활동 로그 새로고침
                     },
                     error: function (err) {
                         console.error("메시지 전송 오류:", err);
@@ -958,7 +1019,86 @@
 
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-
+            // @ 입력 시 드롭다운 표시
+            $("#mentionMessage").on("keyup", function (e) {
+                const inputVal = $(this).val();
+                const caretPos = this.selectionStart;
+            
+                // @ 뒤의 검색어 추출
+                const mentionPattern = /@([\w가-힣]*)$/;
+                const match = mentionPattern.exec(inputVal.slice(0, caretPos));
+                const searchQuery = match ? match[1] : "";
+            
+                if (inputVal[caretPos - 1] === "@" || searchQuery) {
+                    if (!projectId) {
+                        console.error("프로젝트 ID가 설정되지 않았습니다.");
+                        return;
+                    }
+            
+                    // AJAX 요청으로 팀원 목록 가져오기
+                    $.ajax({
+                        url: `${API_URL}/project/members/search`, // API 엔드포인트
+                        method: "GET",
+                        data: { projectId, query: searchQuery },
+                        success: function (members) {
+                            const dropdown = $("#mentionDropdown");
+                            dropdown.empty(); // 기존 드롭다운 초기화
+            
+                            // 데이터 추가
+                            members.forEach((member) => {
+                                dropdown.append(`
+                                    <li class="dropdown-item" data-user-name="${member.userName}">
+                                        @${member.userName} (${member.roleName})
+                                    </li>
+                                `);
+                            });
+            
+                            // 드롭다운 위치 및 표시
+                            const offset = $("#mentionMessage").offset();
+                            dropdown.css({
+                                top: offset.top + $("#mentionMessage").outerHeight(),
+                                left: offset.left,
+                                width: $("#mentionMessage").outerWidth(),
+                                display: "block" // 드롭다운 표시
+                            });
+                        },
+                        error: function (err) {
+                            console.error("팀원 검색 오류:", err);
+                        }
+                    });
+                } else if (inputVal.indexOf("@") === -1) {
+                    $("#mentionDropdown").hide();
+                }
+            });
+            
+            // 드롭다운 항목 클릭 시 메시지에 멘션 추가
+            $(document).on("click", ".dropdown-item", function () {
+                const mentionName = $(this).data("user-name");
+                const inputField = $("#mentionMessage");
+                const caretPos = inputField[0].selectionStart;
+                const message = inputField.val();
+            
+                // 메시지에 멘션 추가
+                const newMessage = `${message.slice(0, caretPos)}@${mentionName} ${message.slice(caretPos)}`;
+                inputField.val(newMessage);
+                inputField.focus(); // 입력 필드로 포커스 이동
+            
+                $("#mentionDropdown").hide(); // 드롭다운 숨김
+            });
+            
+            // 입력 필드 외 클릭 시 드롭다운 숨김
+            $(document).on("click", function (e) {
+                if (!$(e.target).closest("#mentionDropdown, #mentionMessage").length) {
+                    $("#mentionDropdown").hide();
+                }
+            });
+            
+            // ESC 키 입력 시 드롭다운 숨김
+            $("#mentionMessage").on("keydown", function (e) {
+                if (e.key === "Escape") {
+                    $("#mentionDropdown").hide();
+                }
+            });
 
 
 
