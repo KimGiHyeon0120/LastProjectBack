@@ -629,7 +629,7 @@ router.get('/activity/task', async (req, res) => {
              ORDER BY m.created_at DESC`,
             [taskId]
         );
-
+     
         // 작업 기록 데이터
         const [history] = await connection.promise().query(
             `SELECT h.log_type, h.log_message, h.changed_at, 
