@@ -907,7 +907,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const projectId = sessionStorage.getItem("projectId");
         const userIdx = sessionStorage.getItem("userIdx");
-        const API_URL = "http://192.168.20.37:3000/api";
+        const API_URL = "http://localhost:3000/api";
 
         let userRole = null; // 초기값
 
@@ -944,6 +944,7 @@
                 if (userRole === "팀원") {
                     // 데스크 추가 버튼 숨기기
                     $("#taskCreateBtn").hide();
+
 
                     // 스프린트 생성 버튼 비활성화
                     $("#addSprintBtn").prop("disabled", true).hide();
@@ -1128,8 +1129,8 @@
                             <div class="sprint-header">
                                 <h3>${sprint.sprintName}</h3>
                                 ${sprint.sprintName !== "임시저장"
-                                                    ? `<p class="sprint-dates">${formatDateToKorean(sprint.startDate)} ~ ${formatDateToKorean(sprint.endDate)}</p>`
-                                                    : ""}
+                            ? `<p class="sprint-dates">${formatDateToKorean(sprint.startDate)} ~ ${formatDateToKorean(sprint.endDate)}</p>`
+                            : ""}
                                 ${optionsMenu}
                             </div>
                             <div class="sprint-content" 
@@ -1138,14 +1139,14 @@
                                 ${tasksHTML || "<p></p>"}
                             </div>
                             ${sprint.sprintName !== "임시저장" && userRole !== "팀원" // 팀원이 아닌 경우만 추가 버튼을 렌더링
-                                                    ? `<div class="add-task-btn-wrapper">
+                            ? `<div class="add-task-btn-wrapper">
                                         <button class="add-task-btn" 
                                                 onclick="openAddTaskPopup(${sprint.sprintId}, '${sprint.endDate || ""}', '${sprint.sprintName}')">
                                             + 추가
                                         </button>
                                     </div>`
-                                                    : ""
-                                                }
+                            : ""
+                        }
                         </div>`;
                     sprintBoard.append(sprintHTML);
 
