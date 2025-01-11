@@ -904,15 +904,15 @@
 
 
     <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const projectId = sessionStorage.getItem("projectId");
+        const userIdx = sessionStorage.getItem("userIdx");
+        const API_URL = "http://192.168.20.37:3000/api";
 
+        let userRole = null; // 초기값
 
         $(document).ready(function () {
-            const urlParams = new URLSearchParams(window.location.search);
-            const projectId = sessionStorage.getItem("projectId"); 
-            const userIdx = sessionStorage.getItem("userIdx");
-            const API_URL = "http://192.168.20.37:3000/api";
 
-            let userRole = null; // 초기값
 
             // projectId와 userIdx 유효성 검증
             if (!projectId || !userIdx) {
@@ -928,6 +928,7 @@
                 success: function (roleInfo) {
                     if (roleInfo && roleInfo.project_role_name) {
                         userRole = roleInfo.project_role_name; // 예: '팀장' 또는 '팀원'
+                        updateUIBasedOnRole();
                         fetchSprints(); // 역할 정보를 기반으로 스프린트 렌더링
                     } else {
                         console.error("역할 정보가 유효하지 않습니다.", roleInfo);
@@ -938,7 +939,27 @@
                 }
             });
 
+            // 역할에 따른 UI 업데이트
+            function updateUIBasedOnRole() {
+                if (userRole === "팀원") {
+                    // 데스크 추가 버튼 숨기기
+                    $("#taskCreateBtn").hide();
 
+                    // 스프린트 생성 버튼 비활성화
+                    $("#addSprintBtn").prop("disabled", true).hide();
+
+                    // 작업 편집 팝업 읽기 전용 설정
+                    $("#editTaskPopup input, #editTaskPopup textarea, #editTaskPopup select").prop("disabled", true);
+                    $("#saveEditTaskBtn, #deleteTaskBtn").hide();
+
+                    // 데스크 추가 버튼 비활성화
+                    $("#taskCreateBtn").prop("disabled", true).hide();
+
+                    console.log("팀원은 제한된 작업만 수행할 수 있습니다.");
+                } else {
+                    console.log("팀장은 모든 작업을 수행할 수 있습니다.");
+                }
+            }
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
             if (!projectId) {
@@ -1103,27 +1124,29 @@
 
                     // 스프린트 HTML 생성
                     const sprintHTML = `
-                    <div class="sprint" data-sprint-id="${sprint.sprintId}">
-                        <div class="sprint-header">
-                            <h3>${sprint.sprintName}</h3>
-                            ${sprint.sprintName !== "임시저장"
-                                ? `<p class="sprint-dates">${formatDateToKorean(sprint.startDate)} ~ ${formatDateToKorean(sprint.endDate)}</p>`
-                                : ""}
-                            ${optionsMenu}
-                        </div>
-                        <div class="sprint-content" 
-                            ondragover="allowDrop(event)" 
-                            ondrop="dropTask(event, ${sprint.sprintId})">
-                            ${tasksHTML || "<p></p>"}
-                        </div>
-                        ${sprint.sprintName !== "임시저장" ? `
-                        <div class="add-task-btn-wrapper">
-                            <button class="add-task-btn" 
-                                    onclick="openAddTaskPopup(${sprint.sprintId}, '${sprint.endDate || ""}', '${sprint.sprintName}')">
-                                + 추가
-                            </button>
-                        </div>` : ""}
-                    </div>`;
+                        <div class="sprint" data-sprint-id="${sprint.sprintId}">
+                            <div class="sprint-header">
+                                <h3>${sprint.sprintName}</h3>
+                                ${sprint.sprintName !== "임시저장"
+                                                    ? `<p class="sprint-dates">${formatDateToKorean(sprint.startDate)} ~ ${formatDateToKorean(sprint.endDate)}</p>`
+                                                    : ""}
+                                ${optionsMenu}
+                            </div>
+                            <div class="sprint-content" 
+                                ondragover="allowDrop(event)" 
+                                ondrop="dropTask(event, ${sprint.sprintId})">
+                                ${tasksHTML || "<p></p>"}
+                            </div>
+                            ${sprint.sprintName !== "임시저장" && userRole !== "팀원" // 팀원이 아닌 경우만 추가 버튼을 렌더링
+                                                    ? `<div class="add-task-btn-wrapper">
+                                        <button class="add-task-btn" 
+                                                onclick="openAddTaskPopup(${sprint.sprintId}, '${sprint.endDate || ""}', '${sprint.sprintName}')">
+                                            + 추가
+                                        </button>
+                                    </div>`
+                                                    : ""
+                                                }
+                        </div>`;
                     sprintBoard.append(sprintHTML);
 
                     // 각 작업의 상태 드롭다운 로드
@@ -1579,32 +1602,29 @@
 
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-        const API_URL = "http://192.168.20.37:3000/api";        // API URL 선언
 
+        // 작업 편집 팝업 열기
         function openEditTaskPopup(taskId) {
             $.ajax({
-                url: `${API_URL}/tasks/${taskId}`, // 작업 ID로 작업 정보 요청
+                url: `${API_URL}/tasks/${taskId}`,
                 method: "GET",
                 success: function (task) {
-
-                    // 작업 정보 업데이트
                     $("#editTaskName").val(task.task_name || "");
                     $("#editTaskDescription").val(task.description || "");
                     $("#editTaskDueDate").val(task.due_date ? task.due_date.split("T")[0] : "");
 
-                    // 작업 상태 및 우선순위 설정
-                    loadTaskStatus(task.Tasks_status_id);
-                    loadTaskPriority(task.priority);
+                    // 저장 및 삭제 버튼 활성화 여부
+                    if (userRole === "팀원") {
+                        $("#saveEditTaskBtn, #deleteTaskBtn").hide();
+                    } else {
+                        $("#saveEditTaskBtn, #deleteTaskBtn").show();
+                    }
 
-                    // 저장 및 삭제 버튼에 작업 ID 설정
-                    $("#saveEditTaskBtn").data("task-id", task.task_id);
-                    $("#deleteTaskBtn").data("task-id", task.task_id);
-
-                    // 팝업 표시
-                    $("#editTaskPopup").fadeIn();
                     $(".popup-background").fadeIn();
+                    $("#editTaskPopup").fadeIn();
                 },
                 error: function (err) {
+                    console.error("작업 편집 로드 오류:", err);
                 }
             });
         }
