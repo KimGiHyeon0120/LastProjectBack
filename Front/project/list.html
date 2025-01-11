@@ -379,23 +379,27 @@
 
         #mentionDropdown {
             position: absolute;
-            z-index: 2050; /* 팝업보다 높은 값 */
+            z-index: 2050;
+            /* 팝업보다 높은 값 */
             background: white;
             border: 1px solid #ccc;
             border-radius: 4px;
             list-style: none;
             padding: 0;
             margin: 0;
-            max-height: 200px; /* 최대 높이 설정 */
-            overflow-y: auto; /* 스크롤 가능 */
-            display: none; /* 초기에는 숨김 */
+            max-height: 200px;
+            /* 최대 높이 설정 */
+            overflow-y: auto;
+            /* 스크롤 가능 */
+            display: none;
+            /* 초기에는 숨김 */
         }
-        
+
         #mentionDropdown .dropdown-item {
             padding: 8px 12px;
             cursor: pointer;
         }
-        
+
         #mentionDropdown .dropdown-item:hover {
             background: #f0f0f0;
         }
@@ -512,6 +516,7 @@
                 } catch (err) {
                 }
             }
+
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
             // 작업 렌더링
@@ -522,46 +527,47 @@
                 statuses.forEach(status => {
                     const tasksForStatus = tasks.filter(task => task.statusId === status.id);
 
-                    const tasksHTML = tasksForStatus.map(task => `
-                    <div class="task" draggable="true" ondragstart="dragTask(event)" data-task-id="${task.taskId}">
-                        <p onclick="openEditTaskPopup(${task.taskId})">${task.taskName}</p>
-                        <div class="assignee-section">
-                            <!-- 담당자 선택 -->
-                            <div class="assignee-dropdown">
-                                <img src="${task.assignedToImage || '../profile/default-profile.png'}" 
-                                    class="assignee-image" alt="프로필" 
-                                    onclick="window.toggleAssigneeDropdown(${task.taskId})">
-                                <span class="assignee-name">${task.assignedTo || '담당자 없음'}</span>
-                            </div>
-                            <div class="dropdown-options hidden" id="dropdown_${task.taskId}">
-                                ${teamMembers.map(member => `
-                                    <div class="dropdown-item" 
-                                        onclick="window.selectAssignee(${task.taskId}, ${member.userId}, '${member.profileImage || '../profile/default-profile.png'}', '${member.userName}')">
-                                        <img src="${member.profileImage || '../profile/default-profile.png'}" 
-                                            class="dropdown-image" alt="프로필">
-                                        <span>${member.userName}</span>
-                                    </div>
-                                `).join("")}
+                    const tasksHTML = tasksForStatus.map(task => {
+                        const profileImage = task.assignedToImage && task.assignedToImage.trim()
+                            ? task.assignedToImage
+                            : '../profile/default-profile.png';
+
+                        return `
+                <div class="task" draggable="true" ondragstart="dragTask(event)" data-task-id="${task.taskId}">
+                    <p onclick="openEditTaskPopup(${task.taskId})">${task.taskName}</p>
+                    <div class="assignee-section">
+                        <div class="assignee-dropdown">
+                            <img src="${profileImage}" class="assignee-image" alt="프로필" onclick="window.toggleAssigneeDropdown(${task.taskId})">
+                            <span class="assignee-name">${task.assignedTo || '담당자 없음'}</span>
+                        </div>
+                        <div class="dropdown-options hidden" id="dropdown_${task.taskId}">
+                            ${teamMembers.map(member => `
                                 <div class="dropdown-item" 
-                                    onclick="window.selectAssignee(${task.taskId}, null, '../profile/default-profile.png', '담당자 없음')">
-                                    <img src="../profile/default-profile.png" class="dropdown-image" alt="프로필">
-                                    <span>담당자 없음</span>
+                                    onclick="window.selectAssignee(${task.taskId}, ${member.userId}, '${member.profileImage || '../profile/default-profile.png'}', '${member.userName}')">
+                                    <img src="${member.profileImage || '../profile/default-profile.png'}" class="dropdown-image" alt="프로필">
+                                    <span>${member.userName}</span>
                                 </div>
+                            `).join("")}
+                            <div class="dropdown-item" onclick="window.selectAssignee(${task.taskId}, null, '../profile/default-profile.png', '담당자 없음')">
+                                <img src="../profile/default-profile.png" class="dropdown-image" alt="프로필">
+                                <span>담당자 없음</span>
                             </div>
                         </div>
                     </div>
-                `).join("");
+                </div>
+            `;
+                    }).join("");
 
                     const columnHTML = `
-                        <div class="board-column" data-status="${status.name}">
-                            <h3>${status.name}</h3>
-                            <div class="tasks ${tasksForStatus.length === 0 ? "empty" : ""}" 
-                                 ondragover="allowDrop(event)" 
-                                 ondrop="dropTask(event, '${status.id}')">
-                                ${tasksHTML}
-                            </div>
-                        </div>
-                    `;
+            <div class="board-column" data-status="${status.name}">
+                <h3>${status.name}</h3>
+                <div class="tasks ${tasksForStatus.length === 0 ? "empty" : ""}" 
+                    ondragover="allowDrop(event)" 
+                    ondrop="dropTask(event, '${status.id}')">
+                    ${tasksHTML}
+                </div>
+            </div>
+        `;
 
                     sprintBoard.append(columnHTML); // 작업 상태 컬럼 추가
                 });
@@ -687,15 +693,23 @@
                 };
 
                 // 화면에서 즉시 UI 반영 (Ajax 요청 성공 여부와 무관하게 수행)
-                const updateDropdownUI = () => {
+                const updateDropdownUI = (taskId, profileImage, userName) => {
                     const dropdown = document.getElementById(`dropdown_${taskId}`);
                     const dropdownButton = dropdown?.previousElementSibling;
 
                     if (dropdownButton) {
+                        console.log(`Updating dropdown UI for Task ID: ${taskId}`);
+                        console.log(`Profile Image: ${profileImage}, User Name: ${userName || '담당자 없음'}`);
+
                         dropdownButton.innerHTML = `
                             <img src="${profileImage}" class="assignee-image" alt="프로필">
                             <span class="assignee-name">${userName || '담당자 없음'}</span>
                         `;
+
+                        // 추가 디버깅: 업데이트된 HTML 확인
+                        console.log("Updated dropdown button HTML:", dropdownButton.innerHTML);
+                    } else {
+                        console.error(`Dropdown button not found for Task ID: ${taskId}`);
                     }
                 };
 
@@ -1023,18 +1037,18 @@
             $("#mentionMessage").on("keyup", function (e) {
                 const inputVal = $(this).val();
                 const caretPos = this.selectionStart;
-            
+
                 // @ 뒤의 검색어 추출
                 const mentionPattern = /@([\w가-힣]*)$/;
                 const match = mentionPattern.exec(inputVal.slice(0, caretPos));
                 const searchQuery = match ? match[1] : "";
-            
+
                 if (inputVal[caretPos - 1] === "@" || searchQuery) {
                     if (!projectId) {
                         console.error("프로젝트 ID가 설정되지 않았습니다.");
                         return;
                     }
-            
+
                     // AJAX 요청으로 팀원 목록 가져오기
                     $.ajax({
                         url: `${API_URL}/project/members/search`, // API 엔드포인트
@@ -1043,7 +1057,7 @@
                         success: function (members) {
                             const dropdown = $("#mentionDropdown");
                             dropdown.empty(); // 기존 드롭다운 초기화
-            
+
                             // 데이터 추가
                             members.forEach((member) => {
                                 dropdown.append(`
@@ -1052,7 +1066,7 @@
                                     </li>
                                 `);
                             });
-            
+
                             // 드롭다운 위치 및 표시
                             const offset = $("#mentionMessage").offset();
                             dropdown.css({
@@ -1070,29 +1084,29 @@
                     $("#mentionDropdown").hide();
                 }
             });
-            
+
             // 드롭다운 항목 클릭 시 메시지에 멘션 추가
             $(document).on("click", ".dropdown-item", function () {
                 const mentionName = $(this).data("user-name");
                 const inputField = $("#mentionMessage");
                 const caretPos = inputField[0].selectionStart;
                 const message = inputField.val();
-            
+
                 // 메시지에 멘션 추가
                 const newMessage = `${message.slice(0, caretPos)}@${mentionName} ${message.slice(caretPos)}`;
                 inputField.val(newMessage);
                 inputField.focus(); // 입력 필드로 포커스 이동
-            
+
                 $("#mentionDropdown").hide(); // 드롭다운 숨김
             });
-            
+
             // 입력 필드 외 클릭 시 드롭다운 숨김
             $(document).on("click", function (e) {
                 if (!$(e.target).closest("#mentionDropdown, #mentionMessage").length) {
                     $("#mentionDropdown").hide();
                 }
             });
-            
+
             // ESC 키 입력 시 드롭다운 숨김
             $("#mentionMessage").on("keydown", function (e) {
                 if (e.key === "Escape") {

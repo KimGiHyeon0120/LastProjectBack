@@ -77,7 +77,8 @@ router.get('/list', async (req, res) => {
             s.Tasks_status_name AS statusName, 
             t.priority, 
             t.due_date AS dueDate, 
-            COALESCE(u.user_name, '담당자 없음') AS assignedTo
+            COALESCE(u.user_name, '담당자 없음') AS assignedTo,
+            COALESCE(u.user_profile_image, '../profile/default-profile.png') AS assignedToImage
         FROM Tasks t
         LEFT JOIN Tasks_status s ON t.Tasks_status_id = s.Tasks_status_id
         LEFT JOIN Users u ON t.assigned_to = u.user_idx
@@ -88,13 +89,13 @@ router.get('/list', async (req, res) => {
         const params = sprintId ? [projectId, sprintId] : [projectId];
         const [tasks] = await connection.promise().query(query, params);
 
+
         res.status(200).json(tasks);
     } catch (err) {
         console.error('작업 조회 오류:', err);
         res.status(500).json({ message: '작업 조회 중 오류가 발생했습니다.' });
     }
 });
-
 
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────

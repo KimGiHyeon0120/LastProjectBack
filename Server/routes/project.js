@@ -510,7 +510,7 @@ router.get('/members', async (req, res) => {
             SELECT 
                 u.user_idx AS userId,
                 u.user_name AS userName,
-                u.user_profile_image AS profileImage,
+                COALESCE(u.user_profile_image, '../profile/default-profile.png') AS profileImage,
                 pr.project_role_name AS roleName
             FROM Project_Members pm
             JOIN Users u ON pm.user_idx = u.user_idx
@@ -519,6 +519,7 @@ router.get('/members', async (req, res) => {
             ;
         `;
         const [members] = await connection.promise().query(query, [projectId]);
+
 
         res.status(200).json(members);
     } catch (err) {
