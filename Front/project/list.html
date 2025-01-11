@@ -487,7 +487,7 @@
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
         const projectId = sessionStorage.getItem("projectId");
         const userIdx = sessionStorage.getItem("userIdx"); // 로그인된 사용자 ID
-        const API_URL = "http://192.168.20.37:3000/api";
+        const API_URL = "http://localhost:3000/api";
 
 
         $(document).ready(function () {
@@ -500,20 +500,26 @@
             // 작업 상태 및 작업 데이터를 가져오기
             async function fetchTasksAndMembers() {
                 try {
-                    // 작업 상태 목록 가져오기
                     const statusResponse = await $.get(`${API_URL}/tasks/status-list`);
                     const statuses = statusResponse;
 
-                    // 작업 데이터 가져오기
                     const taskResponse = await $.get(`${API_URL}/tasks/list`, { projectId });
                     const tasks = taskResponse;
 
-                    // 팀원 목록 가져오기
                     const membersResponse = await $.get(`${API_URL}/project/members`, { projectId });
                     const teamMembers = membersResponse;
 
                     renderTasks(statuses, tasks, teamMembers);
+
+                    // 드롭다운 이벤트를 재연결
+                    document.querySelectorAll('.assignee-section .assignee-dropdown').forEach(dropdownButton => {
+                        dropdownButton.addEventListener('click', function (event) {
+                            const taskId = event.currentTarget.closest('.task').dataset.taskId;
+                            window.toggleAssigneeDropdown(taskId);
+                        });
+                    });
                 } catch (err) {
+                    console.error("Error fetching tasks and members:", err);
                 }
             }
 
@@ -640,28 +646,29 @@
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
-
+            // 담당자 드롭다운 열기/닫기
             window.toggleAssigneeDropdown = function (taskId) {
-                // 모든 드롭다운 닫기
+
+                // 현재 열려 있는 드롭다운 닫기
                 document.querySelectorAll('.dropdown-options').forEach(dropdown => {
-                    dropdown.classList.remove('show');
-                    const taskElement = dropdown.closest('.task');
-                    if (taskElement) {
-                        taskElement.classList.remove('dropdown-active'); // 모든 task에서 dropdown-active 제거
+                    if (dropdown.id !== `dropdown_${taskId}`) {
+                        dropdown.classList.remove('show');
+                        const taskElement = dropdown.closest('.task');
+                        if (taskElement) {
+                            taskElement.classList.remove('dropdown-active');
+                        }
                     }
                 });
 
-                // 현재 드롭다운 열기
+                // 현재 드롭다운의 참조
                 const currentDropdown = document.getElementById(`dropdown_${taskId}`);
                 if (!currentDropdown) {
-                    console.error(`드롭다운을 찾을 수 없습니다: dropdown_${taskId}`);
                     return;
                 }
 
-                const taskElement = currentDropdown.closest('.task'); // 드롭다운이 속한 task 찾기
-
-                // 상태를 반대로 토글 (열림 <-> 닫힘)
+                const taskElement = currentDropdown.closest('.task');
                 const isDropdownOpen = currentDropdown.classList.contains('show');
+
                 if (isDropdownOpen) {
                     currentDropdown.classList.remove('show');
                     taskElement?.classList.remove('dropdown-active');
@@ -676,45 +683,29 @@
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
-
+            // 작업 담당자 할당 및 UI 업데이트
             window.selectAssignee = function (taskId, userId, profileImage, userName) {
-                // 드롭다운 닫기 및 상태 초기화 함수
-                const closeDropdown = (taskId) => {
-                    const dropdown = document.getElementById(`dropdown_${taskId}`);
-                    const taskElement = dropdown ? dropdown.closest('.task') : null;
 
-                    if (dropdown) {
-                        dropdown.classList.remove("show");
-                    }
+                if (!taskId) {
+                    return;
+                }
 
-                    if (taskElement) {
-                        taskElement.classList.remove("dropdown-active");
-                    }
-                };
+                // UI 업데이트
+                const dropdown = document.getElementById(`dropdown_${taskId}`);
+                const dropdownButton = dropdown?.previousElementSibling;
 
-                // 화면에서 즉시 UI 반영 (Ajax 요청 성공 여부와 무관하게 수행)
-                const updateDropdownUI = (taskId, profileImage, userName) => {
-                    const dropdown = document.getElementById(`dropdown_${taskId}`);
-                    const dropdownButton = dropdown?.previousElementSibling;
+                if (dropdownButton) {
+                    dropdownButton.innerHTML = `
+                        <img src="${profileImage}" class="assignee-image" alt="프로필">
+                        <span class="assignee-name">${userName || '담당자 없음'}</span>
+                    `;
+                } else {
+                    return;
+                }
 
-                    if (dropdownButton) {
-                        console.log(`Updating dropdown UI for Task ID: ${taskId}`);
-                        console.log(`Profile Image: ${profileImage}, User Name: ${userName || '담당자 없음'}`);
-
-                        dropdownButton.innerHTML = `
-                            <img src="${profileImage}" class="assignee-image" alt="프로필">
-                            <span class="assignee-name">${userName || '담당자 없음'}</span>
-                        `;
-
-                        // 추가 디버깅: 업데이트된 HTML 확인
-                        console.log("Updated dropdown button HTML:", dropdownButton.innerHTML);
-                    } else {
-                        console.error(`Dropdown button not found for Task ID: ${taskId}`);
-                    }
-                };
-
-                // UI 즉시 반영
-                updateDropdownUI();
+                // 드롭다운 닫기
+                dropdown.classList.remove('show');
+                dropdown.closest('.task')?.classList.remove('dropdown-active');
 
                 // 서버 요청
                 $.ajax({
@@ -723,20 +714,26 @@
                     contentType: "application/json",
                     data: JSON.stringify({ taskId, assignedTo: userId, changedBy: userIdx }),
                     success: function () {
-                        // 성공 시 드롭다운 닫기
-                        closeDropdown(taskId);
-                        console.log(`담당자 변경됨: Task ID ${taskId}, Assigned To ${userName}`);
+
+                        // 드롭다운 상태 초기화 (다시 열 수 있도록 상태 리셋)
+                        fetchTasksAndMembers();
                     },
                     error: function (err) {
-                        console.error("작업 할당 중 오류 발생:", err);
-                        alert("담당자 변경 중 오류가 발생했습니다.");
-                        // 실패 시 UI 복원
-                        fetchTasksAndMembers(); // 전체 데이터 재조회하여 복원
-                    },
+                        console.error(`Error assigning Task ID ${taskId}:`, err);
+                    }
                 });
             };
 
 
+
+            // 이벤트 위임 방식으로 드롭다운 이벤트 처리
+            document.addEventListener('click', function (e) {
+                const dropdownButton = e.target.closest('.assignee-dropdown');
+                if (dropdownButton) {
+                    const taskId = dropdownButton.closest('.task').dataset.taskId;
+                    window.toggleAssigneeDropdown(taskId);
+                }
+            });
 
 
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -765,35 +762,40 @@
 
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-            // 팝업 열기
+            // 작업 편집 팝업 열기
             window.openEditTaskPopup = function (taskId) {
                 $.ajax({
                     url: `${API_URL}/tasks/${taskId}`,
                     method: "GET",
+                    data: { userIdx: sessionStorage.getItem("userIdx") },
                     success: function (task) {
-                        // 작업 데이터 설정
-                        $("#editTaskName").val(task.task_name || "");
+                        const taskAssignedTo = task.assignedTo; // 담당자 ID
+                        const userRole = task.userRole; // 현재 사용자의 역할 ('팀장', '팀원')
+                        const currentUserIdx = parseInt(userIdx);
+
+                        // 권한 확인
+                        if (currentUserIdx !== parseInt(taskAssignedTo) && userRole !== "팀장") {
+                            alert("작업 편집은 팀장이나 담당자만 가능합니다.");
+                            return;
+                        }
+
+                        // 팝업 열기
+                        $("#editTaskName").val(task.taskName || "");
                         $("#editTaskDescription").val(task.description || "");
-                        $("#editTaskDueDate").val(task.due_date ? task.due_date.split("T")[0] : "");
+                        $("#editTaskDueDate").val(task.dueDate ? task.dueDate.split("T")[0] : "");
 
-                        // 작업 상태 로드
-                        loadTaskStatus(task.Tasks_status_id);
-
-                        // 활동 로그 및 기록 불러오기
+                        loadTaskStatus(task.statusId);
                         loadActivityLogs(taskId);
 
-                        // 팝업과 배경 표시
                         $(".popup-background").fadeIn();
                         $("#editTaskPopup").fadeIn();
 
                         $("#editTaskPopup").data("task-id", taskId);
-
-                        // 저장 및 맨션 버튼에 작업 ID 설정
                         $("#saveTaskBtn").data("task-id", taskId);
                         $("#sendMentionBtn").data("task-id", taskId);
                     },
                     error: function (err) {
-                        console.error("작업 정보를 불러오는 중 오류 발생:", err);
+                        console.error("Error fetching task details:", err);
                     }
                 });
             };
@@ -1045,7 +1047,6 @@
 
                 if (inputVal[caretPos - 1] === "@" || searchQuery) {
                     if (!projectId) {
-                        console.error("프로젝트 ID가 설정되지 않았습니다.");
                         return;
                     }
 

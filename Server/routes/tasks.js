@@ -453,20 +453,37 @@ router.get('/status-list', async (req, res) => {
 
 router.get('/:taskId', async (req, res) => {
     const { taskId } = req.params;
+    const { userIdx } = req.query; // 현재 사용자 ID를 쿼리로 받음
 
-    if (!taskId) {
-        return res.status(400).json({ message: '작업 ID가 필요합니다.' });
-    }
 
     try {
-        const [task] = await connection.promise().query(
-            'SELECT * FROM Tasks WHERE task_id = ?',
-            [taskId]
-        );
+        const query = `
+        SELECT 
+            t.task_id AS taskId,
+            t.task_name AS taskName,
+            t.description AS description,
+            t.due_date AS dueDate,
+            t.Tasks_status_id AS statusId,
+            t.assigned_to AS assignedTo,
+            COALESCE(u.user_name, '담당자 없음') AS assignedToName,
+            COALESCE(u.user_profile_image, '../profile/default-profile.png') AS assignedToImage,
+            (SELECT pr.project_role_name 
+             FROM Project_Members pm
+             JOIN Project_Roles pr ON pm.project_role_id = pr.project_role_id
+             WHERE pm.project_id = t.project_id AND pm.user_idx = ?) AS userRole
+        FROM Tasks t
+        LEFT JOIN Users u ON t.assigned_to = u.user_idx
+        WHERE t.task_id = ?;
+        `;
+
+
+        const [task] = await connection.promise().query(query, [userIdx, taskId]);
 
         if (task.length === 0) {
+            console.error('Task not found:', { taskId });
             return res.status(404).json({ message: '작업을 찾을 수 없습니다.' });
         }
+
 
         res.status(200).json(task[0]);
     } catch (err) {
@@ -474,6 +491,9 @@ router.get('/:taskId', async (req, res) => {
         res.status(500).json({ message: '작업 조회 중 오류가 발생했습니다.' });
     }
 });
+
+
+
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
