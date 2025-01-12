@@ -487,10 +487,30 @@
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
         const projectId = sessionStorage.getItem("projectId");
         const userIdx = sessionStorage.getItem("userIdx"); // 로그인된 사용자 ID
-        const API_URL = "http://localhost:3000/api";
+        const API_URL = "http://192.168.20.37:3000/api";
+        //192.168.20.37
 
+        let userRole = null;
 
         $(document).ready(function () {
+
+
+
+
+
+            $(document).ready(async function () {
+                try {
+                    // 사용자 역할 로드
+                    const response = await $.get(`${API_URL}/project/role`, { projectId, userIdx });
+                    userRole = response.project_role_name; // "팀장" 또는 "팀원"
+
+                    // 작업과 팀원 데이터 로드
+                    fetchTasksAndMembers();
+                } catch (err) {
+                    console.error("사용자 역할 로드 실패:", err);
+                }
+            });
+
 
             if (!projectId) {
                 return;
@@ -508,6 +528,15 @@
 
                     const membersResponse = await $.get(`${API_URL}/project/members`, { projectId });
                     const teamMembers = membersResponse;
+
+                    // teamMembers를 활용하여 userIdx -> 이름 매핑 객체 생성
+                    const userMap = {};
+                    teamMembers.forEach(member => {
+                        userMap[member.userId] = member.userName;
+                    });
+
+                    // 전역 변수로 저장
+                    window.userMap = userMap;
 
                     renderTasks(statuses, tasks, teamMembers);
 
@@ -528,7 +557,7 @@
             // 작업 렌더링
             function renderTasks(statuses, tasks, teamMembers) {
                 const sprintBoard = $("#sprintBoard");
-                sprintBoard.empty(); // 기존 데이터 초기화
+                sprintBoard.empty();
 
                 statuses.forEach(status => {
                     const tasksForStatus = tasks.filter(task => task.statusId === status.id);
@@ -538,58 +567,81 @@
                             ? task.assignedToImage
                             : '../profile/default-profile.png';
 
+                        // `dropdown_${task.taskId}` 드롭다운 추가 (담당자 없음 포함)
                         return `
-                <div class="task" draggable="true" ondragstart="dragTask(event)" data-task-id="${task.taskId}">
-                    <p onclick="openEditTaskPopup(${task.taskId})">${task.taskName}</p>
-                    <div class="assignee-section">
-                        <div class="assignee-dropdown">
-                            <img src="${profileImage}" class="assignee-image" alt="프로필" onclick="window.toggleAssigneeDropdown(${task.taskId})">
-                            <span class="assignee-name">${task.assignedTo || '담당자 없음'}</span>
-                        </div>
-                        <div class="dropdown-options hidden" id="dropdown_${task.taskId}">
-                            ${teamMembers.map(member => `
-                                <div class="dropdown-item" 
-                                    onclick="window.selectAssignee(${task.taskId}, ${member.userId}, '${member.profileImage || '../profile/default-profile.png'}', '${member.userName}')">
-                                    <img src="${member.profileImage || '../profile/default-profile.png'}" class="dropdown-image" alt="프로필">
-                                    <span>${member.userName}</span>
+                            <div class="task" 
+                                 draggable="true" 
+                                 ondragstart="dragTask(event)" 
+                                 data-task-id="${task.taskId}" 
+                                 data-assigned-to="${task.assignedTo}">
+                                <p onclick="openEditTaskPopup(${task.taskId})">${task.taskName}</p>
+                                <div class="assignee-section">
+                                    <div class="assignee-dropdown">
+                                        <img src="${profileImage}" class="assignee-image" alt="프로필" onclick="window.toggleAssigneeDropdown(${task.taskId})">
+                                        <span class="assignee-name">${task.assignedTo || '담당자 없음'}</span>
+                                    </div>
+                                    <!-- 드롭다운 추가 -->
+                                    <div class="dropdown-options hidden" id="dropdown_${task.taskId}">
+                                        ${teamMembers.map(member => `
+                                            <div class="dropdown-item" 
+                                                 onclick="selectAssignee(${task.taskId}, ${member.userId}, '${member.profileImage || '../profile/default-profile.png'}', '${member.userName}')">
+                                                <img src="${member.profileImage || '../profile/default-profile.png'}" class="dropdown-image" alt="프로필">
+                                                <span>${member.userName}</span>
+                                            </div>
+                                        `).join('')}
+                                        <!-- 담당자 없음 옵션 추가 -->
+                                        <div class="dropdown-item" 
+                                             onclick="selectAssignee(${task.taskId}, null, '../profile/default-profile.png', '담당자 없음')">
+                                            <img src="../profile/default-profile.png" class="dropdown-image" alt="프로필">
+                                            <span>담당자 없음</span>
+                                        </div>
+                                    </div>
                                 </div>
-                            `).join("")}
-                            <div class="dropdown-item" onclick="window.selectAssignee(${task.taskId}, null, '../profile/default-profile.png', '담당자 없음')">
-                                <img src="../profile/default-profile.png" class="dropdown-image" alt="프로필">
-                                <span>담당자 없음</span>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            `;
+                        `;
                     }).join("");
 
                     const columnHTML = `
-            <div class="board-column" data-status="${status.name}">
-                <h3>${status.name}</h3>
-                <div class="tasks ${tasksForStatus.length === 0 ? "empty" : ""}" 
-                    ondragover="allowDrop(event)" 
-                    ondrop="dropTask(event, '${status.id}')">
-                    ${tasksHTML}
-                </div>
-            </div>
-        `;
+                        <div class="board-column" data-status="${status.name}">
+                            <h3>${status.name}</h3>
+                            <div class="tasks ${tasksForStatus.length === 0 ? "empty" : ""}" 
+                                 ondragover="allowDrop(event)" 
+                                 ondrop="dropTask(event, '${status.id}')">
+                                ${tasksHTML}
+                            </div>
+                        </div>
+                    `;
 
-                    sprintBoard.append(columnHTML); // 작업 상태 컬럼 추가
+                    sprintBoard.append(columnHTML);
                 });
             }
+
+
 
 
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
             window.dragTask = function (event) {
-                const taskId = event.target.dataset.taskId;
-                event.dataTransfer.setData("text", taskId);
-            };
+                if (!userRole) {
+                    return;
+                }
 
-            // 드래그 허용
-            window.allowDrop = function (event) {
-                event.preventDefault();
+                const taskId = event.target.dataset.taskId;
+                const assignedTo = event.target.dataset.assignedTo; // 담당자 이름
+                const currentUserName = window.userMap[userIdx]; // 현재 로그인된 사용자 이름
+
+                if (!taskId) {
+                    return;
+                }
+
+
+                // 팀장이 아니고, 현재 사용자가 작업 담당자가 아닌 경우
+                if (userRole !== "팀장" && currentUserName !== assignedTo) {
+                    event.preventDefault(); // 드래그 차단
+                    return;
+                }
+
+                event.dataTransfer.setData("text", taskId);
             };
 
             // 작업 드롭
@@ -597,22 +649,38 @@
                 event.preventDefault();
                 const taskId = event.dataTransfer.getData("text");
 
-                if (!userIdx) {
+                if (!taskId) {
+                    console.error("작업 ID가 유효하지 않습니다.");
                     return;
                 }
 
+                // 서버 요청 데이터
+                const requestData = {
+                    taskId: taskId,
+                    status: newStatusId,
+                    changedBy: userIdx
+                };
+
+                // 서버 요청
                 $.ajax({
                     url: `${API_URL}/tasks/update_status`,
                     method: "PUT",
                     contentType: "application/json",
-                    data: JSON.stringify({ taskId, status: newStatusId, changedBy: userIdx }),
+                    data: JSON.stringify(requestData),
                     success: function () {
-                        fetchTasksAndMembers(); // 데이터 새로고침
+                        fetchTasksAndMembers();
                     },
                     error: function (err) {
+                        console.error("작업 상태 변경 오류:", err.responseText);
                     }
                 });
             };
+
+            // 드래그 허용
+            window.allowDrop = function (event) {
+                event.preventDefault();
+            };
+
 
 
 
@@ -648,6 +716,7 @@
 
             // 담당자 드롭다운 열기/닫기
             window.toggleAssigneeDropdown = function (taskId) {
+                console.log(`Task ID ${taskId}의 드롭다운 열기/닫기 시도`);
 
                 // 현재 열려 있는 드롭다운 닫기
                 document.querySelectorAll('.dropdown-options').forEach(dropdown => {
@@ -660,9 +729,9 @@
                     }
                 });
 
-                // 현재 드롭다운의 참조
                 const currentDropdown = document.getElementById(`dropdown_${taskId}`);
                 if (!currentDropdown) {
+                    console.error(`Dropdown not found for Task ID ${taskId}`);
                     return;
                 }
 
@@ -679,16 +748,29 @@
             };
 
 
-
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
             // 작업 담당자 할당 및 UI 업데이트
             window.selectAssignee = function (taskId, userId, profileImage, userName) {
+                console.log("selectAssignee 함수 실행");
+                console.log("User Role:", userRole);
+                console.log("Task ID:", taskId);
+                console.log("User ID:", userId);
 
                 if (!taskId) {
+                    console.error("Task ID가 필요합니다.");
                     return;
                 }
+
+                // 팀장만 담당자를 변경할 수 있도록 확인
+                if (userRole !== "팀장") {
+                    console.warn("담당자 변경은 팀장만 가능합니다.");
+                    alert("담당자 변경은 팀장만 가능합니다.");
+                    return;
+                }
+
+                console.log("팀장 확인 완료, 담당자 변경 실행");
 
                 // UI 업데이트
                 const dropdown = document.getElementById(`dropdown_${taskId}`);
@@ -696,16 +778,19 @@
 
                 if (dropdownButton) {
                     dropdownButton.innerHTML = `
-                        <img src="${profileImage}" class="assignee-image" alt="프로필">
-                        <span class="assignee-name">${userName || '담당자 없음'}</span>
-                    `;
+            <img src="${profileImage}" class="assignee-image" alt="프로필">
+            <span class="assignee-name">${userName || '담당자 없음'}</span>
+        `;
                 } else {
+                    console.error("Dropdown 버튼을 찾을 수 없습니다.");
                     return;
                 }
 
                 // 드롭다운 닫기
                 dropdown.classList.remove('show');
                 dropdown.closest('.task')?.classList.remove('dropdown-active');
+
+                console.log(`Task ID ${taskId}의 UI가 업데이트되었습니다.`);
 
                 // 서버 요청
                 $.ajax({
@@ -714,9 +799,8 @@
                     contentType: "application/json",
                     data: JSON.stringify({ taskId, assignedTo: userId, changedBy: userIdx }),
                     success: function () {
-
-                        // 드롭다운 상태 초기화 (다시 열 수 있도록 상태 리셋)
-                        fetchTasksAndMembers();
+                        console.log(`Task ID ${taskId} 담당자가 ${userName}로 변경되었습니다.`);
+                        fetchTasksAndMembers(); // 작업 목록 새로고침
                     },
                     error: function (err) {
                         console.error(`Error assigning Task ID ${taskId}:`, err);
@@ -724,13 +808,12 @@
                 });
             };
 
-
-
             // 이벤트 위임 방식으로 드롭다운 이벤트 처리
             document.addEventListener('click', function (e) {
                 const dropdownButton = e.target.closest('.assignee-dropdown');
                 if (dropdownButton) {
                     const taskId = dropdownButton.closest('.task').dataset.taskId;
+                    console.log(`Task ID ${taskId}의 드롭다운 클릭`);
                     window.toggleAssigneeDropdown(taskId);
                 }
             });
@@ -774,22 +857,29 @@
                         const currentUserIdx = parseInt(userIdx);
 
                         // 권한 확인
-                        if (currentUserIdx !== parseInt(taskAssignedTo) && userRole !== "팀장") {
-                            alert("작업 편집은 팀장이나 담당자만 가능합니다.");
-                            return;
-                        }
+                        const isAllowed = currentUserIdx === parseInt(taskAssignedTo) || userRole === "팀장";
 
                         // 팝업 열기
-                        $("#editTaskName").val(task.taskName || "");
-                        $("#editTaskDescription").val(task.description || "");
-                        $("#editTaskDueDate").val(task.dueDate ? task.dueDate.split("T")[0] : "");
+                        $("#editTaskName").val(task.taskName || "").prop("disabled", !isAllowed);
+                        $("#editTaskDescription").val(task.description || "").prop("disabled", !isAllowed);
+                        $("#editTaskDueDate").val(task.dueDate ? task.dueDate.split("T")[0] : "").prop("disabled", !isAllowed);
+                        $("#mentionMessage").val(""); // 맨션 입력 필드 초기화
+                        $("#saveTaskBtn").prop("disabled", !isAllowed).toggle(isAllowed);
+                        $("#sendMentionBtn").prop("disabled", !isAllowed).toggle(isAllowed);
 
+                        // 기본 탭 선택: 전체
+                        $(".tab-button").removeClass("active");
+                        $(".tab-button[data-tab='all']").addClass("active");
+                        $("#activityContent").empty(); // 기존 기록 초기화
+
+                        // 작업 상태 및 기록 불러오기
                         loadTaskStatus(task.statusId);
                         loadActivityLogs(taskId);
 
                         $(".popup-background").fadeIn();
                         $("#editTaskPopup").fadeIn();
 
+                        // 작업 ID를 팝업 및 버튼에 저장
                         $("#editTaskPopup").data("task-id", taskId);
                         $("#saveTaskBtn").data("task-id", taskId);
                         $("#sendMentionBtn").data("task-id", taskId);
@@ -1007,7 +1097,16 @@
                     }),
                     success: function () {
                         alert("메시지가 성공적으로 전송되었습니다.");
-                        $("#mentionMessage").val(""); // 입력 필드 초기화
+
+                        // 맨션 입력 필드 초기화
+                        $("#mentionMessage").val("");
+
+                        // 새 맨션 기록 즉시 로드
+                        loadActivityLogs(taskId);
+
+                        // 팝업창도 초기 상태로 복원
+                        $(".tab-button").removeClass("active");
+                        $(".tab-button[data-tab='all']").addClass("active");
                     },
                     error: function (err) {
                         console.error("메시지 전송 오류:", err);

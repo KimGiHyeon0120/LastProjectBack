@@ -455,11 +455,9 @@ router.delete('/delete-member', async (req, res) => {
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
-
-//팀장 찾기
+// 팀장 및 담당자 정보 가져오기
 router.get('/role', async (req, res) => {
     const { projectId, userIdx } = req.query;
-
 
     if (!projectId || !userIdx) {
         console.error('Missing required parameters: projectId or userIdx');
@@ -467,29 +465,30 @@ router.get('/role', async (req, res) => {
     }
 
     try {
-        // 2. 실행할 SQL 쿼리와 파라미터 로깅
+        // 사용자 역할 및 담당자 정보 조회
         const sqlQuery = `
-            SELECT pm.project_role_id, pr.project_role_name
+            SELECT pm.project_role_id, pr.project_role_name, t.assigned_to
             FROM Project_Members pm
             JOIN Project_Roles pr ON pm.project_role_id = pr.project_role_id
+            LEFT JOIN Tasks t ON pm.user_idx = t.assigned_to
             WHERE pm.project_id = ? AND pm.user_idx = ?
         `;
         const queryParams = [projectId, userIdx];
 
-        // 3. SQL 실행
+        // SQL 실행
         const [result] = await connection.promise().query(sqlQuery, queryParams);
 
-
         if (result.length === 0) {
-            console.warn('No role found for the given projectId and userIdx.');
-            return res.status(404).json({ message: '해당 프로젝트에 대한 사용자 역할을 찾을 수 없습니다.' });
+            return res.status(404).json({ message: '해당 프로젝트에 대한 사용자 역할 또는 담당 작업을 찾을 수 없습니다.' });
         }
 
-        res.status(200).json(result[0]);
+        res.status(200).json(result[0]); // 팀장 역할 및 담당 작업 반환
     } catch (err) {
+        console.error('역할 확인 중 오류 발생:', err.message);
         res.status(500).json({ message: '역할 확인 중 오류가 발생했습니다.', error: err.message });
     }
 });
+
 
 
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -537,7 +536,6 @@ router.get('/members/search', async (req, res) => {
     const { projectId, query } = req.query;
 
 
-console.log(req.query)
     try {
         const searchQuery = query ? `%${query}%` : '%';
         const sqlQuery = `

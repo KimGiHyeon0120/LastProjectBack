@@ -105,7 +105,6 @@ router.get('/list', async (req, res) => {
 router.put('/update', async (req, res) => {
     const { taskId, taskName, description, assignedTo, status, priority, dueDate, changedBy } = req.body;
 
-    console.log('Received Data:', req.body);
 
     if (!taskId || !changedBy) {
         return res.status(400).json({ message: '작업 ID와 변경자 ID는 필수입니다.' });
@@ -261,7 +260,7 @@ router.put('/update', async (req, res) => {
 
 
 
-// 작업상태 변경
+// 작업 상태 변경
 router.put('/update_status', async (req, res) => {
     const { taskId, status, changedBy } = req.body;
 
@@ -278,9 +277,9 @@ router.put('/update_status', async (req, res) => {
             3: '완료'
         };
 
-        // 기존 작업 데이터 조회
+        // 기존 작업 데이터 조회 (담당자 포함)
         const [task] = await connection.promise().query(
-            `SELECT Tasks_status_id FROM Tasks WHERE task_id = ?`,
+            `SELECT Tasks_status_id, assigned_to FROM Tasks WHERE task_id = ?`,
             [taskId]
         );
 
@@ -289,6 +288,8 @@ router.put('/update_status', async (req, res) => {
         }
 
         const oldStatus = task[0].Tasks_status_id;
+        const assignedTo = task[0].assigned_to;
+
 
         // 작업 상태 업데이트
         const [updateResult] = await connection.promise().query(
@@ -314,17 +315,21 @@ router.put('/update_status', async (req, res) => {
                 oldStatusName, // 이전 상태 이름
                 newStatusName, // 새로운 상태 이름
                 changedBy,
-                `작업 상태가 '${oldStatusName}'에서 '${newStatusName}'으로 변경되었습니다.`, // 로그 메시지
-                '상태 변경' // 로그 유형
+                `작업 상태가 '${oldStatusName}'에서 '${newStatusName}'으로 변경되었습니다.`,
+                '상태 변경'
             ]
         );
 
-        res.status(200).json({ message: '작업 상태가 성공적으로 업데이트되고 기록되었습니다.' });
+        res.status(200).json({
+            message: '작업 상태가 성공적으로 업데이트되고 기록되었습니다.',
+            assignedTo: assignedTo // 담당자 정보 추가 반환
+        });
     } catch (err) {
         console.error('작업 상태 업데이트 오류:', err);
         res.status(500).json({ message: '작업 상태 업데이트 중 오류가 발생했습니다.' });
     }
 });
+
 
 
 
