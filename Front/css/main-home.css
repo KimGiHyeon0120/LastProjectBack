@@ -204,7 +204,28 @@ button {
 /*================================================================================*/
 
 .sec1 {
+    margin-top: 10px;
     letter-spacing: .3px;
+    position: relative;
+    /* ::before 기준을 잡아줌 */
+}
+
+.sec1::after {
+    content: "";
+    /* 반드시 설정 필요 */
+    display: block;
+    position: absolute;
+    /* 선 위치 조정 */
+    top: 0;
+    /* main-footer 상단에 배치 */
+    left: 0;
+    width: 100%;
+    /* 부모 요소 너비에 맞춤 */
+    height: 1px;
+    /* 선 두께 설정 */
+    background-color: #0000001a;
+    /* 원하는 색상 */
+    box-sizing: border-box;
 }
 
 .sec1-div {
@@ -526,231 +547,7 @@ button {
 
 /*================================================================================*/
 
-.sec2 {
-    align-items: center;
-    display: flex;
-    justify-content: center;
-    padding-left: 0;
-    padding-right: 0;
-    padding-top: 2in;
-    padding-bottom: 2in;
-    background-color: #7f7f7f;
-}
 
-.sec2-div1 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    /* 두 개의 열을 동일한 비율로 배치 */
-    gap: 20px;
-    /* 열 사이 간격 추가 */
-    margin: auto;
-    max-width: 100%;
-    width: 954pt;
-    box-sizing: border-box;
-}
-
-.sec2-img {
-    margin-top: auto;
-    margin-right: auto;
-    margin-left: auto;
-    margin-bottom: auto;
-    max-width: 100%;
-
-}
-
-.integrations-content {
-    max-width: 45pc;
-    padding-top: 1pc;
-    padding-right: 0;
-    padding-bottom: 1pc;
-    padding-left: 0;
-    width: 50%;
-    margin-top: 0;
-    margin-right: auto;
-    margin-bottom: 0;
-    margin-left: auto;
-}
-
-.integrations-content-textArea {
-    display: flex;
-    flex-direction: column;
-}
-
-.integrations-content h2 {
-    line-height: 1.16;
-    font-weight: 500;
-    margin-top: 0;
-    margin-right: 0;
-    margin-bottom: 24px;
-    margin-left: 0;
-
-}
-
-
-.contentBlock-body {
-    line-height: 1.4;
-    margin-top: 0;
-    margin-right: 0;
-    margin-bottom: 24px;
-    margin-left: 0;
-    color: #091e42;
-    margin-block-end: 24px;
-    font-weight: normal;
-    font-size: 1.25rem;
-}
-
-/* 설명 섹션2 */
-
-/*================================================================================*/
-
-.sec3 {
-    background-repeat: no-repeat;
-    color: #fff;
-    padding-right: 0;
-    padding-left: 0;
-    background-color: #fff;
-    padding-top: 2pc;
-    padding-bottom: 2pc;
-}
-
-.sec3-div1 {
-    align-items: stretch;
-    display: grid;
-    justify-content: space-between;
-    margin-top: auto;
-    margin-right: auto;
-    margin-bottom: auto;
-    margin-left: auto;
-    max-width: 100%;
-    box-sizing: border-box;
-    grid-template-columns: minmax(0, 1fr);
-    padding-inline-start: 60px;
-    padding-inline-end: 60px;
-    width: 954pt;
-    gap: 2pc;
-}
-
-.sec3-text-part {
-    padding-right: 0;
-    padding-left: 0;
-    padding-top: 1pc;
-    padding-bottom: 1pc;
-    width: 41.66%;
-    max-width: 490px;
-}
-
-.content-block {
-    display: flex;
-    flex-direction: column;
-    font-size: 1.15rem;
-}
-
-.sec3-text-part .text-section {
-    display: flex;
-    flex-direction: column;
-    text-align: left;
-}
-
-.sec3-text-part h2 {
-    font-size: 2.25rem;
-    font-weight: normal;
-    line-height: 1.333;
-    margin-block-end: 24px;
-    margin-top: 0;
-    margin-right: 0;
-    margin-bottom: 24px;
-    margin-left: 0;
-    text-align: left;
-}
-
-.sec3-graph-part {
-    margin-block-end: 20px;
-    padding-right: 0;
-    padding-left: 0;
-    padding-top: 1pc;
-    padding-bottom: 1pc;
-    margin-block-start: -5pc;
-}
-
-.graph-inner {
-    inset-inline-start: 50%;
-    transform: translateX(-50%);
-    margin-top: auto;
-    margin-right: auto;
-    margin-bottom: auto;
-    margin-left: auto;
-    display: flex;
-    justify-content: center;
-    background-repeat: no-repeat;
-    position: relative;
-    background-image: linear-gradient(90deg, #2684ff 5.1%, #79f2c0);
-    background-position: center 244px;
-    background-size: 100% 5px;
-    width: 125%;
-    max-width: calc(100vw - 2pc);
-}
-
-.inner-graph-part {
-    align-items: center;
-    display: flex;
-    flex-direction: column;
-    padding-right: 1pc;
-    padding-left: 1pc;
-    padding-top: 1pc;
-    padding-bottom: 1pc;
-    width: 16.66%;
-}
-
-.graph-line-part {
-    display: flex;
-    justify-content: center;
-    position: relative;
-    min-height: 220px;
-}
-
-.graph-line-part img {
-    height: 75pt;
-    width: 75pt;
-    z-index: 2;
-    margin-block-end: 1pc;
-    position: relative;
-    inset-block-start: var(--_imgheght);
-}
-
-.graph-line-part::after {
-    content: "";
-    position: absolute;
-    height: 180px;
-    inset-block-start: 95px;
-    border: 2px solid #2684ff;
-    background-size: 4px 8px;
-    background-repeat: repeat-y;
-    max-height: -webkit-fill-available;
-    z-index: 1;
-}
-
-.circle-part {
-    margin-right: auto;
-    margin-left: auto;
-    margin-top: 0;
-    margin-bottom: 30px;
-    border-radius: 50%;
-    background-color: #2684ff;
-    height: 28px;
-    width: 20px;
-}
-
-.raph-text-part-p {
-    text-align: center;
-    font-size: 1rem;
-    margin-top: 0;
-    margin-right: 0;
-    margin-bottom: 0;
-    margin-left: 0;
-    line-height: 1.5;
-}
-
-/* 설명 섹션3 */
 
 /*================================================================================*/
 
@@ -764,7 +561,6 @@ button {
     position: relative;
     /* ::before 기준을 잡아줌 */
 }
-
 .main-footer::before {
     content: "";
     /* 반드시 설정 필요 */
@@ -782,161 +578,6 @@ button {
     /* 원하는 색상 */
     box-sizing: border-box;
 }
-
-.footer-inner {
-    width: 100%;
-    background-color: #fff;
-    flex-direction: column;
-    padding-block: var(--ds-space-200);
-    gap: var(--ds-space-200);
-    margin-top: 30px;
-}
-
-.inner-div1 {
-    width: 100%;
-    margin-top: auto;
-    margin-bottom: auto;
-    margin-right: auto;
-    margin-left: auto;
-    max-width: 76pc;
-    padding-block: 24px;
-    background-color: #f8f8f8;
-    border-radius: 0 0 24px 24px;
-    padding-inline: 24px;
-}
-
-.inner-div-textArea {
-    display: grid;
-    gap: var(--ds-space-400);
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-.textArea-div {
-    width: 100%;
-    box-sizing: border-box;
-    display: block;
-    position: relative;
-    padding-top: 0;
-    padding-bottom: 0;
-    padding-right: 0;
-    padding-left: 0;
-    color: #091e42;
-    margin-top: 0;
-    margin-bottom: 0;
-    margin-right: 0;
-    margin-left: 0;
-    min-height: 1px;
-    font-size: 100%;
-    vertical-align: baseline;
-}
-
-.footer-logo {
-    height: 2pc;
-}
-
-.footer-logo a:focus,
-.footer-logo a:hover,
-.footer-logo a:visited {
-    font-weight: bold;
-    text-decoration-color: currentColor;
-    text-decoration-line: underline;
-    text-decoration-style: solid;
-}
-
-.footer-ul {
-    margin-block-end: 0;
-    padding-inline-start: 20px;
-    list-style: none;
-}
-
-.footer-ul-li {
-    font-size: 1rem;
-    line-height: 14px;
-    margin-block-start: 0rem;
-    margin-block-end: 19px;
-    list-style-type: none;
-    margin-inline-start: -20px;
-    color: inherit;
-}
-
-.footer-li-a {
-    align-items: center;
-    text-decoration-color: currentColor;
-    text-decoration-style: solid;
-    display: inline-flex;
-    text-decoration-line: none;
-    color: #101214;
-    font-size: .875rem;
-    font-weight: 700;
-    letter-spacing: normal;
-}
-
-.textArea-head {
-    align-items: center;
-    display: flex;
-    height: 2pc;
-    margin-block-start: var(--ds-space-0);
-    margin-block-end: var(--ds-space-400);
-}
-
-.textArea-h3 {
-    font-weight: 700 !important;
-    text-transform: uppercase;
-    font-size: 13px;
-    color: var(#101214) !important;
-    font-family: Charlie Text;
-
-}
-
-.textArea-body {
-    list-style: none;
-    padding-inline-start: 20px;
-    margin-block-end: 0;
-}
-
-.textArea-li {
-    font-size: 1rem;
-    line-height: 14px;
-    margin-block-start: 0rem;
-    margin-block-end: 19px;
-    list-style-type: none;
-    margin-inline-start: -20px;
-    color: inherit;
-}
-
-.textArea-li-view {
-    font-weight: 500;
-    list-style-type: none;
-    margin-inline-start: -20px;
-    margin-block-start: 2rem;
-    padding-block: 8px;
-}
-
-.li-link-a {
-    align-items: center;
-    text-decoration-color: currentColor;
-    text-decoration-style: solid;
-    display: inline-flex;
-    text-decoration-line: none;
-    color: #101214;
-    font-size: .875rem;
-    letter-spacing: .42px;
-    font-family: Charlie Display;
-}
-
-
-.li-link-a:focus,
-.li-link-a:hover,
-.li-link-a:visited {
-    text-decoration-color: currentColor;
-    text-decoration-line: underline;
-    text-decoration-style: solid;
-}
-
-
-
-
-
 
 
 
