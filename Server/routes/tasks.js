@@ -265,7 +265,6 @@ router.put('/update_status', async (req, res) => {
     const { taskId, status, changedBy } = req.body;
 
     if (!taskId || !status || !changedBy) {
-        console.error('필수 데이터 누락:', { taskId, status, changedBy });
         return res.status(400).json({ message: '작업 ID, 상태 ID, 변경자 ID는 필수입니다.' });
     }
 
@@ -292,7 +291,6 @@ router.put('/update_status', async (req, res) => {
 
         // 요청된 상태와 현재 상태가 동일한 경우 처리하지 않음
         if (parseInt(oldStatus) === parseInt(status)) {
-            console.log('요청된 상태가 현재 상태와 동일합니다. 기록을 생성하지 않습니다.');
             return res.status(200).json({
                 message: '상태가 변경되지 않았습니다.',
                 assignedTo: assignedTo // 담당자 정보 추가 반환
@@ -400,7 +398,6 @@ router.put('/move-sprint', async (req, res) => {
 
         // 동일한 스프린트로 이동 요청 시 기록을 남기지 않고 종료
         if (parseInt(oldSprintId) === parseInt(newSprintId)) {
-            console.log('작업이 동일한 스프린트로 이동하려고 합니다. 기록 생성하지 않습니다.');
             return res.status(200).json({ message: '스프린트가 변경되지 않았습니다.' });
         }
 
