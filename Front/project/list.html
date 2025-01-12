@@ -375,37 +375,42 @@
 
 
 
-
+        .mention-container {
+            position: relative;
+            /* 부모 요소에 relative 추가 */
+        }
 
         #mentionDropdown {
-            position: absolute;
-            z-index: 2050; /* 팝업보다 높은 값 */
-            background: white;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            max-height: 200px; /* 최대 높이 설정 */
-            overflow-y: auto; /* 스크롤 가능 */
-            display: none; /* 초기에는 숨김 */
-        }
-        
-        #mentionDropdown .dropdown-item {
-            padding: 8px 12px;
-            cursor: pointer;
-        }
-        
-        #mentionDropdown .dropdown-item:hover {
-            background: #f0f0f0;
+            position: fixed;
+            top: 100px;
+            left: 100px;
+            width: 300px;
+            height: auto;
+            z-index: 9999;
+            background-color: white;
+            border: 1px solid red;
+            /* 시각적으로 확인하기 위한 빨간 테두리 */
+            display: block;
+            /* 항상 보이도록 설정 */
         }
 
-        #mentionDropdown .profile-img {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            object-fit: cover;
+        #mentionDropdown .dropdown-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
         }
+
+        #mentionDropdown .dropdown-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        #mentionDropdown .no-results {
+            color: #888;
+            padding: 10px;
+            text-align: center;
+        }
+
+
 
         .dropdown-item {
             padding: 8px;
@@ -414,6 +419,65 @@
 
         .dropdown-item:hover {
             background: #f0f0f0;
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        #notificationDropdown {
+            position: absolute;
+            top: 140px;
+            right: 0;
+            width: 300px;
+            max-height: 400px;
+            background: white;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            display: none;
+            flex-direction: column;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        #notificationDropdown.show {
+            display: flex;
+        }
+
+        .notification-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .notification-item.unread {
+            font-weight: bold;
+            background: #f9f9f9;
+        }
+
+        .notification-item.read {
+            font-weight: normal;
+        }
+
+        .mark-all-btn {
+            padding: 10px;
+            text-align: center;
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            width: 100%;
         }
     </style>
     <script src="../lib/jquery-3.7.1.min.js"></script>
@@ -454,9 +518,10 @@
             <label>맨션 추가</label>
             <div style="position: relative;">
                 <textarea id="mentionMessage" placeholder="맨션 내용을 입력하세요"></textarea>
-                <ul id="mentionDropdown" class="dropdown-menu" style="display: none; position: absolute;">
-                    <!-- 드롭다운 항목이 동적으로 추가됩니다 -->
-                </ul>
+                <div id="autocompleteBox"
+                    style="display: none; position: absolute; top: 100%; left: 0; width: 100%; background: white; border: 1px solid #ddd; z-index: 1000;">
+                    <!-- 자동완성 리스트가 동적으로 추가됩니다 -->
+                </div>
             </div>
 
             <div class="activity-tabs">
@@ -476,7 +541,13 @@
         </form>
     </div>
 
-
+    <div id="notificationWrapper">
+        <div id="notificationIcon">
+            <i class="fa fa-bell"></i>
+            <span id="notificationBadge" class="badge">0</span>
+        </div>
+        <div id="notificationDropdown" class="dropdown hidden"></div>
+    </div>
 
     <script>
 
@@ -484,9 +555,29 @@
         const projectId = sessionStorage.getItem("projectId");
         const userIdx = sessionStorage.getItem("userIdx"); // 로그인된 사용자 ID
         const API_URL = "http://192.168.20.37:3000/api";
+        //192.168.20.37
 
+        let userRole = null;
 
         $(document).ready(function () {
+
+
+
+
+
+            $(document).ready(async function () {
+                try {
+                    // 사용자 역할 로드
+                    const response = await $.get(`${API_URL}/project/role`, { projectId, userIdx });
+                    userRole = response.project_role_name; // "팀장" 또는 "팀원"
+
+                    // 작업과 팀원 데이터 로드
+                    fetchTasksAndMembers();
+                } catch (err) {
+                    console.error("사용자 역할 로드 실패:", err);
+                }
+            });
+
 
             if (!projectId) {
                 return;
@@ -496,61 +587,86 @@
             // 작업 상태 및 작업 데이터를 가져오기
             async function fetchTasksAndMembers() {
                 try {
-                    // 작업 상태 목록 가져오기
                     const statusResponse = await $.get(`${API_URL}/tasks/status-list`);
                     const statuses = statusResponse;
 
-                    // 작업 데이터 가져오기
                     const taskResponse = await $.get(`${API_URL}/tasks/list`, { projectId });
                     const tasks = taskResponse;
 
-                    // 팀원 목록 가져오기
                     const membersResponse = await $.get(`${API_URL}/project/members`, { projectId });
                     const teamMembers = membersResponse;
 
+                    // teamMembers를 활용하여 userIdx -> 이름 매핑 객체 생성
+                    const userMap = {};
+                    teamMembers.forEach(member => {
+                        userMap[member.userId] = member.userName;
+                    });
+
+                    // 전역 변수로 저장
+                    window.userMap = userMap;
+
                     renderTasks(statuses, tasks, teamMembers);
+
+                    // 드롭다운 이벤트를 재연결
+                    document.querySelectorAll('.assignee-section .assignee-dropdown').forEach(dropdownButton => {
+                        dropdownButton.addEventListener('click', function (event) {
+                            const taskId = event.currentTarget.closest('.task').dataset.taskId;
+                            window.toggleAssigneeDropdown(taskId);
+                        });
+                    });
                 } catch (err) {
+                    console.error("Error fetching tasks and members:", err);
                 }
             }
+
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
             // 작업 렌더링
             function renderTasks(statuses, tasks, teamMembers) {
                 const sprintBoard = $("#sprintBoard");
-                sprintBoard.empty(); // 기존 데이터 초기화
+                sprintBoard.empty();
 
                 statuses.forEach(status => {
                     const tasksForStatus = tasks.filter(task => task.statusId === status.id);
 
-                    const tasksHTML = tasksForStatus.map(task => `
-                    <div class="task" draggable="true" ondragstart="dragTask(event)" data-task-id="${task.taskId}">
-                        <p onclick="openEditTaskPopup(${task.taskId})">${task.taskName}</p>
-                        <div class="assignee-section">
-                            <!-- 담당자 선택 -->
-                            <div class="assignee-dropdown">
-                                <img src="${task.assignedToImage || '../profile/default-profile.png'}" 
-                                    class="assignee-image" alt="프로필" 
-                                    onclick="window.toggleAssigneeDropdown(${task.taskId})">
-                                <span class="assignee-name">${task.assignedTo || '담당자 없음'}</span>
-                            </div>
-                            <div class="dropdown-options hidden" id="dropdown_${task.taskId}">
-                                ${teamMembers.map(member => `
-                                    <div class="dropdown-item" 
-                                        onclick="window.selectAssignee(${task.taskId}, ${member.userId}, '${member.profileImage || '../profile/default-profile.png'}', '${member.userName}')">
-                                        <img src="${member.profileImage || '../profile/default-profile.png'}" 
-                                            class="dropdown-image" alt="프로필">
-                                        <span>${member.userName}</span>
+                    const tasksHTML = tasksForStatus.map(task => {
+                        const profileImage = task.assignedToImage && task.assignedToImage.trim()
+                            ? task.assignedToImage
+                            : '../profile/default-profile.png';
+
+                        // `dropdown_${task.taskId}` 드롭다운 추가 (담당자 없음 포함)
+                        return `
+                            <div class="task" 
+                                 draggable="true" 
+                                 ondragstart="dragTask(event)" 
+                                 data-task-id="${task.taskId}" 
+                                 data-assigned-to="${task.assignedTo}">
+                                <p onclick="openEditTaskPopup(${task.taskId})">${task.taskName}</p>
+                                <div class="assignee-section">
+                                    <div class="assignee-dropdown">
+                                        <img src="${profileImage}" class="assignee-image" alt="프로필" onclick="window.toggleAssigneeDropdown(${task.taskId})">
+                                        <span class="assignee-name">${task.assignedTo || '담당자 없음'}</span>
                                     </div>
-                                `).join("")}
-                                <div class="dropdown-item" 
-                                    onclick="window.selectAssignee(${task.taskId}, null, '../profile/default-profile.png', '담당자 없음')">
-                                    <img src="../profile/default-profile.png" class="dropdown-image" alt="프로필">
-                                    <span>담당자 없음</span>
+                                    <!-- 드롭다운 추가 -->
+                                    <div class="dropdown-options hidden" id="dropdown_${task.taskId}">
+                                        ${teamMembers.map(member => `
+                                            <div class="dropdown-item" 
+                                                 onclick="selectAssignee(${task.taskId}, ${member.userId}, '${member.profileImage || '../profile/default-profile.png'}', '${member.userName}')">
+                                                <img src="${member.profileImage || '../profile/default-profile.png'}" class="dropdown-image" alt="프로필">
+                                                <span>${member.userName}</span>
+                                            </div>
+                                        `).join('')}
+                                        <!-- 담당자 없음 옵션 추가 -->
+                                        <div class="dropdown-item" 
+                                             onclick="selectAssignee(${task.taskId}, null, '../profile/default-profile.png', '담당자 없음')">
+                                            <img src="../profile/default-profile.png" class="dropdown-image" alt="프로필">
+                                            <span>담당자 없음</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                `).join("");
+                        `;
+                    }).join("");
 
                     const columnHTML = `
                         <div class="board-column" data-status="${status.name}">
@@ -563,21 +679,36 @@
                         </div>
                     `;
 
-                    sprintBoard.append(columnHTML); // 작업 상태 컬럼 추가
+                    sprintBoard.append(columnHTML);
                 });
             }
+
+
 
 
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
             window.dragTask = function (event) {
-                const taskId = event.target.dataset.taskId;
-                event.dataTransfer.setData("text", taskId);
-            };
+                if (!userRole) {
+                    return;
+                }
 
-            // 드래그 허용
-            window.allowDrop = function (event) {
-                event.preventDefault();
+                const taskId = event.target.dataset.taskId;
+                const assignedTo = event.target.dataset.assignedTo; // 담당자 이름
+                const currentUserName = window.userMap[userIdx]; // 현재 로그인된 사용자 이름
+
+                if (!taskId) {
+                    return;
+                }
+
+
+                // 팀장이 아니고, 현재 사용자가 작업 담당자가 아닌 경우
+                if (userRole !== "팀장" && currentUserName !== assignedTo) {
+                    event.preventDefault(); // 드래그 차단
+                    return;
+                }
+
+                event.dataTransfer.setData("text", taskId);
             };
 
             // 작업 드롭
@@ -585,22 +716,38 @@
                 event.preventDefault();
                 const taskId = event.dataTransfer.getData("text");
 
-                if (!userIdx) {
+                if (!taskId) {
+                    console.error("작업 ID가 유효하지 않습니다.");
                     return;
                 }
 
+                // 서버 요청 데이터
+                const requestData = {
+                    taskId: taskId,
+                    status: newStatusId,
+                    changedBy: userIdx
+                };
+
+                // 서버 요청
                 $.ajax({
                     url: `${API_URL}/tasks/update_status`,
                     method: "PUT",
                     contentType: "application/json",
-                    data: JSON.stringify({ taskId, status: newStatusId, changedBy: userIdx }),
+                    data: JSON.stringify(requestData),
                     success: function () {
-                        fetchTasksAndMembers(); // 데이터 새로고침
+                        fetchTasksAndMembers();
                     },
                     error: function (err) {
+                        console.error("작업 상태 변경 오류:", err.responseText);
                     }
                 });
             };
+
+            // 드래그 허용
+            window.allowDrop = function (event) {
+                event.preventDefault();
+            };
+
 
 
 
@@ -612,7 +759,6 @@
                 const assignedTo = dropdown.value;
 
                 if (!taskId) {
-                    alert("Task ID가 필요합니다.");
                     return;
                 }
 
@@ -634,28 +780,30 @@
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
-
+            // 담당자 드롭다운 열기/닫기
             window.toggleAssigneeDropdown = function (taskId) {
-                // 모든 드롭다운 닫기
+                console.log(`Task ID ${taskId}의 드롭다운 열기/닫기 시도`);
+
+                // 현재 열려 있는 드롭다운 닫기
                 document.querySelectorAll('.dropdown-options').forEach(dropdown => {
-                    dropdown.classList.remove('show');
-                    const taskElement = dropdown.closest('.task');
-                    if (taskElement) {
-                        taskElement.classList.remove('dropdown-active'); // 모든 task에서 dropdown-active 제거
+                    if (dropdown.id !== `dropdown_${taskId}`) {
+                        dropdown.classList.remove('show');
+                        const taskElement = dropdown.closest('.task');
+                        if (taskElement) {
+                            taskElement.classList.remove('dropdown-active');
+                        }
                     }
                 });
 
-                // 현재 드롭다운 열기
                 const currentDropdown = document.getElementById(`dropdown_${taskId}`);
                 if (!currentDropdown) {
-                    console.error(`드롭다운을 찾을 수 없습니다: dropdown_${taskId}`);
+                    console.error(`Dropdown not found for Task ID ${taskId}`);
                     return;
                 }
 
-                const taskElement = currentDropdown.closest('.task'); // 드롭다운이 속한 task 찾기
-
-                // 상태를 반대로 토글 (열림 <-> 닫힘)
+                const taskElement = currentDropdown.closest('.task');
                 const isDropdownOpen = currentDropdown.classList.contains('show');
+
                 if (isDropdownOpen) {
                     currentDropdown.classList.remove('show');
                     taskElement?.classList.remove('dropdown-active');
@@ -666,41 +814,47 @@
             };
 
 
-
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
-
+            // 작업 담당자 할당 및 UI 업데이트
             window.selectAssignee = function (taskId, userId, profileImage, userName) {
-                // 드롭다운 닫기 및 상태 초기화 함수
-                const closeDropdown = (taskId) => {
-                    const dropdown = document.getElementById(`dropdown_${taskId}`);
-                    const taskElement = dropdown ? dropdown.closest('.task') : null;
+                console.log("selectAssignee 함수 실행");
+                console.log("User Role:", userRole);
+                console.log("Task ID:", taskId);
+                console.log("User ID:", userId);
 
-                    if (dropdown) {
-                        dropdown.classList.remove("show");
-                    }
+                if (!taskId) {
+                    console.error("Task ID가 필요합니다.");
+                    return;
+                }
 
-                    if (taskElement) {
-                        taskElement.classList.remove("dropdown-active");
-                    }
-                };
+                // 팀장만 담당자를 변경할 수 있도록 확인
+                if (userRole !== "팀장") {
+                    return;
+                }
 
-                // 화면에서 즉시 UI 반영 (Ajax 요청 성공 여부와 무관하게 수행)
-                const updateDropdownUI = () => {
-                    const dropdown = document.getElementById(`dropdown_${taskId}`);
-                    const dropdownButton = dropdown?.previousElementSibling;
+                console.log("팀장 확인 완료, 담당자 변경 실행");
 
-                    if (dropdownButton) {
-                        dropdownButton.innerHTML = `
-                            <img src="${profileImage}" class="assignee-image" alt="프로필">
-                            <span class="assignee-name">${userName || '담당자 없음'}</span>
-                        `;
-                    }
-                };
+                // UI 업데이트
+                const dropdown = document.getElementById(`dropdown_${taskId}`);
+                const dropdownButton = dropdown?.previousElementSibling;
 
-                // UI 즉시 반영
-                updateDropdownUI();
+                if (dropdownButton) {
+                    dropdownButton.innerHTML = `
+            <img src="${profileImage}" class="assignee-image" alt="프로필">
+            <span class="assignee-name">${userName || '담당자 없음'}</span>
+        `;
+                } else {
+                    console.error("Dropdown 버튼을 찾을 수 없습니다.");
+                    return;
+                }
+
+                // 드롭다운 닫기
+                dropdown.classList.remove('show');
+                dropdown.closest('.task')?.classList.remove('dropdown-active');
+
+                console.log(`Task ID ${taskId}의 UI가 업데이트되었습니다.`);
 
                 // 서버 요청
                 $.ajax({
@@ -709,20 +863,24 @@
                     contentType: "application/json",
                     data: JSON.stringify({ taskId, assignedTo: userId, changedBy: userIdx }),
                     success: function () {
-                        // 성공 시 드롭다운 닫기
-                        closeDropdown(taskId);
-                        console.log(`담당자 변경됨: Task ID ${taskId}, Assigned To ${userName}`);
+                        console.log(`Task ID ${taskId} 담당자가 ${userName}로 변경되었습니다.`);
+                        fetchTasksAndMembers(); // 작업 목록 새로고침
                     },
                     error: function (err) {
-                        console.error("작업 할당 중 오류 발생:", err);
-                        alert("담당자 변경 중 오류가 발생했습니다.");
-                        // 실패 시 UI 복원
-                        fetchTasksAndMembers(); // 전체 데이터 재조회하여 복원
-                    },
+                        console.error(`Error assigning Task ID ${taskId}:`, err);
+                    }
                 });
             };
 
-
+            // 이벤트 위임 방식으로 드롭다운 이벤트 처리
+            document.addEventListener('click', function (e) {
+                const dropdownButton = e.target.closest('.assignee-dropdown');
+                if (dropdownButton) {
+                    const taskId = dropdownButton.closest('.task').dataset.taskId;
+                    console.log(`Task ID ${taskId}의 드롭다운 클릭`);
+                    window.toggleAssigneeDropdown(taskId);
+                }
+            });
 
 
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -751,35 +909,47 @@
 
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-            // 팝업 열기
+            // 작업 편집 팝업 열기
             window.openEditTaskPopup = function (taskId) {
                 $.ajax({
                     url: `${API_URL}/tasks/${taskId}`,
                     method: "GET",
+                    data: { userIdx: sessionStorage.getItem("userIdx") },
                     success: function (task) {
-                        // 작업 데이터 설정
-                        $("#editTaskName").val(task.task_name || "");
-                        $("#editTaskDescription").val(task.description || "");
-                        $("#editTaskDueDate").val(task.due_date ? task.due_date.split("T")[0] : "");
+                        const taskAssignedTo = task.assignedTo; // 담당자 ID
+                        const userRole = task.userRole; // 현재 사용자의 역할 ('팀장', '팀원')
+                        const currentUserIdx = parseInt(userIdx);
 
-                        // 작업 상태 로드
-                        loadTaskStatus(task.Tasks_status_id);
+                        // 권한 확인
+                        const isAllowed = currentUserIdx === parseInt(taskAssignedTo) || userRole === "팀장";
 
-                        // 활동 로그 및 기록 불러오기
+                        // 팝업 열기
+                        $("#editTaskName").val(task.taskName || "").prop("disabled", !isAllowed);
+                        $("#editTaskDescription").val(task.description || "").prop("disabled", !isAllowed);
+                        $("#editTaskDueDate").val(task.dueDate ? task.dueDate.split("T")[0] : "").prop("disabled", !isAllowed);
+                        $("#mentionMessage").val(""); // 맨션 입력 필드 초기화
+                        $("#saveTaskBtn").prop("disabled", !isAllowed).toggle(isAllowed);
+                        $("#sendMentionBtn").prop("disabled", !isAllowed).toggle(isAllowed);
+
+                        // 기본 탭 선택: 전체
+                        $(".tab-button").removeClass("active");
+                        $(".tab-button[data-tab='all']").addClass("active");
+                        $("#activityContent").empty(); // 기존 기록 초기화
+
+                        // 작업 상태 및 기록 불러오기
+                        loadTaskStatus(task.statusId);
                         loadActivityLogs(taskId);
 
-                        // 팝업과 배경 표시
                         $(".popup-background").fadeIn();
                         $("#editTaskPopup").fadeIn();
 
+                        // 작업 ID를 팝업 및 버튼에 저장
                         $("#editTaskPopup").data("task-id", taskId);
-
-                        // 저장 및 맨션 버튼에 작업 ID 설정
                         $("#saveTaskBtn").data("task-id", taskId);
                         $("#sendMentionBtn").data("task-id", taskId);
                     },
                     error: function (err) {
-                        console.error("작업 정보를 불러오는 중 오류 발생:", err);
+                        console.error("Error fetching task details:", err);
                     }
                 });
             };
@@ -828,7 +998,7 @@
                     contentType: "application/json",
                     data: JSON.stringify(updatedTask),
                     success: function () {
-                        alert("작업이 성공적으로 저장되었습니다.");
+                        ;
                         $(".popup-background").fadeOut();
                         $("#editTaskPopup").fadeOut();
                     },
@@ -918,40 +1088,46 @@
 
             // 활동 로그 및 기록 불러오기
             function loadActivityLogs(taskId) {
+                if (!taskId) {
+                    console.error("작업 ID가 필요합니다.");
+                    return;
+                }
 
                 $.ajax({
-                    url: `${API_URL}/tasks/activity/task`, // Task_History를 사용하는 API
+                    url: `${API_URL}/tasks/activity/task`, // Task_History 및 Mentions API
                     method: "GET",
                     data: { taskId },
                     success: function (logs) {
                         const activityContent = $("#activityContent");
-                        activityContent.empty();
+                        activityContent.empty(); // 기존 로그 제거
 
+                        if (!logs || logs.length === 0) {
+                            activityContent.append(`<p class="no-logs">활동 로그가 없습니다.</p>`);
+                            return;
+                        }
 
-                        // 중복 제거 (필요할 경우)
-                        const uniqueLogs = [...new Map(logs.map(log => [log.log_message, log])).values()];
+                        // 중복 제거 및 정렬 (필요한 경우)
+                        const uniqueLogs = [...new Map(logs.map(log => [log.log_message + log.activity_date, log])).values()];
 
+                        uniqueLogs.forEach((log) => {
+                            // 로그 데이터 유효성 검증
+                            if (!log.log_message) return;
 
-                        uniqueLogs.forEach((log, index) => {
-
-
-                            if (!log.log_message) {
-                                return;
-                            }
-
-                            // "맨션"과 "기록" 구분
                             const logType = log.log_type === "맨션" ? "mentions" : "logs";
+                            const formattedDate = formatDate(log.activity_date || log.created_at || log.changed_at);
 
                             activityContent.append(`
                                 <div class="activity-log" data-log-type="${logType}">
-                                    <p><strong>${log.log_type || '기록'}</strong>: ${log.log_message || '내용 없음'}</p>
-                                    <p class="log-time">${formatDate(log.changed_at || log.created_at || log.activity_date)}</p>
+                                    <p><strong>${log.log_type || '기록'}</strong>: ${log.log_message}</p>
+                                    <p class="log-time">${formattedDate}</p>
                                 </div>
                             `);
                         });
                     },
                     error: function (err) {
-                    }
+                        console.error("활동 로그 로드 오류:", err);
+                        $("#activityContent").empty().append(`<p class="error-log">활동 로그를 가져오는 중 오류가 발생했습니다.</p>`);
+                    },
                 });
             }
 
@@ -971,14 +1147,11 @@
                 const mentionMessage = $("#mentionMessage").val().trim();
 
                 if (!mentionMessage) {
-                    alert("메시지를 입력하세요.");
                     return;
                 }
 
-                // @사용자명 추출
                 const mentionedUsers = extractMentionedUsers(mentionMessage);
 
-                // AJAX 요청으로 서버에 데이터 전송
                 $.ajax({
                     url: `${API_URL}/mentions/send`,
                     method: "POST",
@@ -986,19 +1159,24 @@
                     data: JSON.stringify({
                         taskId,
                         mentionMessage,
-                        mentionedUsers, // 추출한 사용자 이름 목록
-                        sentBy: userIdx, // 현재 로그인한 사용자 ID
+                        mentionedUsers,
+                        sentBy: userIdx,
                     }),
                     success: function () {
-                        alert("메시지가 성공적으로 전송되었습니다.");
                         $("#mentionMessage").val(""); // 입력 필드 초기화
+                        loadActivityLogs(taskId); // 활동 로그 업데이트
+                        $(".tab-button").removeClass("active");
+                        $(".tab-button[data-tab='all']").addClass("active");
                     },
                     error: function (err) {
                         console.error("메시지 전송 오류:", err);
                         alert("메시지 전송 중 오류가 발생했습니다.");
-                    }
+                    },
                 });
             });
+
+
+
 
 
 
@@ -1007,11 +1185,11 @@
 
             // @사용자명 추출 함수
             function extractMentionedUsers(message) {
-                const mentionPattern = /@(\w+)/g; // @뒤에 단어 추출
+                const mentionPattern = /@(\w+)/g; // @ 뒤의 사용자명 추출
                 const matches = [];
                 let match;
                 while ((match = mentionPattern.exec(message)) !== null) {
-                    matches.push(match[1]); // 사용자 이름 추가
+                    matches.push(match[1]); // 사용자명 배열 추가
                 }
                 return matches;
             }
@@ -1019,89 +1197,225 @@
 
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-            // @ 입력 시 드롭다운 표시
+
+
+            // 맨션 입력 이벤트
             $("#mentionMessage").on("keyup", function (e) {
-                const inputVal = $(this).val();
-                const caretPos = this.selectionStart;
-            
+                const inputVal = $(this).val(); // 입력된 값
+                const caretPos = this.selectionStart; // 커서 위치
+
                 // @ 뒤의 검색어 추출
                 const mentionPattern = /@([\w가-힣]*)$/;
                 const match = mentionPattern.exec(inputVal.slice(0, caretPos));
                 const searchQuery = match ? match[1] : "";
-            
-                if (inputVal[caretPos - 1] === "@" || searchQuery) {
-                    if (!projectId) {
-                        console.error("프로젝트 ID가 설정되지 않았습니다.");
-                        return;
-                    }
-            
-                    // AJAX 요청으로 팀원 목록 가져오기
+
+                console.log("현재 검색어:", searchQuery); // 디버깅 로그
+
+                if (searchQuery) {
+                    // 서버에 검색 요청
                     $.ajax({
-                        url: `${API_URL}/project/members/search`, // API 엔드포인트
+                        url: `${API_URL}/project/members/search`,
                         method: "GET",
                         data: { projectId, query: searchQuery },
                         success: function (members) {
-                            const dropdown = $("#mentionDropdown");
-                            dropdown.empty(); // 기존 드롭다운 초기화
-            
-                            // 데이터 추가
-                            members.forEach((member) => {
-                                dropdown.append(`
-                                    <li class="dropdown-item" data-user-name="${member.userName}">
-                                        @${member.userName} (${member.roleName})
-                                    </li>
-                                `);
-                            });
-            
-                            // 드롭다운 위치 및 표시
+                            const box = $("#autocompleteBox");
+                            box.empty(); // 기존 리스트 초기화
+
+                            if (members.length > 0) {
+                                // 검색 결과 추가
+                                members.forEach(member => {
+                                    box.append(`
+                            <div class="autocomplete-item" 
+                                 style="padding: 10px; cursor: pointer; border-bottom: 1px solid #f0f0f0;" 
+                                 data-user-name="${member.userName}">
+                                @${member.userName} (${member.roleName})
+                            </div>
+                        `);
+                                });
+                            } else {
+                                // 검색 결과 없음 표시
+                                box.append('<div style="padding: 10px; color: #888; text-align: center;">검색 결과가 없습니다</div>');
+                            }
+
+                            // 자동완성 박스 위치를 텍스트박스 위쪽으로 조정
                             const offset = $("#mentionMessage").offset();
-                            dropdown.css({
-                                top: offset.top + $("#mentionMessage").outerHeight(),
-                                left: offset.left,
+                            const inputHeight = $("#mentionMessage").outerHeight();
+                            box.css({
+                                top: 50, // 텍스트박스 위쪽
                                 width: $("#mentionMessage").outerWidth(),
-                                display: "block" // 드롭다운 표시
+                                display: "block" // 표시
                             });
                         },
                         error: function (err) {
                             console.error("팀원 검색 오류:", err);
                         }
                     });
-                } else if (inputVal.indexOf("@") === -1) {
-                    $("#mentionDropdown").hide();
+                } else {
+                    $("#autocompleteBox").hide(); // 검색어가 없으면 자동완성 박스 숨김
                 }
             });
-            
-            // 드롭다운 항목 클릭 시 메시지에 멘션 추가
-            $(document).on("click", ".dropdown-item", function () {
-                const mentionName = $(this).data("user-name");
-                const inputField = $("#mentionMessage");
-                const caretPos = inputField[0].selectionStart;
-                const message = inputField.val();
-            
-                // 메시지에 멘션 추가
-                const newMessage = `${message.slice(0, caretPos)}@${mentionName} ${message.slice(caretPos)}`;
-                inputField.val(newMessage);
-                inputField.focus(); // 입력 필드로 포커스 이동
-            
-                $("#mentionDropdown").hide(); // 드롭다운 숨김
+
+
+
+
+
+            // 자동완성 항목 클릭 이벤트
+            $(document).on("click", ".autocomplete-item", function () {
+                const mentionName = $(this).data("user-name"); // 선택된 사용자 이름
+                if (!mentionName) return;
+
+                const textarea = $("#mentionMessage");
+                const caretPos = textarea[0].selectionStart; // 커서 위치
+                const message = textarea.val();
+
+                // @ 뒤의 검색어를 지우고 새 맨션 텍스트 추가
+                const updatedMessage = message.replace(/@[\w가-힣]*$/, `@${mentionName} `);
+                textarea.val(updatedMessage);
+                textarea.focus(); // 텍스트박스에 포커스 유지
+
+                $("#autocompleteBox").hide(); // 자동완성 박스 숨김
             });
-            
-            // 입력 필드 외 클릭 시 드롭다운 숨김
+
+            // 텍스트박스 외 클릭 시 자동완성 박스 숨김
             $(document).on("click", function (e) {
-                if (!$(e.target).closest("#mentionDropdown, #mentionMessage").length) {
-                    $("#mentionDropdown").hide();
-                }
-            });
-            
-            // ESC 키 입력 시 드롭다운 숨김
-            $("#mentionMessage").on("keydown", function (e) {
-                if (e.key === "Escape") {
-                    $("#mentionDropdown").hide();
+                if (!$(e.target).closest("#mentionMessage, #autocompleteBox").length) {
+                    $("#autocompleteBox").hide();
                 }
             });
 
 
 
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+            // 알림 아이콘 및 UI 요소 설정
+            const notificationIcon = $("#notificationIcon");
+            const notificationDropdown = $("#notificationDropdown");
+            const notificationBadge = $("#notificationBadge");
+
+            // 알림 데이터 로드
+            async function fetchNotifications() {
+                try {
+                    const notifications = await $.get(`${API_URL}/notification`, { userId: userIdx });
+                    renderNotifications(notifications);
+                } catch (err) {
+                    console.error("알림 데이터를 가져오는 중 오류 발생:", err);
+                }
+            }
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+            // 알림 렌더링
+            function renderNotifications(notifications) {
+                notificationDropdown.empty();
+
+                if (!notifications || notifications.length === 0) {
+                    notificationDropdown.append(`<p class="no-notifications">알림이 없습니다.</p>`);
+                    notificationBadge.hide();
+                    return;
+                }
+
+                const unreadCount = notifications.filter(notification => notification.is_read_by_assignee === 0).length;
+                if (unreadCount > 0) {
+                    notificationBadge.text(unreadCount).show();
+                } else {
+                    notificationBadge.hide();
+                }
+
+                notifications.forEach(notification => {
+                    const isReadClass = notification.is_read_by_assignee ? "read" : "unread";
+                    const senderName = notification.sender_name || '알 수 없는 사용자';
+
+                    notificationDropdown.append(`
+                        <div class="notification-item ${isReadClass}" data-id="${notification.notification_id}">
+                            <p>${senderName}님: ${notification.message}</p>
+                            <small>${formatDate(notification.created_at)}</small>
+                        </div>
+                    `);
+                });
+
+                notificationDropdown.append(`
+                    <button id="markAllAsRead" class="mark-all-btn">모두 읽음 처리</button>
+                `);
+            }
+
+
+
+
+
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+            // 알림 아이콘 클릭 이벤트
+            notificationIcon.click(function () {
+                notificationDropdown.toggleClass("show");
+                console.log("Dropdown visible:", notificationDropdown.hasClass("show"));
+                if (notificationDropdown.hasClass("show")) {
+                    fetchNotifications();
+                }
+            });
+
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+            // 알림 읽음 처리
+            $(document).on("click", ".notification-item", function () {
+                const notificationId = $(this).data("id");
+
+                $.ajax({
+                    url: `${API_URL}/notifications/mark-as-read`,
+                    method: "PUT",
+                    contentType: "application/json",
+                    data: JSON.stringify({ notificationId }),
+                    success: function () {
+                        fetchNotifications();
+                    },
+                    error: function (err) {
+                        console.error("알림 읽음 처리 중 오류 발생:", err);
+                    }
+                });
+            });
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+            // 모든 알림 읽음 처리
+            $(document).on("click", "#markAllAsRead", function () {
+                $.ajax({
+                    url: `${API_URL}/notifications/mark-all-as-read`,
+                    method: "PUT",
+                    contentType: "application/json",
+                    data: JSON.stringify({ userId: userIdx }),
+                    success: function () {
+                        fetchNotifications();
+                    },
+                    error: function (err) {
+                        console.error("모든 알림 읽음 처리 중 오류 발생:", err);
+                    }
+                });
+            });
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+            // 날짜 포맷 함수
+            function formatDate(dateString) {
+                const options = { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+                return new Date(dateString).toLocaleDateString('ko-KR', options);
+            }
 
 
             // 초기 데이터 로드

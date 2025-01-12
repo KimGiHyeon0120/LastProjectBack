@@ -77,7 +77,8 @@ router.get('/list', async (req, res) => {
             s.Tasks_status_name AS statusName, 
             t.priority, 
             t.due_date AS dueDate, 
-            COALESCE(u.user_name, '담당자 없음') AS assignedTo
+            COALESCE(u.user_name, '담당자 없음') AS assignedTo,
+            COALESCE(u.user_profile_image, '../profile/default-profile.png') AS assignedToImage
         FROM Tasks t
         LEFT JOIN Tasks_status s ON t.Tasks_status_id = s.Tasks_status_id
         LEFT JOIN Users u ON t.assigned_to = u.user_idx
@@ -88,13 +89,13 @@ router.get('/list', async (req, res) => {
         const params = sprintId ? [projectId, sprintId] : [projectId];
         const [tasks] = await connection.promise().query(query, params);
 
+
         res.status(200).json(tasks);
     } catch (err) {
         console.error('작업 조회 오류:', err);
         res.status(500).json({ message: '작업 조회 중 오류가 발생했습니다.' });
     }
 });
-
 
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -104,7 +105,6 @@ router.get('/list', async (req, res) => {
 router.put('/update', async (req, res) => {
     const { taskId, taskName, description, assignedTo, status, priority, dueDate, changedBy } = req.body;
 
-    console.log('Received Data:', req.body);
 
     if (!taskId || !changedBy) {
         return res.status(400).json({ message: '작업 ID와 변경자 ID는 필수입니다.' });
@@ -260,12 +260,11 @@ router.put('/update', async (req, res) => {
 
 
 
-// 작업상태 변경
+// 작업 상태 변경
 router.put('/update_status', async (req, res) => {
     const { taskId, status, changedBy } = req.body;
 
     if (!taskId || !status || !changedBy) {
-        console.error('필수 데이터 누락:', { taskId, status, changedBy });
         return res.status(400).json({ message: '작업 ID, 상태 ID, 변경자 ID는 필수입니다.' });
     }
 
@@ -277,9 +276,9 @@ router.put('/update_status', async (req, res) => {
             3: '완료'
         };
 
-        // 기존 작업 데이터 조회
+        // 기존 작업 데이터 조회 (담당자 포함)
         const [task] = await connection.promise().query(
-            `SELECT Tasks_status_id FROM Tasks WHERE task_id = ?`,
+            `SELECT Tasks_status_id, assigned_to FROM Tasks WHERE task_id = ?`,
             [taskId]
         );
 
@@ -288,6 +287,15 @@ router.put('/update_status', async (req, res) => {
         }
 
         const oldStatus = task[0].Tasks_status_id;
+        const assignedTo = task[0].assigned_to;
+
+        // 요청된 상태와 현재 상태가 동일한 경우 처리하지 않음
+        if (parseInt(oldStatus) === parseInt(status)) {
+            return res.status(200).json({
+                message: '상태가 변경되지 않았습니다.',
+                assignedTo: assignedTo // 담당자 정보 추가 반환
+            });
+        }
 
         // 작업 상태 업데이트
         const [updateResult] = await connection.promise().query(
@@ -313,17 +321,21 @@ router.put('/update_status', async (req, res) => {
                 oldStatusName, // 이전 상태 이름
                 newStatusName, // 새로운 상태 이름
                 changedBy,
-                `작업 상태가 '${oldStatusName}'에서 '${newStatusName}'으로 변경되었습니다.`, // 로그 메시지
-                '상태 변경' // 로그 유형
+                `작업 상태가 '${oldStatusName}'에서 '${newStatusName}'으로 변경되었습니다.`,
+                '상태 변경'
             ]
         );
 
-        res.status(200).json({ message: '작업 상태가 성공적으로 업데이트되고 기록되었습니다.' });
+        res.status(200).json({
+            message: '작업 상태가 성공적으로 업데이트되고 기록되었습니다.',
+            assignedTo: assignedTo // 담당자 정보 추가 반환
+        });
     } catch (err) {
         console.error('작업 상태 업데이트 오류:', err);
         res.status(500).json({ message: '작업 상태 업데이트 중 오류가 발생했습니다.' });
     }
 });
+
 
 
 
@@ -383,6 +395,11 @@ router.put('/move-sprint', async (req, res) => {
         }
 
         const oldSprintId = taskData[0].sprint_id;
+
+        // 동일한 스프린트로 이동 요청 시 기록을 남기지 않고 종료
+        if (parseInt(oldSprintId) === parseInt(newSprintId)) {
+            return res.status(200).json({ message: '스프린트가 변경되지 않았습니다.' });
+        }
 
         // 이전 및 새로운 스프린트 이름 조회
         const [sprints] = await connection.promise().query(
@@ -452,20 +469,37 @@ router.get('/status-list', async (req, res) => {
 
 router.get('/:taskId', async (req, res) => {
     const { taskId } = req.params;
+    const { userIdx } = req.query; // 현재 사용자 ID를 쿼리로 받음
 
-    if (!taskId) {
-        return res.status(400).json({ message: '작업 ID가 필요합니다.' });
-    }
 
     try {
-        const [task] = await connection.promise().query(
-            'SELECT * FROM Tasks WHERE task_id = ?',
-            [taskId]
-        );
+        const query = `
+        SELECT 
+            t.task_id AS taskId,
+            t.task_name AS taskName,
+            t.description AS description,
+            t.due_date AS dueDate,
+            t.Tasks_status_id AS statusId,
+            t.assigned_to AS assignedTo,
+            COALESCE(u.user_name, '담당자 없음') AS assignedToName,
+            COALESCE(u.user_profile_image, '../profile/default-profile.png') AS assignedToImage,
+            (SELECT pr.project_role_name 
+             FROM Project_Members pm
+             JOIN Project_Roles pr ON pm.project_role_id = pr.project_role_id
+             WHERE pm.project_id = t.project_id AND pm.user_idx = ?) AS userRole
+        FROM Tasks t
+        LEFT JOIN Users u ON t.assigned_to = u.user_idx
+        WHERE t.task_id = ?;
+        `;
+
+
+        const [task] = await connection.promise().query(query, [userIdx, taskId]);
 
         if (task.length === 0) {
+            console.error('Task not found:', { taskId });
             return res.status(404).json({ message: '작업을 찾을 수 없습니다.' });
         }
+
 
         res.status(200).json(task[0]);
     } catch (err) {
@@ -473,6 +507,9 @@ router.get('/:taskId', async (req, res) => {
         res.status(500).json({ message: '작업 조회 중 오류가 발생했습니다.' });
     }
 });
+
+
+
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -652,6 +689,7 @@ router.get('/activity/task', async (req, res) => {
         res.status(500).json({ message: '멘션 및 작업 기록 조회 중 오류가 발생했습니다.' });
     }
 });
+
 
 
 
