@@ -290,6 +290,14 @@ router.put('/update_status', async (req, res) => {
         const oldStatus = task[0].Tasks_status_id;
         const assignedTo = task[0].assigned_to;
 
+        // 요청된 상태와 현재 상태가 동일한 경우 처리하지 않음
+        if (parseInt(oldStatus) === parseInt(status)) {
+            console.log('요청된 상태가 현재 상태와 동일합니다. 기록을 생성하지 않습니다.');
+            return res.status(200).json({
+                message: '상태가 변경되지 않았습니다.',
+                assignedTo: assignedTo // 담당자 정보 추가 반환
+            });
+        }
 
         // 작업 상태 업데이트
         const [updateResult] = await connection.promise().query(
@@ -389,6 +397,12 @@ router.put('/move-sprint', async (req, res) => {
         }
 
         const oldSprintId = taskData[0].sprint_id;
+
+        // 동일한 스프린트로 이동 요청 시 기록을 남기지 않고 종료
+        if (parseInt(oldSprintId) === parseInt(newSprintId)) {
+            console.log('작업이 동일한 스프린트로 이동하려고 합니다. 기록 생성하지 않습니다.');
+            return res.status(200).json({ message: '스프린트가 변경되지 않았습니다.' });
+        }
 
         // 이전 및 새로운 스프린트 이름 조회
         const [sprints] = await connection.promise().query(
