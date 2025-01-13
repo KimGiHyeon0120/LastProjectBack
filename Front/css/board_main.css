@@ -1,0 +1,767 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f5f7;
+}
+
+.main {
+    padding: 15px;
+    margin-top: 80px;
+}
+
+.sprint-board {
+    margin-top: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+}
+
+/* 스프린트 카드 스타일 */
+.sprint {
+    border: 1px solid #ddd;
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    width: 700px;
+    max-width: 90%;
+    margin-bottom: 20px;
+    /* 스프린트 간 간격 추가 */
+    transition: transform 0.2s ease;
+}
+
+.sprint:hover {
+    transform: translateY(-2px);
+    /* 살짝 떠오르는 효과 */
+}
+
+.sprint-header {
+    display: flex;
+    justify-content: space-between;
+    /* 좌우로 배치 */
+    align-items: center;
+    margin-bottom: 8px;
+    text-align: left;
+    /* 텍스트는 왼쪽 정렬 */
+    position: relative;
+    /* 삭제 버튼 위치 기준 */
+    padding: 0 10px;
+    /* 좌우 여백 추가 */
+}
+
+/* 스프린트 제목 스타일 */
+.sprint-header h3 {
+    margin: 0;
+    font-size: 18px;
+    /* 크기를 약간 키움 */
+    font-weight: bold;
+    color: #333;
+    text-align: left;
+    /* 제목은 왼쪽 정렬 */
+    flex-grow: 1;
+    /* 제목이 가능한 공간을 차지하도록 */
+}
+
+/* 스프린트 날짜 스타일 */
+.sprint-dates {
+    font-size: 14px;
+    /* 약간 크기 키움 */
+    color: #666;
+    /* 더 차분한 색상 */
+    text-align: right;
+    /* 날짜는 오른쪽 정렬 */
+    margin: 0;
+    flex-shrink: 0;
+    /* 날짜 영역 크기 고정 */
+    margin-right: 50px;
+}
+
+/* 스프린트 컨텐츠 */
+.sprint-content {
+    padding: 10px;
+    /* 연한 배경 추가 */
+    border-radius: 4px;
+    /* 모서리 둥글게 */
+}
+
+
+
+/* 작업 이름 기본 스타일 */
+.task-name {
+    cursor: pointer;
+    color: #007bff;
+    /* 파란색 */
+    font-weight: normal;
+    /* 기본 글씨 두께 */
+    transition: color 0.2s ease, font-weight 0.2s ease;
+    /* 전환 효과 */
+}
+
+/* 작업 이름에 마우스 오버 시 스타일 */
+.task-name:hover {
+    color: #0056b3;
+    /* 더 진한 파란색 */
+    font-weight: bold;
+    /* 글씨 두께를 굵게 변경 */
+    text-decoration: underline;
+    /* 밑줄 추가 (선택 사항) */
+}
+
+
+.task-priority {
+    flex-shrink: 0;
+    font-size: 12px;
+    color: #888;
+}
+
+#addSprintBtn {
+    margin-top: 15px;
+    display: inline-block;
+    background-color: #40a9ff;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    font-size: 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
+}
+
+#addSprintBtn:hover {
+    background-color: #1890ff;
+}
+
+
+
+
+
+
+
+
+
+
+
+/* 팝업 스타일 */
+.popup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    padding: 20px;
+}
+
+.popup-header {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.popup-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.popup-form input {
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.popup-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+}
+
+.popup-buttons button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.popup-buttons .cancel-btn {
+    background-color: #ddd;
+}
+
+.popup-buttons .cancel-btn:hover {
+    background-color: #bbb;
+}
+
+.popup-buttons .create-btn {
+    background-color: #40a9ff;
+    color: #fff;
+}
+
+.popup-buttons .create-btn:hover {
+    background-color: #1890ff;
+}
+
+/* 팝업 배경 */
+.popup-background {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.3);
+    z-index: 999;
+}
+
+
+
+/* 옵션 버튼 스타일 */
+.sprint-header .options-btn {
+    background-color: transparent;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #333;
+}
+
+.sprint-header .options-btn:hover {
+    color: #888;
+}
+
+/* 드롭다운 메뉴 스타일 */
+.options-menu {
+    display: none;
+    position: absolute;
+    right: 10px;
+    top: 100%;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    width: 120px;
+}
+
+.options-menu button {
+
+    display: block;
+    width: 100%;
+    padding: 8px;
+    background-color: transparent;
+    border: none;
+    text-align: left;
+    font-size: 14px;
+    cursor: pointer;
+    color: #333;
+}
+
+.options-menu button:hover {
+    background-color: #f9f9f9;
+    color: #000;
+}
+
+
+
+
+
+
+
+
+/* 우선순위 및 상태 드롭다운 스타일 */
+/* 드롭다운 기본 스타일 */
+.priority-dropdown,
+.status-dropdown {
+    -webkit-appearance: none;
+    /* Chrome, Safari, Edge 등 웹킷 기반 브라우저 */
+    -moz-appearance: none;
+    /* Firefox */
+    appearance: none;
+    /* 최신 브라우저 */
+    width: 40%;
+    /* 드롭다운이 셀을 꽉 채우도록 */
+    height: 35px;
+    /* 드롭다운 높이를 약간 늘려 가독성 향상 */
+    font-size: 14px;
+    /* 텍스트 크기 조정 */
+    padding: 6px 10px;
+    /* 안쪽 여백 */
+    border: 1px solid #ddd;
+    /* 테두리 색상 */
+    border-radius: 6px;
+    /* 둥근 테두리 */
+    background-color: #fff;
+    /* 배경색 */
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    /* 그림자 효과 */
+    text-align: center;
+    /* 드롭다운 내부 텍스트 가운데 정렬 */
+    color: #333;
+    /* 텍스트 색상 */
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+    /* 포커스 시 효과 */
+}
+
+/* 드롭다운 선택 시 스타일 */
+.priority-dropdown:focus,
+.status-dropdown:focus {
+    border-color: #40a9ff;
+    /* 선택 시 테두리 색상 변경 */
+    outline: none;
+    /* 기본 outline 제거 */
+    box-shadow: 0 0 6px rgba(64, 169, 255, 0.5);
+    /* 선택 시 그림자 효과 */
+    background-color: #f0f9ff;
+    /* 포커스 시 배경색 변경 */
+}
+
+/* 드롭다운 호버 효과 */
+.priority-dropdown:hover,
+.status-dropdown:hover {
+    background-color: #f7faff;
+    /* 호버 시 배경색 */
+    cursor: pointer;
+    /* 포인터 커서로 변경 */
+}
+
+
+/* 작업 카드 */
+.task-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    /* 각 요소 간의 간격 균등 분배 */
+    padding: 8px 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #b3d9ff;
+    /* 연한 하늘색 테두리 */
+    border-radius: 4px;
+    /* 테두리에 약간의 곡선 추가 */
+    cursor: pointer;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    font-size: 14px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    /* 인터렉션 효과 추가 */
+}
+
+/* 작업 이름 텍스트 스타일 */
+.task-card p {
+    flex: 1;
+    /* 가능한 공간을 차지하도록 */
+    margin: 0;
+    padding-right: 10px;
+    /* 우선순위와의 간격 확보 */
+    overflow: hidden;
+    /* 넘치는 텍스트 숨김 */
+    text-overflow: ellipsis;
+    /* 말줄임표 추가 */
+    white-space: nowrap;
+    /* 텍스트 줄바꿈 방지 */
+}
+
+
+.task-card:hover {
+    background-color: #e6f7ff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+
+
+/* 작업 이름과 상태 간격 조정 */
+.task-card p+p {
+    margin-left: 15px;
+    /* 요소 간 간격 추가 */
+}
+
+/* 작업 이름 스타일 */
+.task-card p strong {
+    display: block;
+    /* 작업 이름을 블록 요소로 변경 */
+    font-weight: bold;
+    color: #333;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+
+
+/* 팀원 읽기 전용 스타일 */
+.readonly-dropdown {
+    background-color: #f9f9f9;
+    /* 읽기 전용 스타일 배경 */
+    color: #555;
+    /* 텍스트 색상 */
+    pointer-events: none;
+    /* 클릭 불가 */
+    border: none;
+    /* 테두리 제거 */
+    font-size: 14px;
+    /* 텍스트 크기 */
+    text-align: center;
+    /* 텍스트 가운데 정렬 */
+}
+
+
+
+/* + 추가 버튼 */
+.add-task-btn-wrapper {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.add-task-btn {
+    background-color: #40a9ff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.add-task-btn:hover {
+    background-color: #1890ff;
+    transform: scale(1.05);
+    /* 살짝 확대 */
+}
+
+
+
+
+
+textarea#taskDescription {
+    width: 100%;
+    /* 부모 요소의 전체 폭을 사용 */
+    height: 120px;
+    /* 높이를 늘려 가독성 향상 */
+    padding: 10px;
+    /* 안쪽 여백 */
+    border: 1px solid #ccc;
+    /* 연한 테두리 */
+    border-radius: 6px;
+    /* 둥근 모서리 */
+    font-size: 14px;
+    /* 글씨 크기 */
+    font-family: Arial, sans-serif;
+    /* 글씨체 */
+    resize: none;
+    /* 크기 조절 불가능 */
+    background-color: #f9f9f9;
+    /* 배경색 */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    /* 약간의 그림자 */
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+    /* 포커스 시 효과 */
+}
+
+textarea#taskDescription:focus {
+    outline: none;
+    /* 기본 포커스 테두리 제거 */
+    border-color: #40a9ff;
+    /* 포커스 시 테두리 색 변경 */
+    box-shadow: 0 0 6px rgba(64, 169, 255, 0.5);
+    /* 포커스 시 그림자 효과 */
+}
+
+/* 작업 이름 입력 박스 */
+input#taskName {
+    width: 100%;
+    /* 전체 폭 */
+    height: 40px;
+    /* 높이 */
+    padding: 10px;
+    /* 안쪽 여백 */
+    border: 1px solid #ccc;
+    /* 테두리 색 */
+    border-radius: 6px;
+    /* 둥근 모서리 */
+    font-size: 14px;
+    /* 글씨 크기 */
+    font-family: Arial, sans-serif;
+    /* 글씨체 */
+    background-color: #f9f9f9;
+    /* 배경색 */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    /* 그림자 효과 */
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+    /* 포커스 시 효과 */
+}
+
+input#taskName:focus {
+    outline: none;
+    /* 기본 포커스 테두리 제거 */
+    border-color: #40a9ff;
+    /* 포커스 시 테두리 색 변경 */
+    box-shadow: 0 0 6px rgba(64, 169, 255, 0.5);
+    /* 포커스 시 그림자 효과 */
+}
+
+/* 마감 날짜 입력 박스 */
+input#taskDueDate {
+    width: 100%;
+    /* 전체 폭 */
+    height: 40px;
+    /* 높이 */
+    padding: 10px;
+    /* 안쪽 여백 */
+    border: 1px solid #ccc;
+    /* 테두리 색 */
+    border-radius: 6px;
+    /* 둥근 모서리 */
+    font-size: 14px;
+    /* 글씨 크기 */
+    font-family: Arial, sans-serif;
+    /* 글씨체 */
+    background-color: #f9f9f9;
+    /* 배경색 */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    /* 그림자 효과 */
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+    /* 포커스 시 효과 */
+}
+
+input#taskDueDate:focus {
+    outline: none;
+    /* 기본 포커스 테두리 제거 */
+    border-color: #40a9ff;
+    /* 포커스 시 테두리 색 변경 */
+    box-shadow: 0 0 6px rgba(64, 169, 255, 0.5);
+    /* 포커스 시 그림자 효과 */
+}
+
+
+/* 버튼 스타일 */
+#saveEditTaskBtn {
+    background-color: #40a9ff;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+#saveEditTaskBtn:hover {
+    background-color: #1890ff;
+}
+
+#deleteTaskBtn {
+    background-color: #ff4d4f;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+#deleteTaskBtn:hover {
+    background-color: #d9363e;
+}
+
+
+
+
+
+
+
+
+
+
+/* 작업 편집 팝업 */
+#editTaskPopup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    padding: 20px;
+}
+
+/* 팝업 헤더 */
+#editTaskPopup .popup-header {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-align: center;
+    color: #333;
+}
+
+/* 작업 이름 입력 */
+#editTaskName {
+    width: 100%;
+    height: 40px;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: #f9f9f9;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#editTaskName:focus {
+    outline: none;
+    border-color: #40a9ff;
+    box-shadow: 0 0 6px rgba(64, 169, 255, 0.5);
+}
+
+/* 작업 설명 입력 */
+#editTaskDescription {
+    width: 100%;
+    height: 100px;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: #f9f9f9;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    resize: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#editTaskDescription:focus {
+    outline: none;
+    border-color: #40a9ff;
+    box-shadow: 0 0 6px rgba(64, 169, 255, 0.5);
+}
+
+/* 마감 날짜 */
+#editTaskDueDate {
+    width: 100%;
+    height: 40px;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: #f9f9f9;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#editTaskDueDate:focus {
+    outline: none;
+    border-color: #40a9ff;
+    box-shadow: 0 0 6px rgba(64, 169, 255, 0.5);
+}
+
+/* 작업 상태 선택 */
+#editTaskStatus {
+    width: 100%;
+    height: 40px;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: #f9f9f9;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    appearance: none;
+}
+
+#editTaskStatus:focus {
+    outline: none;
+    border-color: #40a9ff;
+    box-shadow: 0 0 6px rgba(64, 169, 255, 0.5);
+}
+
+/* 작업 우선순위 선택 */
+#editTaskPriority {
+    width: 100%;
+    height: 40px;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: #f9f9f9;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    appearance: none;
+}
+
+#editTaskPriority:focus {
+    outline: none;
+    border-color: #40a9ff;
+    box-shadow: 0 0 6px rgba(64, 169, 255, 0.5);
+}
+
+/* 팝업 버튼 */
+#editTaskPopup .popup-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+}
+
+/* 취소 버튼 */
+#cancelEditTaskBtn {
+    background-color: #ddd;
+    color: #333;
+    border: none;
+    padding: 10px 15px;
+    font-size: 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#cancelEditTaskBtn:hover {
+    background-color: #bbb;
+}
+
+/* 저장 버튼 */
+#saveEditTaskBtn {
+    background-color: #40a9ff;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    font-size: 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#saveEditTaskBtn:hover {
+    background-color: #1890ff;
+}
+
+/* 삭제 버튼 */
+#deleteTaskBtn {
+    background-color: #ff4d4f;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    font-size: 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#deleteTaskBtn:hover {
+    background-color: #d9363e;
+}
