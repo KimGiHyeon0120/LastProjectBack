@@ -1,6 +1,8 @@
 document.addEventListener("DOMContentLoaded", function () {
     const buttons = document.querySelectorAll(".tap-button");
     const contentPanels = document.querySelector(".tap-panels");
+    const hoverDiv = document.querySelector('.main-head-login');
+    const hoverText = document.querySelector('.inner-user-name');
     let currentIndex = 0; // 현재 활성화된 버튼 인덱스
     let slideInterval; // 슬라이드 타이머
     let isAnimating = false; // 애니메이션 중인지 여부 확인
@@ -75,4 +77,37 @@ document.addEventListener("DOMContentLoaded", function () {
             setTimeout(startSlideShow, 3000); // 3초 후 슬라이드 재개
         });
     });
+
+
+    // 마우스를 올렸을 때
+    hoverDiv.addEventListener('mouseenter', () => {
+        hoverText.textContent = '지금 바로 시작하시겠습니까?';
+    });
+
+    // 마우스를 내렸을 때
+    hoverDiv.addEventListener('mouseleave', () => {
+        hoverText.textContent = '당신의 계획을 현실로';
+    });
+
+
+
+
+
+    const clockArtSix = `
+
+    ________
+   /       /\\
+  / ----- (::\\
+ /©_______®\\::\\
+‖ ‖25-01-21‖ ‖::‖
+‖ ‖        ‖ ‖::‖
+‖ ‖__18:00_‖ ‖::‖
+ \\®  ???  ©/::/
+  \\ ----- (::/
+   \\_______\\/
+`;
+
+    console.clear();
+    console.log('Team_6pm_escaper' + clockArtSix);
+
 });
