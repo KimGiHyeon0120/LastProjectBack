@@ -79,11 +79,13 @@ router.get('/list', async (req, res) => {
             t.due_date AS dueDate, 
             t.start_date AS startDate, 
             t.assigned_to AS assignedTo, 
-            COALESCE(u.user_name, '담당자 없음') AS assignedToName
+            COALESCE(u.user_name, '담당자 없음') AS assignedToName,
+            COALESCE(u.user_profile_image, '../profile/default-profile.png') AS assignedToImage
         FROM Tasks t
         LEFT JOIN Tasks_status s ON t.Tasks_status_id = s.Tasks_status_id
         LEFT JOIN Users u ON t.assigned_to = u.user_idx
-        WHERE t.project_id = ? ${sprintId ? 'AND t.sprint_id = ?' : ''}
+        WHERE t.project_id = ?
+        ${sprintId ? 'AND t.sprint_id = ?' : ''}
         ORDER BY t.due_date ASC;
     `;
 
