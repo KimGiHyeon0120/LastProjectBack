@@ -678,31 +678,24 @@
                             ? task.assignedToImage
                             : '../profile/default-profile.png';
 
-                        // `dropdown_${task.taskId}` 드롭다운 추가 (담당자 없음 포함)
+                        const assignedToName = userMap[task.assignedTo] || '담당자 없음';
+                        console.log(task.assignedToImage)
                         return `
-                            <div class="task" 
-                                 draggable="true" 
-                                 ondragstart="dragTask(event)" 
-                                 data-task-id="${task.taskId}" 
-                                 data-assigned-to="${task.assignedTo}">
+                            <div class="task" draggable="true" ondragstart="dragTask(event)" data-task-id="${task.taskId}" data-assigned-to="${assignedToName}">
                                 <p onclick="openEditTaskPopup(${task.taskId})">${task.taskName}</p>
                                 <div class="assignee-section">
                                     <div class="assignee-dropdown">
                                         <img src="${profileImage}" class="assignee-image" alt="프로필" onclick="window.toggleAssigneeDropdown(${task.taskId})">
-                                        <span class="assignee-name">${task.assignedTo || '담당자 없음'}</span>
+                                        <span class="assignee-name">${assignedToName}</span>
                                     </div>
-                                    <!-- 드롭다운 추가 -->
                                     <div class="dropdown-options hidden" id="dropdown_${task.taskId}">
                                         ${teamMembers.map(member => `
-                                            <div class="dropdown-item" 
-                                                 onclick="selectAssignee(${task.taskId}, ${member.userId}, '${member.profileImage || '../profile/default-profile.png'}', '${member.userName}')">
+                                            <div class="dropdown-item" onclick="selectAssignee(${task.taskId}, ${member.userId}, '${member.profileImage || '../profile/default-profile.png'}', '${member.userName}')">
                                                 <img src="${member.profileImage || '../profile/default-profile.png'}" class="dropdown-image" alt="프로필">
                                                 <span>${member.userName}</span>
                                             </div>
                                         `).join('')}
-                                        <!-- 담당자 없음 옵션 추가 -->
-                                        <div class="dropdown-item" 
-                                             onclick="selectAssignee(${task.taskId}, null, '../profile/default-profile.png', '담당자 없음')">
+                                        <div class="dropdown-item" onclick="selectAssignee(${task.taskId}, null, '../profile/default-profile.png', '담당자 없음')">
                                             <img src="../profile/default-profile.png" class="dropdown-image" alt="프로필">
                                             <span>담당자 없음</span>
                                         </div>
@@ -710,7 +703,7 @@
                                 </div>
                             </div>
                         `;
-                    }).join("");
+                    }).join('');
 
                     const columnHTML = `
                         <div class="board-column" data-status="${status.name}">
