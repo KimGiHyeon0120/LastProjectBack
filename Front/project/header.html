@@ -1,69 +1,27 @@
 <head>
     <link rel="stylesheet" href="../css/header.css">
-    <script src="/proj/assets/lib/jquery-3.7.1.min.js"></script>
 </head>
 
 <body>
-    <!-- 헤더 -->
     <header>
         <div class="header_part">
-            <!-- 햄버거 메뉴 -->
-            <div class="hamburger" onclick="openNav()">☰</div>
-
-            <!-- 로고 -->
+            <div class="hamburger" onclick="toggleNav()">☰</div>
             <div class="logo-container">
                 <img src="../img/logo.png" alt="Plan It 로고">
             </div>
-
-            <!-- 네비게이션 링크 -->
             <div class="nav-left">
                 <a href="#">내 작업</a>
-                <a href="#" onclick="redirectToProjectList()">프로젝트</a>
-
+                <a href="#">프로젝트</a>
             </div>
         </div>
     </header>
-
-    <!-- 사이드바 -->
-    <div id="mySidebar" class="sidebar2">
-        <!-- 닫기 버튼 -->
-        <a class="closebtn" onclick="closeNav()">←</a>
-        <h3>내 칸반 프로젝트</h3>
-        <a href="/Front/project/summary.html">요약</a>
-        <a href="/Front/project/calendar.html">캘린더</a>
-        <a href="/Front/project/board_main.html">보드</a>
-        <a href="/Front/project/list.html">목록</a>
+    
+    <div id="mySidebar">
+        <a href="summary.html" ><img src="../img/summary-icon.png" alt="요약 아이콘" class="icon"><span>요약</span></a>
+        <a href="calendar.html" ><img src="../img/calendar-icon.png" alt="캘린더 아이콘" class="icon"><span>캘린더</span></a>
+        <a href="list.html" ><img src="../img/timeline-icon.png" alt="타임라인 아이콘" class="icon"><span>타임라인</span></a>
+        <a href="board_main.html" ><img src="../img/board-icon.png" alt="보드 아이콘" class="icon"><span>보드</span></a>
+        <a href="#" ><img src="../img/Team-icon.png" alt="팀 아이콘" class="icon"><span>팀 관리</span></a>
     </div>
-
-    <script>
-        function redirectToProjectList() {
-            window.location.href = '../project/projectList.html';
-        }
-        // 사이드바 열기
-        function openNav() {
-            document.getElementById("mySidebar").style.left = "0";
-        }
-
-        // 사이드바 닫기
-        function closeNav() {
-            document.getElementById("mySidebar").style.left = "-250px";
-        }
-
-        // 로그인 상태 확인 및 버튼 업데이트
-        $(document).ready(function () {
-            const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
-
-            if (loggedInUser) {
-                // 로그인된 상태라면 "로그아웃" 버튼으로 변경
-                $("#login-logout-btn").text("로그아웃").attr("href", "#").on("click", function () {
-                    // 로그아웃 동작
-                    localStorage.removeItem("loggedInUser"); // localStorage에서 로그인 정보 제거
-                    window.location.href = "../Login/login.html"; // 로그인 페이지로 리다이렉트
-                });
-            } else {
-                // 로그인되지 않은 상태라면 "로그인" 버튼
-                $("#login-logout-btn").text("로그인").attr("href", "../Login/login.html");
-            }
-        });
-    </script>
+    
 </body>
