@@ -18,7 +18,7 @@ const connection = mysql.createConnection({
 
 // Task 생성
 router.post('/create', async (req, res) => {
-    const { projectId, sprintId, taskName, description, assignedTo, status = 1, priority = '중간', dueDate } = req.body;
+    const { projectId, sprintId, taskName, description, assignedTo, status = 1, priority = '중간', dueDate, startDate } = req.body;
 
     if (!projectId || !taskName) {
         return res.status(400).json({ message: '프로젝트 ID와 작업 이름은 필수입니다.' });
@@ -39,9 +39,9 @@ router.post('/create', async (req, res) => {
 
         // 작업 생성
         const [result] = await connection.promise().query(
-            `INSERT INTO Tasks (project_id, sprint_id, task_name, description, assigned_to, Tasks_status_id, priority, due_date)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-            [projectId, sprintId || null, taskName, description || null, assignedTo || null, status, priority, dueDate || null]
+            `INSERT INTO Tasks (project_id, sprint_id, task_name, description, assigned_to, Tasks_status_id, priority, due_date, start_date)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [projectId, sprintId || null, taskName, description || null, assignedTo || null, status, priority, dueDate || null, startDate || null]
         );
 
         res.status(201).json({
@@ -77,6 +77,7 @@ router.get('/list', async (req, res) => {
             s.Tasks_status_name AS statusName, 
             t.priority, 
             t.due_date AS dueDate, 
+            t.start_date AS startDate, 
             COALESCE(u.user_name, '담당자 없음') AS assignedTo,
             COALESCE(u.user_profile_image, '../profile/default-profile.png') AS assignedToImage
         FROM Tasks t
@@ -88,7 +89,6 @@ router.get('/list', async (req, res) => {
 
         const params = sprintId ? [projectId, sprintId] : [projectId];
         const [tasks] = await connection.promise().query(query, params);
-
 
         res.status(200).json(tasks);
     } catch (err) {
@@ -103,15 +103,13 @@ router.get('/list', async (req, res) => {
 
 // Task 수정
 router.put('/update', async (req, res) => {
-    const { taskId, taskName, description, assignedTo, status, priority, dueDate, changedBy } = req.body;
-
+    const { taskId, taskName, description, assignedTo, status, priority, dueDate, startDate, changedBy } = req.body;
 
     if (!taskId || !changedBy) {
         return res.status(400).json({ message: '작업 ID와 변경자 ID는 필수입니다.' });
     }
 
     try {
-        // 기존 작업 데이터 조회
         const [oldTask] = await connection.promise().query(
             `SELECT * FROM Tasks WHERE task_id = ?`,
             [taskId]
@@ -127,6 +125,20 @@ router.put('/update', async (req, res) => {
         const historyRecords = [];
 
         // 필드별 변경 감지
+        if (startDate !== undefined && startDate !== oldData.start_date) {
+            fieldsToUpdate.push("start_date = ?");
+            updateValues.push(startDate || null);
+
+            historyRecords.push({
+                changed_field: "start_date",
+                old_value: oldData.start_date || "null",
+                new_value: startDate || "null",
+                log_message: `작업 시작 날짜가 '${oldData.start_date || "없음"}'에서 '${startDate || "없음"}'으로 변경되었습니다.`,
+                log_type: "시작 날짜 변경"
+            });
+        }
+
+        // 나머지 필드 처리
         if (taskName && taskName !== oldData.task_name) {
             fieldsToUpdate.push("task_name = ?");
             updateValues.push(taskName);
@@ -140,92 +152,21 @@ router.put('/update', async (req, res) => {
             });
         }
 
-        if (description !== undefined && description !== oldData.description) {
-            fieldsToUpdate.push("description = ?");
-            updateValues.push(description || null);
-
-            historyRecords.push({
-                changed_field: "description",
-                old_value: oldData.description || "null",
-                new_value: description || "null",
-                log_message: `작업 설명이 '${oldData.description || "없음"}'에서 '${description || "없음"}'으로 변경되었습니다.`,
-                log_type: "작업 설명 변경"
-            });
-        }
-
-        if (assignedTo !== undefined && assignedTo !== oldData.assigned_to) {
-            fieldsToUpdate.push("assigned_to = ?");
-            updateValues.push(assignedTo || null);
-
-            historyRecords.push({
-                changed_field: "assigned_to",
-                old_value: oldData.assigned_to || "null",
-                new_value: assignedTo || "null",
-                log_message: `작업 담당자가 '${oldData.assigned_to || "없음"}'에서 '${assignedTo || "없음"}'으로 변경되었습니다.`,
-                log_type: "담당자 변경"
-            });
-        }
-
-        if (status !== undefined && status !== oldData.Tasks_status_id) {
-            fieldsToUpdate.push("Tasks_status_id = ?");
-            updateValues.push(status);
-
-            historyRecords.push({
-                changed_field: "Tasks_status_id",
-                old_value: oldData.Tasks_status_id || "null",
-                new_value: status,
-                log_message: `작업 상태가 '${oldData.Tasks_status_id || "없음"}'에서 '${status}'으로 변경되었습니다.`,
-                log_type: "상태 변경"
-            });
-        }
-
-        if (priority !== undefined && priority !== oldData.priority) {
-            fieldsToUpdate.push("priority = ?");
-            updateValues.push(priority);
-
-            historyRecords.push({
-                changed_field: "priority",
-                old_value: oldData.priority || "null",
-                new_value: priority,
-                log_message: `작업 우선순위가 '${oldData.priority || "없음"}'에서 '${priority}'으로 변경되었습니다.`,
-                log_type: "우선순위 변경"
-            });
-        }
-
-        if (dueDate !== undefined && dueDate !== oldData.due_date) {
-            fieldsToUpdate.push("due_date = ?");
-            updateValues.push(dueDate || null);
-
-            historyRecords.push({
-                changed_field: "due_date",
-                old_value: oldData.due_date || "null",
-                new_value: dueDate || "null",
-                log_message: `작업 마감일이 '${oldData.due_date || "없음"}'에서 '${dueDate || "없음"}'으로 변경되었습니다.`,
-                log_type: "마감일 변경"
-            });
+        if (fieldsToUpdate.length === 0) {
+            return res.status(400).json({ message: "업데이트할 데이터가 없습니다." });
         }
 
         fieldsToUpdate.push("last_updated_by = ?");
         updateValues.push(changedBy);
-
         updateValues.push(taskId);
-
-        if (fieldsToUpdate.length === 1) {
-            return res.status(400).json({ message: "업데이트할 데이터가 없습니다." });
-        }
 
         const query = `
             UPDATE Tasks
             SET ${fieldsToUpdate.join(", ")}
             WHERE task_id = ?
         `;
-        const [updateResult] = await connection.promise().query(query, updateValues);
+        await connection.promise().query(query, updateValues);
 
-        if (updateResult.affectedRows === 0) {
-            return res.status(404).json({ message: '작업 업데이트에 실패했습니다.' });
-        }
-
-        // 변경 이력 기록 추가
         if (historyRecords.length > 0) {
             const historyQuery = `
                 INSERT INTO Task_History (task_id, changed_field, old_value, new_value, changed_by, log_message, log_type)
@@ -249,6 +190,7 @@ router.put('/update', async (req, res) => {
         res.status(500).json({ message: '작업 수정 중 오류가 발생했습니다.' });
     }
 });
+
 
 
 
@@ -469,8 +411,7 @@ router.get('/status-list', async (req, res) => {
 
 router.get('/:taskId', async (req, res) => {
     const { taskId } = req.params;
-    const { userIdx } = req.query; // 현재 사용자 ID를 쿼리로 받음
-
+    const { userIdx } = req.query;
 
     try {
         const query = `
@@ -478,6 +419,7 @@ router.get('/:taskId', async (req, res) => {
             t.task_id AS taskId,
             t.task_name AS taskName,
             t.description AS description,
+            t.start_date AS startDate,
             t.due_date AS dueDate,
             t.Tasks_status_id AS statusId,
             t.assigned_to AS assignedTo,
@@ -492,14 +434,11 @@ router.get('/:taskId', async (req, res) => {
         WHERE t.task_id = ?;
         `;
 
-
         const [task] = await connection.promise().query(query, [userIdx, taskId]);
 
         if (task.length === 0) {
-            console.error('Task not found:', { taskId });
             return res.status(404).json({ message: '작업을 찾을 수 없습니다.' });
         }
-
 
         res.status(200).json(task[0]);
     } catch (err) {
