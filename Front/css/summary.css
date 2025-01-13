@@ -1,0 +1,156 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f5f7;
+}
+
+.container {
+    padding: 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.header .card {
+    text-align: center;
+    flex: 1;
+    margin: 0 10px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.header .card:hover {
+    transform: scale(1.05);
+}
+
+.header .card h2 {
+    margin: 0;
+    color: #333;
+}
+
+.header .card span {
+    font-size: 24px;
+    font-weight: bold;
+    color: #e91e63;
+}
+
+.content {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.hidden {
+    display: none;
+}
+
+/* .row에서 두 컬럼을 수평 배치 */
+.row {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px; /* 두 열 사이에 간격 추가 */
+    margin-top: 20px;
+}
+
+/* 왼쪽 컬럼 스타일 */
+.left-column {
+    flex: 1;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* 오른쪽 컬럼 스타일 */
+.right-column {
+    flex: 1;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* 업무 진행상태 테이블 스타일 */
+#task-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#task-table th, #task-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+#task-table th {
+    background-color: #f4f5f7;
+    font-weight: bold;
+    color: #333;
+}
+
+#task-table td {
+    background-color: #fff;
+    color: #555;
+}
+
+#task-table tr:hover {
+    background-color: #e6e6e6;
+}
+
+#task-table td strong {
+    color: #e91e63;
+}
+
+/* 팀원 목록 스타일 */
+#team-member-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+#team-member-list li {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+#team-member-list li .team-member {
+    display: flex;
+    align-items: center;
+}
+
+#team-member-list li img.profile-image {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+#team-member-list li span {
+    font-size: 16px;
+    color: #333;
+}
+
+#team-member-list li span strong {
+    color: #333;
+}
+
+#team-member-list li:hover {
+    background-color: #e6e6e6;
+}

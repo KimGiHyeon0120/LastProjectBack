@@ -12,6 +12,7 @@ const commentRoutes = require('./routes/comment');
 const notifiRoutes = require('./routes/notification');
 require('dotenv').config();
 const emailRoutes = require('./routes/userVerification');
+const summaryRoutes = require('./routes/summary');
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use('/api/mentions', mentionsRoutes);
 app.use('/api/comment', commentRoutes);
 app.use('/api/notification', notifiRoutes);
 app.use('/api/userVerification', emailRoutes);
+app.use('/api/summary', summaryRoutes);
 
 // 서버 시작
 const PORT = process.env.PORT || 3000;
