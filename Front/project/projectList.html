@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>프로젝트 리스트</title>
+    <link rel="icon" sizes="48x48" href="../img/android-icon-48x48.png">
+    <link rel="apple-touch-icon" sizes="48x48" href="../img/android-icon-48x48.png">
+    <script src="../script/header.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        header {
+            background-color: #f4f5f7;
+            padding: 10px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .projectList-container {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .projectList-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .projectList-header h1 {
+            font-size: 24px;
+        }
+
+        .projectList-create-btn {
+            background-color: #0052cc;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .projectList-create-btn:hover {
+            background-color: #003d99;
+        }
+
+        .projectList-filters {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .projectList-search-bar {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .projectList-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .projectList-table th,
+        .projectList-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .projectList-table th {
+            background-color: #f4f5f7;
+        }
+
+        .projectList-table tr:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 헤더 영역 -->
+    <header>
+        <script>loadHTML("./header.html")</script>
+    </header>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="projectList-container">
+        <div class="projectList-header">
+            <h1>프로젝트</h1>
+            <button class="projectList-create-btn">프로젝트 만들기</button>
+        </div>
+        <table class="projectList-table">
+            <thead>
+                <tr>
+                    <th>이름</th>
+                    <th>리더</th>
+                </tr>
+            </thead>
+            <tbody id="projectList">
+                <!-- 프로젝트 데이터가 동적으로 추가됩니다 -->
+            </tbody>
+        </table>
+    </main>
+
+    <script>
+        $(document).ready(function () {
+            const API_URL = "http://localhost:3000/api/project/list-by-user";
+            //localhost
+            
+            // sessionStorage에서 로그인된 사용자 정보 가져오기
+            const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
+            if (!loggedInUser || !loggedInUser.user_id) {
+                alert("로그인이 필요합니다.");
+                window.location.href = "../Login/login.html";
+                return;
+            }
+    
+            const userId = loggedInUser.user_id; // sessionStorage에 저장된 사용자 ID
+    
+            // `user_id`로 `user_idx`를 가져오기
+            function fetchUserIdx() {
+                return new Promise((resolve, reject) => {
+                    $.ajax({
+                        url: `http://localhost:3000/api/users/get-idx?userId=${userId}`, // user_id로 user_idx 조회
+                        method: "GET",
+                        success: function (data) {
+                            resolve(data.user_idx); // 백엔드에서 user_idx 반환
+                        },
+                        error: function (err) {
+                            reject(err);
+                        },
+                    });
+                });
+            }
+    
+            // 프로젝트 목록 불러오기
+            function fetchProjects(userIdx) {
+                $.ajax({
+                    url: `${API_URL}?userId=${userIdx}`,
+                    method: "GET",
+                    success: function (data) {
+                        renderProjects(data.ownedProjects, data.participatingProjects);
+                    },
+                    error: function (err) {
+                        console.error("프로젝트 목록 불러오기 실패:", err);
+                    },
+                });
+            }
+    
+            // 프로젝트 데이터 렌더링
+            function renderProjects(ownedProjects, participatingProjects) {
+                const projectList = $("#projectList");
+                projectList.empty();
+    
+                // 소유한 프로젝트 추가
+                ownedProjects.forEach((project) => {
+                    projectList.append(`
+                        <tr class="project-row" data-project-id="${project.project_id}">
+                            <td>${project.project_name}</td>
+                            <td>${project.role_name || '역할 없음'}</td>
+                        </tr>
+                    `);
+                });
+    
+                // 참여한 프로젝트 추가
+                participatingProjects.forEach((project) => {
+                    projectList.append(`
+                        <tr class="project-row" data-project-id="${project.project_id}">
+                            <td>${project.project_name}</td>
+                            <td>${project.role_name || '역할 없음'}</td>
+                        </tr>
+                    `);
+                });
+    
+                // 테이블 행 클릭 이벤트 추가
+                $(".project-row").on("click", function () {
+                    const projectId = $(this).data("project-id");
+                    sessionStorage.setItem('projectId', projectId); // projectId를 sessionStorage에 저장
+                    window.location.href = `../project/board_main.html?projectId=${projectId}`;
+                });
+            }
+    
+            // 실행 흐름: user_idx 조회 후 프로젝트 목록 불러오기
+            fetchUserIdx()
+                .then(fetchProjects) // user_idx로 프로젝트 목록 호출
+                .catch((err) => {
+                    console.error("전체 처리 중 오류 발생:", err);
+                });
+        });
+    </script>
+
+</body>
+
+</html>
