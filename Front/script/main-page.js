@@ -75,4 +75,25 @@ document.addEventListener("DOMContentLoaded", function () {
             setTimeout(startSlideShow, 3000); // 3초 후 슬라이드 재개
         });
     });
+
+    const clockArtSix = `
+
+    ________
+   /       /\\
+  / ----- (::\\
+ /©_______®\\::\\
+‖ ‖25-01-21‖ ‖::‖
+‖ ‖        ‖ ‖::‖
+‖ ‖__18:00_‖ ‖::‖
+ \\®  ???  ©/::/
+  \\ ----- (::/
+   \\_______\\/
+`;
+
+    console.clear();
+    console.log('Team_6pm_escaper'+clockArtSix);
+
 });
+
+
+
