@@ -30,7 +30,6 @@ router.post('/send', async (req, res) => {
     }
 
     try {
-        // 작업 정보 가져오기
         const [taskData] = await connection.promise().query(
             `SELECT t.assigned_to AS task_owner, p.project_id
              FROM Tasks t
@@ -110,7 +109,8 @@ router.post('/send', async (req, res) => {
             projectId,
             taskId,
             0, // is_read_by_assignee
-            0  // read_by_team_leader
+            0, // read_by_team_leader
+            sentBy // 추가된 필드
         ]);
 
         console.log('Notifications 데이터:', notifications);
@@ -118,7 +118,7 @@ router.post('/send', async (req, res) => {
         if (notifications.length > 0) {
             const result = await connection.promise().query(
                 `INSERT INTO Notifications (user_idx, message, related_project_id, related_task_id, 
-                                             is_read_by_assignee, read_by_team_leader)
+                                             is_read_by_assignee, read_by_team_leader, sent_by)
                  VALUES ?`,
                 [notifications]
             );
