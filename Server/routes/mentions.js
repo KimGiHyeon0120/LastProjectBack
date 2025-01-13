@@ -22,12 +22,15 @@ const connection = mysql.createConnection({
 router.post('/send', async (req, res) => {
     const { taskId, mentionMessage, mentionedUsers, sentBy } = req.body;
 
+    console.log('받은 요청 데이터:', { taskId, mentionMessage, mentionedUsers, sentBy });
+
     if (!taskId || !mentionMessage || !sentBy) {
+        console.log('필수 데이터 누락:', { taskId, mentionMessage, sentBy });
         return res.status(400).json({ message: '필수 데이터를 모두 입력해주세요.' });
     }
 
     try {
-        // 작업 담당자 및 프로젝트 ID 조회
+        // 작업 정보 가져오기
         const [taskData] = await connection.promise().query(
             `SELECT t.assigned_to AS task_owner, p.project_id
              FROM Tasks t
@@ -36,30 +39,48 @@ router.post('/send', async (req, res) => {
             [taskId]
         );
 
+        console.log('작업 데이터:', taskData);
+
         if (taskData.length === 0) {
+            console.log('작업이 존재하지 않습니다:', { taskId });
             return res.status(404).json({ message: '작업을 찾을 수 없습니다.' });
         }
 
-        const taskOwner = taskData[0].task_owner;
+        const taskOwner = taskData[0].task_owner; // 작업 담당자
         const projectId = taskData[0].project_id;
 
         const notificationRecipients = new Set();
 
-        // 멘션된 사용자 ID 조회
+        // 멘션된 사용자 추가 (공백 포함 사용자명 처리)
         if (mentionedUsers && mentionedUsers.length > 0) {
+            console.log('멘션된 사용자 이름:', mentionedUsers);
+
             const [mentionedMemberIds] = await connection.promise().query(
                 `SELECT user_idx FROM Users WHERE user_name IN (?)`,
                 [mentionedUsers]
             );
-            mentionedMemberIds.forEach(member => notificationRecipients.add(member.user_idx));
+
+            console.log('멘션된 사용자 ID:', mentionedMemberIds);
+
+            if (mentionedMemberIds.length > 0) {
+                mentionedMemberIds.forEach(member => notificationRecipients.add(member.user_idx));
+            } else {
+                console.log('Users 테이블에서 멘션된 사용자를 찾을 수 없습니다:', mentionedUsers);
+            }
         }
+
+        console.log('멘션된 사용자 + 담당자 추가 전 recipients:', Array.from(notificationRecipients));
 
         // 작업 담당자 추가
         if (taskOwner) {
             notificationRecipients.add(taskOwner);
+        } else {
+            console.log('작업 담당자가 설정되어 있지 않습니다.');
         }
 
-        // 멘션 데이터 저장
+        console.log('멘션된 사용자 + 담당자 추가 후 recipients:', Array.from(notificationRecipients));
+
+        // 멘션 데이터 생성
         const mentions = Array.from(notificationRecipients).map(userId => [
             taskId,
             userId,
@@ -67,28 +88,45 @@ router.post('/send', async (req, res) => {
             mentionMessage
         ]);
 
-        await connection.promise().query(
-            `INSERT INTO Mentions (task_id, mentioned_user, sent_by, message)
-             VALUES ?`,
-            [mentions]
-        );
+        console.log('Mentions 데이터:', mentions);
 
-        // 알림 생성
+        // Mentions 저장
+        if (mentions.length > 0) {
+            const result = await connection.promise().query(
+                `INSERT INTO Mentions (task_id, mentioned_user, sent_by, message)
+                 VALUES ?`,
+                [mentions]
+            );
+
+            console.log('Mentions 삽입 결과:', result);
+        } else {
+            console.log('Mentions 데이터가 비어 있습니다. Mentions 삽입을 생략합니다.');
+        }
+
+        // 알림 생성 데이터
         const notifications = Array.from(notificationRecipients).map(userId => [
             userId,
-            `@${sentBy}님이 작업에 멘션했습니다: ${mentionMessage}`,
+            mentionMessage,
             projectId,
             taskId,
             0, // is_read_by_assignee
             0  // read_by_team_leader
         ]);
 
-        await connection.promise().query(
-            `INSERT INTO Notifications (user_idx, message, related_project_id, related_task_id, 
-                                         is_read_by_assignee, read_by_team_leader)
-             VALUES ?`,
-            [notifications]
-        );
+        console.log('Notifications 데이터:', notifications);
+
+        if (notifications.length > 0) {
+            const result = await connection.promise().query(
+                `INSERT INTO Notifications (user_idx, message, related_project_id, related_task_id, 
+                                             is_read_by_assignee, read_by_team_leader)
+                 VALUES ?`,
+                [notifications]
+            );
+
+            console.log('Notifications 삽입 결과:', result);
+        } else {
+            console.log('Notifications 데이터가 비어 있습니다. Notifications 삽입을 생략합니다.');
+        }
 
         res.status(201).json({ message: '멘션과 알림이 성공적으로 처리되었습니다.' });
     } catch (err) {
@@ -96,6 +134,8 @@ router.post('/send', async (req, res) => {
         res.status(500).json({ message: '멘션 및 알림 생성 중 오류가 발생했습니다.' });
     }
 });
+
+
 
 
 

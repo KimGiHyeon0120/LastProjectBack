@@ -1147,10 +1147,23 @@
                 const mentionMessage = $("#mentionMessage").val().trim();
 
                 if (!mentionMessage) {
+                    alert("멘션 메시지를 입력해주세요.");
                     return;
                 }
 
                 const mentionedUsers = extractMentionedUsers(mentionMessage);
+
+                if (mentionedUsers.length === 0) {
+                    alert("멘션 대상 사용자가 없습니다.");
+                    return;
+                }
+
+                console.log("멘션 생성 요청 데이터:", {
+                    taskId,
+                    mentionMessage,
+                    mentionedUsers,
+                    sentBy: userIdx,
+                });
 
                 $.ajax({
                     url: `${API_URL}/mentions/send`,
