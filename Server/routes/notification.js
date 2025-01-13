@@ -134,31 +134,56 @@ router.post('/mentions/send', async (req, res) => {
 
 // 알림 조회 (사용자별)
 router.get('/', async (req, res) => {
-    const { userId } = req.query;
+    const { userId, isTeamLeader } = req.query;
 
     if (!userId) {
         return res.status(400).json({ message: '사용자 ID는 필수입니다.' });
     }
 
     try {
-        const [notifications] = await connection.promise().query(
-            `SELECT n.notification_id, n.message, n.related_project_id, n.related_task_id, 
-                    n.is_read_by_assignee, n.read_by_team_leader, n.created_at, 
-                    t.task_name, p.project_name, 
-                    s.user_name AS sender_name
-             FROM Notifications n
-             LEFT JOIN Tasks t ON n.related_task_id = t.task_id
-             LEFT JOIN Projects p ON n.related_project_id = p.project_id
-             LEFT JOIN Users s ON n.sent_by = s.user_idx
-             WHERE n.user_idx = ?
-             ORDER BY n.created_at DESC`,
-            [userId]
-        );
+        let query = `
+            SELECT n.notification_id, n.message, n.related_project_id, n.related_task_id, 
+                   n.is_read_by_assignee, n.read_by_team_leader, n.created_at, 
+                   t.task_name, t.sprint_id, p.project_name, 
+                   s.sprint_name, u.user_name AS sender_name
+            FROM Notifications n
+            LEFT JOIN Tasks t ON n.related_task_id = t.task_id
+            LEFT JOIN Sprints s ON t.sprint_id = s.sprint_id
+            LEFT JOIN Projects p ON n.related_project_id = p.project_id
+            LEFT JOIN Users u ON n.sent_by = u.user_idx
+        `;
+
+        const queryParams = [];
+
+        // 팀장인지 확인하고 쿼리 조건 추가
+        if (isTeamLeader === 'true') {
+            query += `WHERE n.related_project_id IN (
+                        SELECT pm.project_id
+                        FROM Project_Members pm
+                        JOIN Project_Roles pr ON pm.project_role_id = pr.project_role_id
+                        WHERE pm.user_idx = ? AND pr.project_role_name = '팀장'
+                      )`;
+            queryParams.push(userId);
+        } else {
+            query += `WHERE n.user_idx = ?`;
+            queryParams.push(userId);
+        }
+
+        query += ` ORDER BY n.created_at DESC`;
+
+        const [notifications] = await connection.promise().query(query, queryParams);
+
+        if (!notifications.length) {
+            return res.status(404).json({ message: '알림이 없습니다.' });
+        }
 
         res.status(200).json(notifications);
     } catch (err) {
         console.error('알림 조회 오류:', err);
-        res.status(500).json({ message: '알림 조회 중 오류가 발생했습니다.', error: err.message });
+        res.status(500).json({ 
+            message: '알림 조회 중 오류가 발생했습니다.', 
+            error: err.message 
+        });
     }
 });
 

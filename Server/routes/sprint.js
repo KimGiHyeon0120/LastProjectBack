@@ -181,6 +181,7 @@ router.delete('/delete', async (req, res) => {
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
+
 // 프로젝트 ID로 스프린트와 태스크 조회
 router.get('/list-with-tasks', async (req, res) => {
     const { projectId } = req.query;
@@ -198,10 +199,43 @@ router.get('/list-with-tasks', async (req, res) => {
 
         for (const sprint of sprints) {
             const [tasks] = await connection.promise().query(
-                `SELECT task_id AS taskId, task_name AS taskName, description, Tasks_status_id AS statusId, priority
-                 FROM Tasks WHERE sprint_id = ?`,
+                `SELECT 
+                    t.task_id AS taskId, 
+                    t.task_name AS taskName, 
+                    t.description, 
+                    t.Tasks_status_id AS statusId, 
+                    t.priority, 
+                    t.due_date AS dueDate, 
+                    t.start_date AS startDate, 
+                    t.assigned_to AS assignedTo, 
+                    COALESCE(u.user_name, '담당자 없음') AS assignedToName -- 담당자 이름 추가
+                 FROM Tasks t
+                 LEFT JOIN Users u ON t.assigned_to = u.user_idx -- Users 테이블과 연결
+                 WHERE t.sprint_id = ?`,
                 [sprint.sprintId]
             );
+
+            // 우선순위 자동 설정
+            const now = new Date();
+            tasks.forEach(task => {
+                if (task.dueDate) {
+                    const dueDate = new Date(task.dueDate);
+                    const daysLeft = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24)); // 날짜 차이 계산
+
+                    if (daysLeft <= 1) {
+                        task.priority = '긴급';
+                    } else if (daysLeft <= 3) {
+                        task.priority = '높음';
+                    } else if (daysLeft <= 5) {
+                        task.priority = '중간';
+                    } else if (daysLeft <= 7) {
+                        task.priority = '낮음';
+                    } else {
+                        task.priority = '낮음';
+                    }
+                }
+            });
+
             sprint.tasks = tasks; // 스프린트에 태스크 추가
         }
 
@@ -211,6 +245,7 @@ router.get('/list-with-tasks', async (req, res) => {
         res.status(500).json({ message: '스프린트와 태스크 조회 중 오류가 발생했습니다.' });
     }
 });
+
 
 
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
