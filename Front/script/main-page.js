@@ -3,19 +3,26 @@ document.addEventListener("DOMContentLoaded", function () {
     const contentPanels = document.querySelector(".tap-panels");
     let currentIndex = 0; // 현재 활성화된 버튼 인덱스
     let slideInterval; // 슬라이드 타이머
+    let isAnimating = false; // 애니메이션 중인지 여부 확인
 
     // 콘텐츠 로드 함수
     async function loadContent(index) {
+        if (isAnimating) return; // 애니메이션 중이면 실행하지 않음
+        isAnimating = true;
+
         // 기존 활성화된 콘텐츠 삭제
         const activePanel = contentPanels.querySelector(".tap-panels-inner.active");
         if (activePanel) {
-            activePanel.classList.add("exit"); // 슬라이드 아웃 애니메이션
-            setTimeout(() => activePanel.remove(), 500); // 애니메이션 종료 후 삭제
+            activePanel.classList.add("animate__animated", "animate__fadeOutLeftBig");
+            activePanel.addEventListener("animationend", function () {
+                activePanel.remove();
+                isAnimating = false; // 애니메이션 완료 후 상태 해제
+            }, { once: true }); // 한 번만 실행
         }
 
         // 새 콘텐츠 생성 및 추가
         const newPanel = document.createElement("div");
-        newPanel.classList.add("tap-panels-inner");
+        newPanel.classList.add("tap-panels-inner", "animate__animated", "animate__fadeInRightBig");
         contentPanels.appendChild(newPanel);
 
         try {
@@ -29,12 +36,10 @@ document.addEventListener("DOMContentLoaded", function () {
             newPanel.innerHTML = html;
 
             // 새 콘텐츠 활성화
-            setTimeout(() => {
+            newPanel.addEventListener("animationend", function () {
                 newPanel.classList.add("active");
-                animateReset();
-                contentPanels.classList.add('animate__animated', 'animate__fadeOutLeftBig',
-                     'animate__delay-4.9s');
-            }, 50);
+                isAnimating = false; // 애니메이션 완료 후 상태 해제
+            }, { once: true });
         } catch (error) {
             newPanel.innerHTML = `<p>오류: ${error.message}</p>`;
         }
@@ -44,19 +49,12 @@ document.addEventListener("DOMContentLoaded", function () {
         buttons[index].classList.add("active");
     }
 
-    function animateReset() {
-        const animate = document.querySelector(".tap-panels");
-        animate.addEventListener('animationend', function () {
-            animate.classList.remove('animate__animated', 'animate__fadeOutLeftBig')
-        })
-    }
-
     // 슬라이드 자동 전환
     function startSlideShow() {
         slideInterval = setInterval(() => {
             currentIndex = (currentIndex + 1) % buttons.length; // 다음 인덱스 계산
             loadContent(currentIndex);
-        }, 5000); // 5초 간격
+        }, 5200); // 5.2초 간격
     }
 
     // 슬라이드 중지
