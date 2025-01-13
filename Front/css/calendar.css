@@ -1,0 +1,107 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px;
+}
+
+.calendar {
+    text-align: center;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.header button {
+    border: none;
+    background: none;
+    font-size: 20px; /* Increased button font size */
+    cursor: pointer;
+}
+
+.weekdays, .days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0;
+    background-color: #ddd;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.weekdays {
+    background-color: #f0f0f0;
+    font-weight: bold;
+    border: 1px solid #ddd;
+}
+
+.weekday {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 60px; /* Increased height of weekdays */
+    border-right: 1px solid #ddd;
+    font-size: 18px; /* Increased font size for weekdays */
+}
+
+.weekday:last-child {
+    border-right: none;
+}
+
+.days {
+    padding: 0;
+    border-top: 1px solid #ddd;
+}
+
+.day {
+    width: 100px; /* Increased width */
+    height: 120px; /* Increased height */
+    display: flex;
+    align-items: flex-start; /* 날짜를 상단으로 정렬 */
+    justify-content: flex-end; /* 날짜를 오른쪽으로 정렬 */
+    background-color: white; /* 배경색 하얀색 */
+    border-left: 1px solid #ddd;
+    box-sizing: border-box;
+    padding: 10px; /* Increased padding */
+    position: relative;
+    font-size: 20px; /* Increased font size for dates */
+}
+
+.day.blank {
+    background-color: #f0f0f0;
+    color: #aaa;
+}
+
+.day.sun {
+    background-color: #f8d7da; /* 일요일 색상 */
+}
+
+.day.sat {
+    background-color: #d1ecf1; /* 토요일 색상 */
+}
+
+.day:last-child {
+    border-right: 1px solid #ddd;
+}
+
+/* 가로줄 추가 */
+.day {
+    border-bottom: 1px solid #ddd; /* 가로줄 추가 */
+}
+
+/* 오늘 날짜 숫자만 강조 */
+.day.today span {
+    background-color: #ff6961; /* 오늘 날짜 숫자 배경색 */
+    color: white; /* 숫자 텍스트 색상 */
+    padding: 3px; /* Adjust padding for the smaller circle */
+    border-radius: 50%; /* 원형 강조 */
+    display: inline-block;
+    width: 23px; /* 원의 크기 */
+    height: 23px; /* 원의 크기 */
+    text-align: center; /* 숫자 중앙 정렬 */
+    line-height: 15px; /* 숫자 세로 중앙 정렬 */
+}

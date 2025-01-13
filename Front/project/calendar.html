@@ -1,72 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title></title>
-    <link rel="stylesheet" href="../css/sample_01.css">
+    <link rel="stylesheet" href="../css/calendar.css">
     <link rel="icon" sizes="48x48" href="../img/android-icon-48x48.png">
     <link rel="apple-touch-icon" sizes="48x48" href="../img/android-icon-48x48.png">
 
-    <script src="/proj/assets/lib/jquery-3.7.1.min.js"></script>
+    <script src="../lib/jquery-3.7.1.min.js"></script>
     <script src="../script/header.js"></script>
 </head>
-<body>
-        <!-- 헤더 영역 -->
-        <header>
-            <script>loadHTML("./header.html")</script>
-        </header>
 
-    <div class="main">
-    <div class="header">
-        <h1>프로젝트 타임라인</h1>
-    </div>
-    <div class="horizontal-timeline">
-        <div class="timeline-row">
-            <div class="timeline-item completed">
-                <div class="timeline-marker"></div>
-                <div class="timeline-content">
-                    <h3>Task 1</h3>
-                    <p>2025-01-01</p>
-                    <p>Project kickoff</p>
-                </div>
-            </div>
-            <div class="timeline-item in-progress">
-                <div class="timeline-marker"></div>
-                <div class="timeline-content">
-                    <h3>Task 2</h3>
-                    <p>2025-01-02</p>
-                    <p>Development begins</p>
-                </div>
-            </div>
-            <div class="timeline-item pending">
-                <div class="timeline-marker"></div>
-                <div class="timeline-content">
-                    <h3>Task 3</h3>
-                    <p>2025-01-03</p>
-                    <p>Testing phase starts</p>
-                </div>
-            </div>
+<body>
+    <!-- 헤더 영역 -->
+    <header>
+        <script>loadHTML("./header.html")</script>
+    </header>
+
+    <div class="calendar">
+        <div class="header">
+            <div id="month-year"></div>
+            <button id="prev">◀</button>
+            <button id="today">오늘</button>
+            <button id="next">▶</button>
         </div>
-        <div class="timeline-row">
-            <div class="timeline-item completed">
-                <div class="timeline-marker"></div>
-                <div class="timeline-content">
-                    <h3>Task 4</h3>
-                    <p>2025-01-04</p>
-                    <p>Feedback collection</p>
-                </div>
-            </div>
-            <div class="timeline-item pending">
-                <div class="timeline-marker"></div>
-                <div class="timeline-content">
-                    <h3>Task 5</h3>
-                    <p>2025-01-05</p>
-                    <p>Final deployment</p>
-                </div>
-            </div>
+        <div class="weekdays">
+            <div class="weekday">일</div>
+            <div class="weekday">월</div>
+            <div class="weekday">화</div>
+            <div class="weekday">수</div>
+            <div class="weekday">목</div>
+            <div class="weekday">금</div>
+            <div class="weekday">토</div>
         </div>
+        <div class="days" id="calendar-days"></div>
     </div>
-</div>
+
+    <script>
+        const daysElement = document.getElementById("calendar-days");
+        const monthYearElement = document.getElementById("month-year");
+        const prevButton = document.getElementById("prev");
+        const nextButton = document.getElementById("next");
+        const todayButton = document.getElementById("today");
+
+        let currentDate = new Date();
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
+
+            const prevLastDate = new Date(year, month, 0).getDate(); // 이전 달의 마지막 날짜
+            const nextMonthStart = 1; // 다음 달 시작 날짜
+
+            monthYearElement.textContent = `${year}년 ${month + 1}월`;
+
+            daysElement.innerHTML = "";
+
+            // 이전 달의 날짜 표시
+            for (let i = firstDay - 1; i >= 0; i--) {
+                const blank = document.createElement("div");
+                blank.classList.add("day", "blank");
+                blank.textContent = prevLastDate - i;
+                daysElement.appendChild(blank);
+            }
+
+            // 이번 달의 날짜 표시
+            const today = new Date();
+            for (let date = 1; date <= lastDate; date++) {
+                const dayElement = document.createElement("div");
+                dayElement.classList.add("day");
+
+                // 일요일과 토요일 색상 적용
+                if (new Date(year, month, date).getDay() === 0) {
+                    dayElement.classList.add("sun"); // 일요일
+                } else if (new Date(year, month, date).getDay() === 6) {
+                    dayElement.classList.add("sat"); // 토요일
+                }
+
+                // 숫자만 강조하는 span 태그 추가
+                const dayNumber = document.createElement("span");
+                dayNumber.textContent = date;
+
+                if (
+                    year === today.getFullYear() &&
+                    month === today.getMonth() &&
+                    date === today.getDate()
+                ) {
+                    dayElement.classList.add("today");
+                }
+
+                dayElement.appendChild(dayNumber);
+                daysElement.appendChild(dayElement);
+            }
+
+            // 다음 달의 날짜 표시
+            const remainingDays = 7 - ((firstDay + lastDate) % 7 || 7);
+            for (let i = 0; i < remainingDays; i++) {
+                const blank = document.createElement("div");
+                blank.classList.add("day", "blank");
+                blank.textContent = nextMonthStart + i;
+                daysElement.appendChild(blank);
+            }
+        }
+
+        function changeMonth(offset) {
+            currentDate.setMonth(currentDate.getMonth() + offset);
+            renderCalendar();
+        }
+
+        prevButton.addEventListener("click", () => changeMonth(-1));
+        nextButton.addEventListener("click", () => changeMonth(1));
+        todayButton.addEventListener("click", () => {
+            currentDate = new Date();
+            renderCalendar();
+        });
+
+        renderCalendar();
+    </script>
 </body>
+
 </html>
