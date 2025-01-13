@@ -1,128 +1,164 @@
- /* Reset 스타일 */
- * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: Arial, sans-serif;
-    background-color: #ffffff;
-    overflow-x: hidden;
-}
-
-/* =============================================== /*
 
 /* 상단 네비게이션 */
 header {
-    background-color: white;
-    padding: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     position: fixed;
-    width: 100%;
-    z-index: 100;
     top: 0;
+    left: 0;
+    width: 100%;
+    height: 54px; /* 헤더 높이 */
+    background-color: white;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #091E4224;
+    padding: 0 px;
 }
+
 
 .header_part {
     display: flex;
     align-items: center; /* 세로 정렬 */
     justify-content: flex-start; /* 왼쪽 정렬 */
-    padding: 0 20px;
+    padding: 0 10px;
 }
 
 
 .hamburger {
-    font-size: 24px;
+    font-size: 22px;
     cursor: pointer;
-    color: black;
-    margin-right: 30px; /* 로고와 간격 */
+    color: #172b4d;
+    margin-right: 10px; /* 로고와 간격 */
+ /* 버튼 너비와 높이를 동일하게 */
+    padding: 0px 9px 5px;
+    display: flex;
+    align-items: center; /* 텍스트 수직 정렬 */
+    justify-content: center; /* 텍스트 수평 정렬 */
+    border-radius: 50%; /* 완전히 동그란 원 모양 */
+    transition: background-color 0.3s ease, color 0.3s ease; /* 부드러운 전환 효과 */
 }
 
-
-.logo-container {
-    margin-right: 20px; /* 네비게이션과 간격 */
+.hamburger:hover {
+    background-color: #e0e0e0; /* 호버 시 배경색 */
 }
+.hamburger:active  {
+    background-color: #c4c4c4; /* 호버 시 배경색 */
+}
+
 
 .logo-container img {
-    max-height: 50px;
+    border-radius: 4px; /* 둥근 모서리 추가 */
+    padding: 4px; /* 배경색 효과를 위해 여백 추가 */
+    max-height: 40px;
     width: auto;
+    transition: background-color 0.3s ease, color 0.3s ease; /* 부드러운 전환 효과 */
+}
+.logo-container img:hover {
+    background-color: #e0e0e0; /* 호버 시 배경색 */
+}
+.logo-container img:active {
+    background-color: #c4c4c4; /* 호버 시 배경색 */
 }
 .nav-left {
     display: flex;
     justify-content: flex-start; /* 왼쪽 정렬 */
 }
 .nav-left a {
-    font-size: 0.9375rem; /* 글씨 크기 줄이기 */
-    color: black;
+    font-size: 15px; /* 글씨 크기 줄이기 */
+    color: #172b4d;
     text-decoration: none;
     transition: color 0.2s, background-color 0.2s; /* 배경색 전환 애니메이션 추가 */
-    margin: 0 8px; /* 간격을 좁혀줌 */
-    padding: 5px 10px; /* 배경색 효과를 위해 여백 추가 */
+    margin: 10px; /* 간격을 좁혀줌 */
+    padding: 4px; /* 배경색 효과를 위해 여백 추가 */
     border-radius: 4px; /* 둥근 모서리 추가 */
     position: relative; /* ::after를 위해 위치 속성 설정 */
 
 }
 
 .nav-left a:hover {
-    color: black;
-    background-color: #f4f4f4; /* 배경색 추가 */
+   
+    background-color: #e0e0e0; /* 배경색 추가 */
+}
+.nav-left a:active  {
+    background-color: #c4c4c4; /* 호버 시 배경색 */
 }
 
 
 
 /* =============================================== /*
-
 /* 사이드바 */
-
-.sidebar2 {
-    width: 250px;
-    height: 100%;
+#mySidebar {
     position: fixed;
-    top: 0;
-    left: -250px; /* 닫힌 상태 */
-    background-color: #8ABFA3;
-    transition: left 0.3s ease; /* 부드러운 애니메이션 */
-    z-index: 1000;
-    padding-top: 60px;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+    top: 54px;
+    left: 0;
+    width: 60px;
+    height: calc(100% - 69px);
+    background-color: white;
+    border-right: 1px solid #091E4224;
+    overflow: hidden;
+    transition: width 0.3s ease; /* 사이드바 확장 애니메이션 */
+    z-index: 2;
 }
 
-.sidebar2 h3 {
-    margin: 20px;
-    color: #605678;
-}
-
-.sidebar2 a {
-    display: block;
-    padding: 10px 20px;
+/* 사이드바 내부 링크 */
+#mySidebar a {
+    border-radius: 4px; /* 각 모서리를 10px로 둥글게 */
+    display: flex;
+    align-items: center;
+    padding: 10px 12px; /* 위아래 10px, 좌우 10px */
+    margin: 6px;
     text-decoration: none;
     color: #605678;
     font-size: 15px;
-    white-space: nowrap;
+    white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+    transition: background-color 0.3s ease;
 }
 
-.sidebar2 a:hover {
+/* 아이콘 스타일 */
+#mySidebar a img.icon {
+    width: 24px; /* 아이콘 너비 */
+    height: 24px; /* 아이콘 높이 */
+    margin-right: 9px; /* 아이콘과 텍스트 간격 */
+    vertical-align: middle; /* 텍스트와 정렬 */
+}
+
+/* 텍스트 숨기기 */
+#mySidebar a span {
+    display: none; /* 기본 상태에서 숨김 */
+    transition: opacity 0.3s ease; /* 부드러운 전환 */
+}
+
+/* 확장된 상태에서 텍스트 표시 */
+#mySidebar.expanded a span {
+    display: inline;
+    opacity: 1;
+}
+
+/* 링크 호버 스타일 */
+#mySidebar a:hover {
     background-color: #D3EE98;
     color: #8ABFA3;
     font-weight: bold;
 }
-
-.sidebar2 .closebtn {
-    color: #605678;
-    text-decoration: none;
-    font-size: 24px;
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    cursor: pointer;
+#mySidebar a:active {
+    background-color: #A3D7B2;  /* 클릭 중인 배경색 (기존의 hover 스타일과 구분) */
+    color: #4D8F5B;  /* 클릭 중인 텍스트 색상 */
+    font-weight: bold;  /* 클릭 중인 글씨 강조 */
 }
 
-.header_part .nav-right {
-    margin-right: 20px;
+/* 현재 페이지가 활성화된 링크 */
+#mySidebar a.active {
+    background-color: #A3D7B2; /* 활성화된 링크의 배경색 */
+    color: #4D8F5B; /* 활성화된 링크의 텍스트 색상 */
+    font-weight: bold; /* 활성화된 링크의 글씨 강조 */
 }
 
-.header_part > .nav-right > a:hover {
-    font-weight: bold;
-    text-decoration: underline;
+/* 확장된 사이드바 */
+#mySidebar.expanded {
+    width: 200px; /* 확장 시 사이드바 너비 */
+}
+
+/* 메인 콘텐츠 영역 */
+.main {
+    margin-top: 60px; /* 헤더 높이만큼 공간을 둔다 */
+    transition: margin-left 0.3s ease; /* margin-left 애니메이션 */
 }
