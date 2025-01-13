@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>작업 진행 상태</title>
-    <link rel="icon" sizes="48x48" href="../img/android-icon-48x48.png">
-    <link rel="apple-touch-icon" sizes="48x48" href="../img/android-icon-48x48.png">
+    <link rel="icon" sizes="48x48" href="../img/logo.png">
+    <link rel="apple-touch-icon" sizes="48x48" href="../img/logo.png">
     <style>
         /* 고정 헤더 스타일 */
         header {
@@ -527,6 +527,18 @@
                 <!-- 스프린트 및 작업 데이터가 동적으로 추가됩니다 -->
             </div>
         </div>
+
+        <!-- 알림 -->
+        <div id="notificationWrapper">
+            <div id="notificationIcon">
+                <i class="fa fa-bell"></i>
+                <span id="notificationBadge" class="badge">0</span>
+            </div>
+            <div id="notificationDropdown" class="dropdown hidden"></div>
+        </div>
+
+
+
     </div>
 
 
@@ -584,21 +596,14 @@
 
 
 
-    <!-- 알림 -->
-    <div id="notificationWrapper">
-        <div id="notificationIcon">
-            <i class="fa fa-bell"></i>
-            <span id="notificationBadge" class="badge">0</span>
-        </div>
-        <div id="notificationDropdown" class="dropdown hidden"></div>
-    </div>
+
 
     <script>
 
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
         const projectId = sessionStorage.getItem("projectId");
         const userIdx = sessionStorage.getItem("userIdx"); // 로그인된 사용자 ID
-        const API_URL = "http://192.168.20.37:3000/api";
+        const API_URL = "http://localhost:3000/api";
         //192.168.20.37
 
         let userRole = null;
