@@ -9,779 +9,8 @@
     <link rel="apple-touch-icon" sizes="48x48" href="../img/android-icon-48x48.png">
     <script src="../lib/jquery-3.7.1.min.js"></script>
     <script src="../script/header.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f5f7;
-        }
-
-        .main {
-            padding: 15px;
-            margin-top: 80px;
-        }
-
-        .sprint-board {
-            margin-top: 15px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            justify-content: center;
-        }
-
-        /* 스프린트 카드 스타일 */
-        .sprint {
-            border: 1px solid #ddd;
-            background-color: #fff;
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            width: 700px;
-            max-width: 90%;
-            margin-bottom: 20px;
-            /* 스프린트 간 간격 추가 */
-            transition: transform 0.2s ease;
-        }
-
-        .sprint:hover {
-            transform: translateY(-2px);
-            /* 살짝 떠오르는 효과 */
-        }
-
-        .sprint-header {
-            display: flex;
-            justify-content: space-between;
-            /* 좌우로 배치 */
-            align-items: center;
-            margin-bottom: 8px;
-            text-align: left;
-            /* 텍스트는 왼쪽 정렬 */
-            position: relative;
-            /* 삭제 버튼 위치 기준 */
-            padding: 0 10px;
-            /* 좌우 여백 추가 */
-        }
-
-        /* 스프린트 제목 스타일 */
-        .sprint-header h3 {
-            margin: 0;
-            font-size: 18px;
-            /* 크기를 약간 키움 */
-            font-weight: bold;
-            color: #333;
-            text-align: left;
-            /* 제목은 왼쪽 정렬 */
-            flex-grow: 1;
-            /* 제목이 가능한 공간을 차지하도록 */
-        }
-
-        /* 스프린트 날짜 스타일 */
-        .sprint-dates {
-            font-size: 14px;
-            /* 약간 크기 키움 */
-            color: #666;
-            /* 더 차분한 색상 */
-            text-align: right;
-            /* 날짜는 오른쪽 정렬 */
-            margin: 0;
-            flex-shrink: 0;
-            /* 날짜 영역 크기 고정 */
-            margin-right: 50px;
-        }
-
-        /* 스프린트 컨텐츠 */
-        .sprint-content {
-            padding: 10px;
-            /* 연한 배경 추가 */
-            border-radius: 4px;
-            /* 모서리 둥글게 */
-        }
-
-
-
-        /* 작업 이름 기본 스타일 */
-        .task-name {
-            cursor: pointer;
-            color: #007bff;
-            /* 파란색 */
-            font-weight: normal;
-            /* 기본 글씨 두께 */
-            transition: color 0.2s ease, font-weight 0.2s ease;
-            /* 전환 효과 */
-        }
-
-        /* 작업 이름에 마우스 오버 시 스타일 */
-        .task-name:hover {
-            color: #0056b3;
-            /* 더 진한 파란색 */
-            font-weight: bold;
-            /* 글씨 두께를 굵게 변경 */
-            text-decoration: underline;
-            /* 밑줄 추가 (선택 사항) */
-        }
-
-
-        .task-priority {
-            flex-shrink: 0;
-            font-size: 12px;
-            color: #888;
-        }
-
-        #addSprintBtn {
-            margin-top: 15px;
-            display: inline-block;
-            background-color: #40a9ff;
-            color: #fff;
-            border: none;
-            padding: 8px 12px;
-            font-size: 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.3s ease;
-        }
-
-        #addSprintBtn:hover {
-            background-color: #1890ff;
-        }
-
-
-
-
-
-
-
-
-
-
-
-        /* 팝업 스타일 */
-        .popup {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 400px;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            padding: 20px;
-        }
-
-        .popup-header {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .popup-form {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .popup-form input {
-            padding: 8px;
-            font-size: 14px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-
-        .popup-buttons {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 15px;
-        }
-
-        .popup-buttons button {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .popup-buttons .cancel-btn {
-            background-color: #ddd;
-        }
-
-        .popup-buttons .cancel-btn:hover {
-            background-color: #bbb;
-        }
-
-        .popup-buttons .create-btn {
-            background-color: #40a9ff;
-            color: #fff;
-        }
-
-        .popup-buttons .create-btn:hover {
-            background-color: #1890ff;
-        }
-
-        /* 팝업 배경 */
-        .popup-background {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.3);
-            z-index: 999;
-        }
-
-
-
-        /* 옵션 버튼 스타일 */
-        .sprint-header .options-btn {
-            background-color: transparent;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #333;
-        }
-
-        .sprint-header .options-btn:hover {
-            color: #888;
-        }
-
-        /* 드롭다운 메뉴 스타일 */
-        .options-menu {
-            display: none;
-            position: absolute;
-            right: 10px;
-            top: 100%;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            z-index: 100;
-            width: 120px;
-        }
-
-        .options-menu button {
-
-            display: block;
-            width: 100%;
-            padding: 8px;
-            background-color: transparent;
-            border: none;
-            text-align: left;
-            font-size: 14px;
-            cursor: pointer;
-            color: #333;
-        }
-
-        .options-menu button:hover {
-            background-color: #f9f9f9;
-            color: #000;
-        }
-
-
-
-
-
-
-
-
-        /* 우선순위 및 상태 드롭다운 스타일 */
-        /* 드롭다운 기본 스타일 */
-        .priority-dropdown,
-        .status-dropdown {
-            -webkit-appearance: none;
-            /* Chrome, Safari, Edge 등 웹킷 기반 브라우저 */
-            -moz-appearance: none;
-            /* Firefox */
-            appearance: none;
-            /* 최신 브라우저 */
-            width: 40%;
-            /* 드롭다운이 셀을 꽉 채우도록 */
-            height: 35px;
-            /* 드롭다운 높이를 약간 늘려 가독성 향상 */
-            font-size: 14px;
-            /* 텍스트 크기 조정 */
-            padding: 6px 10px;
-            /* 안쪽 여백 */
-            border: 1px solid #ddd;
-            /* 테두리 색상 */
-            border-radius: 6px;
-            /* 둥근 테두리 */
-            background-color: #fff;
-            /* 배경색 */
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-            /* 그림자 효과 */
-            text-align: center;
-            /* 드롭다운 내부 텍스트 가운데 정렬 */
-            color: #333;
-            /* 텍스트 색상 */
-            transition: box-shadow 0.3s ease, border-color 0.3s ease;
-            /* 포커스 시 효과 */
-        }
-
-        /* 드롭다운 선택 시 스타일 */
-        .priority-dropdown:focus,
-        .status-dropdown:focus {
-            border-color: #40a9ff;
-            /* 선택 시 테두리 색상 변경 */
-            outline: none;
-            /* 기본 outline 제거 */
-            box-shadow: 0 0 6px rgba(64, 169, 255, 0.5);
-            /* 선택 시 그림자 효과 */
-            background-color: #f0f9ff;
-            /* 포커스 시 배경색 변경 */
-        }
-
-        /* 드롭다운 호버 효과 */
-        .priority-dropdown:hover,
-        .status-dropdown:hover {
-            background-color: #f7faff;
-            /* 호버 시 배경색 */
-            cursor: pointer;
-            /* 포인터 커서로 변경 */
-        }
-
-
-        /* 작업 카드 */
-        .task-card {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            /* 각 요소 간의 간격 균등 분배 */
-            padding: 8px 10px;
-            background-color: #f9f9f9;
-            border: 1px solid #b3d9ff;
-            /* 연한 하늘색 테두리 */
-            border-radius: 4px;
-            /* 테두리에 약간의 곡선 추가 */
-            cursor: pointer;
-            margin-top: 5px;
-            margin-bottom: 5px;
-            font-size: 14px;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            /* 인터렉션 효과 추가 */
-        }
-
-        /* 작업 이름 텍스트 스타일 */
-        .task-card p {
-            flex: 1;
-            /* 가능한 공간을 차지하도록 */
-            margin: 0;
-            padding-right: 10px;
-            /* 우선순위와의 간격 확보 */
-            overflow: hidden;
-            /* 넘치는 텍스트 숨김 */
-            text-overflow: ellipsis;
-            /* 말줄임표 추가 */
-            white-space: nowrap;
-            /* 텍스트 줄바꿈 방지 */
-        }
-
-
-        .task-card:hover {
-            background-color: #e6f7ff;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-
-
-        /* 작업 이름과 상태 간격 조정 */
-        .task-card p+p {
-            margin-left: 15px;
-            /* 요소 간 간격 추가 */
-        }
-
-        /* 작업 이름 스타일 */
-        .task-card p strong {
-            display: block;
-            /* 작업 이름을 블록 요소로 변경 */
-            font-weight: bold;
-            color: #333;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-
-
-
-        /* 팀원 읽기 전용 스타일 */
-        .readonly-dropdown {
-            background-color: #f9f9f9;
-            /* 읽기 전용 스타일 배경 */
-            color: #555;
-            /* 텍스트 색상 */
-            pointer-events: none;
-            /* 클릭 불가 */
-            border: none;
-            /* 테두리 제거 */
-            font-size: 14px;
-            /* 텍스트 크기 */
-            text-align: center;
-            /* 텍스트 가운데 정렬 */
-        }
-
-
-
-        /* + 추가 버튼 */
-        .add-task-btn-wrapper {
-            text-align: center;
-            margin-top: 10px;
-        }
-
-        .add-task-btn {
-            background-color: #40a9ff;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            font-size: 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
-
-        .add-task-btn:hover {
-            background-color: #1890ff;
-            transform: scale(1.05);
-            /* 살짝 확대 */
-        }
-
-
-
-
-
-        textarea#taskDescription {
-            width: 100%;
-            /* 부모 요소의 전체 폭을 사용 */
-            height: 120px;
-            /* 높이를 늘려 가독성 향상 */
-            padding: 10px;
-            /* 안쪽 여백 */
-            border: 1px solid #ccc;
-            /* 연한 테두리 */
-            border-radius: 6px;
-            /* 둥근 모서리 */
-            font-size: 14px;
-            /* 글씨 크기 */
-            font-family: Arial, sans-serif;
-            /* 글씨체 */
-            resize: none;
-            /* 크기 조절 불가능 */
-            background-color: #f9f9f9;
-            /* 배경색 */
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            /* 약간의 그림자 */
-            transition: box-shadow 0.3s ease, border-color 0.3s ease;
-            /* 포커스 시 효과 */
-        }
-
-        textarea#taskDescription:focus {
-            outline: none;
-            /* 기본 포커스 테두리 제거 */
-            border-color: #40a9ff;
-            /* 포커스 시 테두리 색 변경 */
-            box-shadow: 0 0 6px rgba(64, 169, 255, 0.5);
-            /* 포커스 시 그림자 효과 */
-        }
-
-        /* 작업 이름 입력 박스 */
-        input#taskName {
-            width: 100%;
-            /* 전체 폭 */
-            height: 40px;
-            /* 높이 */
-            padding: 10px;
-            /* 안쪽 여백 */
-            border: 1px solid #ccc;
-            /* 테두리 색 */
-            border-radius: 6px;
-            /* 둥근 모서리 */
-            font-size: 14px;
-            /* 글씨 크기 */
-            font-family: Arial, sans-serif;
-            /* 글씨체 */
-            background-color: #f9f9f9;
-            /* 배경색 */
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            /* 그림자 효과 */
-            transition: box-shadow 0.3s ease, border-color 0.3s ease;
-            /* 포커스 시 효과 */
-        }
-
-        input#taskName:focus {
-            outline: none;
-            /* 기본 포커스 테두리 제거 */
-            border-color: #40a9ff;
-            /* 포커스 시 테두리 색 변경 */
-            box-shadow: 0 0 6px rgba(64, 169, 255, 0.5);
-            /* 포커스 시 그림자 효과 */
-        }
-
-        /* 마감 날짜 입력 박스 */
-        input#taskDueDate {
-            width: 100%;
-            /* 전체 폭 */
-            height: 40px;
-            /* 높이 */
-            padding: 10px;
-            /* 안쪽 여백 */
-            border: 1px solid #ccc;
-            /* 테두리 색 */
-            border-radius: 6px;
-            /* 둥근 모서리 */
-            font-size: 14px;
-            /* 글씨 크기 */
-            font-family: Arial, sans-serif;
-            /* 글씨체 */
-            background-color: #f9f9f9;
-            /* 배경색 */
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            /* 그림자 효과 */
-            transition: box-shadow 0.3s ease, border-color 0.3s ease;
-            /* 포커스 시 효과 */
-        }
-
-        input#taskDueDate:focus {
-            outline: none;
-            /* 기본 포커스 테두리 제거 */
-            border-color: #40a9ff;
-            /* 포커스 시 테두리 색 변경 */
-            box-shadow: 0 0 6px rgba(64, 169, 255, 0.5);
-            /* 포커스 시 그림자 효과 */
-        }
-
-
-        /* 버튼 스타일 */
-        #saveEditTaskBtn {
-            background-color: #40a9ff;
-            color: #fff;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.3s ease;
-        }
-
-        #saveEditTaskBtn:hover {
-            background-color: #1890ff;
-        }
-
-        #deleteTaskBtn {
-            background-color: #ff4d4f;
-            color: #fff;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.3s ease;
-        }
-
-        #deleteTaskBtn:hover {
-            background-color: #d9363e;
-        }
-
-
-
-
-
-
-
-
-
-
-        /* 작업 편집 팝업 */
-        #editTaskPopup {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 400px;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            padding: 20px;
-        }
-
-        /* 팝업 헤더 */
-        #editTaskPopup .popup-header {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            text-align: center;
-            color: #333;
-        }
-
-        /* 작업 이름 입력 */
-        #editTaskName {
-            width: 100%;
-            height: 40px;
-            padding: 10px;
-            font-size: 14px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            background-color: #f9f9f9;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        #editTaskName:focus {
-            outline: none;
-            border-color: #40a9ff;
-            box-shadow: 0 0 6px rgba(64, 169, 255, 0.5);
-        }
-
-        /* 작업 설명 입력 */
-        #editTaskDescription {
-            width: 100%;
-            height: 100px;
-            padding: 10px;
-            font-size: 14px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            background-color: #f9f9f9;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            resize: none;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        #editTaskDescription:focus {
-            outline: none;
-            border-color: #40a9ff;
-            box-shadow: 0 0 6px rgba(64, 169, 255, 0.5);
-        }
-
-        /* 마감 날짜 */
-        #editTaskDueDate {
-            width: 100%;
-            height: 40px;
-            padding: 10px;
-            font-size: 14px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            background-color: #f9f9f9;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        #editTaskDueDate:focus {
-            outline: none;
-            border-color: #40a9ff;
-            box-shadow: 0 0 6px rgba(64, 169, 255, 0.5);
-        }
-
-        /* 작업 상태 선택 */
-        #editTaskStatus {
-            width: 100%;
-            height: 40px;
-            padding: 10px;
-            font-size: 14px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            background-color: #f9f9f9;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-            appearance: none;
-        }
-
-        #editTaskStatus:focus {
-            outline: none;
-            border-color: #40a9ff;
-            box-shadow: 0 0 6px rgba(64, 169, 255, 0.5);
-        }
-
-        /* 작업 우선순위 선택 */
-        #editTaskPriority {
-            width: 100%;
-            height: 40px;
-            padding: 10px;
-            font-size: 14px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            background-color: #f9f9f9;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-            appearance: none;
-        }
-
-        #editTaskPriority:focus {
-            outline: none;
-            border-color: #40a9ff;
-            box-shadow: 0 0 6px rgba(64, 169, 255, 0.5);
-        }
-
-        /* 팝업 버튼 */
-        #editTaskPopup .popup-buttons {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 15px;
-        }
-
-        /* 취소 버튼 */
-        #cancelEditTaskBtn {
-            background-color: #ddd;
-            color: #333;
-            border: none;
-            padding: 10px 15px;
-            font-size: 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        #cancelEditTaskBtn:hover {
-            background-color: #bbb;
-        }
-
-        /* 저장 버튼 */
-        #saveEditTaskBtn {
-            background-color: #40a9ff;
-            color: #fff;
-            border: none;
-            padding: 10px 15px;
-            font-size: 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        #saveEditTaskBtn:hover {
-            background-color: #1890ff;
-        }
-
-        /* 삭제 버튼 */
-        #deleteTaskBtn {
-            background-color: #ff4d4f;
-            color: #fff;
-            border: none;
-            padding: 10px 15px;
-            font-size: 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        #deleteTaskBtn:hover {
-            background-color: #d9363e;
-        }
-    </style>
+    <link rel="stylesheet" href="../css/board_main.css">
 </head>
-
-
-
 
 
 
@@ -808,19 +37,17 @@
             <label>작업 설명</label>
             <textarea id="editTaskDescription" placeholder="작업 설명을 입력하세요"></textarea>
 
+            <label>시작 날짜</label>
+            <input type="date" id="editTaskStartDate" />
+
             <label>마감 날짜</label>
             <input type="date" id="editTaskDueDate" />
 
             <label>작업 상태</label>
             <select id="editTaskStatus"></select>
 
-            <label>작업 우선순위</label>
-            <select id="editTaskPriority">
-                <option value="낮음">낮음</option>
-                <option value="중간">중간</option>
-                <option value="높음">높음</option>
-                <option value="긴급">긴급</option>
-            </select>
+            <!-- 숨겨진 필드 추가 -->
+            <input type="hidden" id="editTaskAssignedTo" />
 
             <div class="popup-buttons">
                 <button type="button" class="cancel-btn" id="cancelEditTaskBtn">취소</button>
@@ -829,6 +56,7 @@
             </div>
         </form>
     </div>
+
 
     <!-- 작업 추가 팝업 -->
     <div class="popup" id="addTaskPopup">
@@ -839,6 +67,9 @@
 
             <label>작업 설명</label>
             <textarea id="taskDescription" placeholder="작업 설명을 입력하세요"></textarea>
+
+            <label>시작 날짜</label>
+            <input type="date" id="taskStartDate" required />
 
             <label>마감 날짜</label>
             <input type="date" id="taskDueDate" required />
@@ -909,7 +140,7 @@
         const userIdx = sessionStorage.getItem("userIdx");
         const API_URL = "http://192.168.20.37:3000/api";
         //192.168.20.37
-        
+
         let userRole = null; // 초기값
 
         $(document).ready(function () {
@@ -1104,29 +335,23 @@
 
                     // 작업 카드 HTML 생성
                     const tasksHTML = (sprint.tasks || []).map(task => `
-                    <div class="task-card" 
-                        ${userRole === "팀원" ? '' : `draggable="true" ondragstart="dragTask(event)"`} 
-                        data-task-id="${task.taskId}" 
-                        data-sprint-id="${sprint.sprintId}">
-                        <p class="task-name" onclick="openEditTaskPopup(${task.taskId})">
-                            <strong>${task.taskName}</strong>
-                        </p>
-                        <p>
-                            ${userRole === "팀장" ? `
-                                <select id="priorityDropdown-${task.taskId}" class="priority-dropdown" data-task-id="${task.taskId}">
-                                    <option value="낮음" ${task.priority === '낮음' ? 'selected' : ''}>낮음</option>
-                                    <option value="중간" ${task.priority === '중간' ? 'selected' : ''}>중간</option>
-                                    <option value="높음" ${task.priority === '높음' ? 'selected' : ''}>높음</option>
-                                    <option value="긴급" ${task.priority === '긴급' ? 'selected' : ''}>긴급</option>
+                        <div class="task-card" 
+                            ${userRole === "팀원" ? '' : `draggable="true" ondragstart="dragTask(event)"`} 
+                            data-task-id="${task.taskId}" 
+                            data-sprint-id="${sprint.sprintId}" 
+                            data-assigned-to="${task.assignedTo}">
+                            <p class="task-name" onclick="openEditTaskPopup(${task.taskId})">
+                                <strong>${task.taskName}</strong>
+                            </p>
+                            <p>
+                                <span class="readonly-priority">${task.priority}</span>
+                            </p>
+                            <p>
+                                <select id="statusDropdown-${task.taskId}" class="status-dropdown" data-task-id="${task.taskId}" data-assigned-to="${task.assignedTo}">
+                                    <option value="">로딩 중...</option>
                                 </select>
-                            ` : `<span class="readonly-dropdown">${task.priority}</span>`}
-                        </p>
-                        <p>
-                            <select id="statusDropdown-${task.taskId}" class="status-dropdown" data-task-id="${task.taskId}">
-                                <option value="">로딩 중...</option>
-                            </select>
-                        </p>
-                    </div>
+                            </p>
+                        </div>
                     `).join("");
 
                     // 스프린트 옵션 메뉴 생성
@@ -1146,8 +371,8 @@
                         <div class="sprint-header">
                             <h3>${sprint.sprintName}</h3>
                             ${sprint.sprintName !== "임시저장"
-                        ? `<p class="sprint-dates">${formatDateToKorean(sprint.startDate)} ~ ${formatDateToKorean(sprint.endDate)}</p>`
-                        : ""}
+                            ? `<p class="sprint-dates">${formatDateToKorean(sprint.startDate)} ~ ${formatDateToKorean(sprint.endDate)}</p>`
+                            : ""}
                             ${optionsMenu}
                         </div>
                         <div class="sprint-content" 
@@ -1156,13 +381,13 @@
                             ${tasksHTML || "<p></p>"}
                         </div>
                         ${sprint.sprintName !== "임시저장" && userRole !== "팀원" // 팀원이 아닌 경우만 추가 버튼을 렌더링
-                        ? `<div class="add-task-btn-wrapper">
+                            ? `<div class="add-task-btn-wrapper">
                                     <button class="add-task-btn" 
                                             onclick="openAddTaskPopup(${sprint.sprintId}, '${sprint.endDate || ""}', '${sprint.sprintName}')">
                                         + 추가
                                     </button>
                                 </div>`
-                        : ""}
+                            : ""}
                     </div>`;
                     sprintBoard.append(sprintHTML);
 
@@ -1365,76 +590,55 @@
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
+            // 작업 상태 변경 이벤트 처리
             $(document).on("change", ".status-dropdown", function () {
                 const taskId = $(this).closest(".task-card").data("task-id");
                 const newStatus = $(this).val();
-                const changedBy = userIdx; // 로그인 사용자 ID
-                const taskName = $(this).closest(".task-card").find("p strong").text(); // 작업 이름
+                const assignedTo = $(this).data("assigned-to"); // 담당자 ID
+                const changedBy = userIdx;
 
-                const requestData = {
-                    taskId,
-                    taskName,
-                    status: newStatus,
-                    changedBy
-                };
+                // 디버깅 로그
+                console.log("Status Change Request:", { taskId, newStatus, changedBy, assignedTo });
 
-
-                // AJAX 요청
-                $.ajax({
-                    url: `${API_URL}/tasks/update`,
-                    method: "PUT",
-                    contentType: "application/json",
-                    data: JSON.stringify(requestData),
-                    success: function (response) {
-                    },
-                    error: function (err) {
-                    }
-                });
-            });
-
-
-            $(document).on("change", ".priority-dropdown", function () {
-                if (userRole === "팀원") {
-                    // 드롭다운 값을 변경 이전 상태로 복원
-                    const previousValue = $(this).data("previous-value");
-                    $(this).val(previousValue);
+                // 데이터 유효성 확인
+                if (!taskId || !newStatus) {
+                    
+                    location.href = location.href; // 이전 값으로 복원
                     return;
                 }
 
-                const taskId = $(this).data("task-id") || $(this).attr("id").split("-")[1]; // taskId 추출
-                const newPriority = $(this).val(); // 새 우선순위 값
-                const changedBy = userIdx; // 로그인 사용자 ID
-
-                if (!taskId) {
-                    console.error("taskId가 정의되지 않았습니다. data-task-id 속성을 확인하세요.");
-                    return; // taskId가 없으면 요청을 보내지 않음
+                // 권한 검증
+                if (userRole !== "팀장" && userIdx != assignedTo) {
+                    
+                    location.href = location.href; // 이전 값으로 복원
+                    return;
                 }
-
-                const requestData = {
-                    taskId,
-                    priority: newPriority,
-                    changedBy
-                };
 
                 // AJAX 요청
                 $.ajax({
                     url: `${API_URL}/tasks/update`,
                     method: "PUT",
                     contentType: "application/json",
-                    data: JSON.stringify(requestData),
+                    data: JSON.stringify({ taskId, status: newStatus, changedBy }),
                     success: function (response) {
-                        // 성공적으로 업데이트된 경우, 새로운 값을 저장
-                        $(this).data("previous-value", newPriority);
+                        console.log("상태 변경 성공:", response);
+                        $(this).data("previous-value", newStatus); // 새로운 상태 저장
                     },
                     error: function (err) {
-                        // 오류 발생 시, 이전 값으로 복원
-                        $(this).val($(this).data("previous-value"));
+                        console.error("상태 변경 중 오류:", err);
+                        $(this).val($(this).data("previous-value")); // 이전 값으로 복원
+                        alert("상태 변경에 실패했습니다. 권한을 확인하거나 관리자에게 문의하세요.");
                     }
                 });
             });
 
+
+
+
+
             // 초기 값 저장
             $(document).on("focus", ".priority-dropdown", function () {
+                // 드롭다운 초기 값 저장
                 const currentValue = $(this).val();
                 $(this).data("previous-value", currentValue);
             });
@@ -1444,6 +648,8 @@
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
+
+            // 작업 상태 드롭다운 로드 함수
             function loadStatusDropdown(task) {
                 $.ajax({
                     url: `${API_URL}/tasks/status-list`, // 상태 목록 API 호출
@@ -1471,22 +677,30 @@
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
+
+            //작업 만들기
             $("#taskCreateBtn").click(function () {
                 const taskName = $("#taskName").val();
                 const description = $("#taskDescription").val();
-                const dueDate = $("#taskDueDate").val();
+                const startDate = $("#taskStartDate").val(); // 시작 날짜
+                const dueDate = $("#taskDueDate").val(); // 마감 날짜
                 const sprintId = $(this).data("sprint-id");
                 const projectId = sessionStorage.getItem("projectId");
                 const userIdx = sessionStorage.getItem("userIdx");
 
-                if (!taskName) {
+                // 필수 필드 확인
+                if (!taskName || !startDate || !dueDate) {
+                    alert("모든 필드를 입력해주세요.");
                     return;
                 }
 
-                if (!dueDate) {
+                // 날짜 유효성 검증
+                if (new Date(startDate) > new Date(dueDate)) {
+                    alert("시작 날짜는 마감 날짜보다 앞서야 합니다.");
                     return;
                 }
 
+                // 작업 추가 요청
                 $.ajax({
                     url: `${API_URL}/tasks/create`,
                     method: "POST",
@@ -1496,20 +710,28 @@
                         sprintId,
                         taskName,
                         description,
-                        dueDate,
-                        assignedTo: userIdx, // 현재 사용자를 작업에 할당
+                        startDate, // 시작 날짜 추가
+                        dueDate,   // 마감 날짜
+                        assignedTo: userIdx // 현재 사용자를 작업에 할당
                     }),
                     success: function (response) {
+                        alert("작업이 성공적으로 추가되었습니다.");
                         $("#addTaskPopup").fadeOut();
                         $(".popup-background").fadeOut();
                         fetchSprints(); // 스프린트 새로고침
                     },
                     error: function (err) {
-                    },
+                        console.error("작업 추가 오류:", err);
+                        alert("작업 추가 중 오류가 발생했습니다.");
+                    }
                 });
             });
 
 
+
+
+
+            // 작업 추가 팝업 닫기 버튼 클릭 이벤트
             $("#cancelTaskBtn").click(function () {
                 $("#addTaskPopup").fadeOut();
                 $(".popup-background").fadeOut();
@@ -1531,12 +753,39 @@
                     const taskId = $(this).data("task-id");
                     const taskName = $("#editTaskName").val();
                     const description = $("#editTaskDescription").val();
+                    const startDate = $("#editTaskStartDate").val();
                     const dueDate = $("#editTaskDueDate").val();
+                    const status = $("#editTaskStatus").val();
+                    const assignedTo = $("#editTaskAssignedTo").val(); // 숨겨진 필드에서 가져오기
 
-                    if (!taskName) {
+                    // **작업 ID 확인**
+                    if (!taskId) {
+                        alert("작업 ID가 설정되지 않았습니다.");
                         return;
                     }
 
+                    // 필수 필드 확인
+                    if (!taskName || !startDate || !dueDate) {
+                        alert("모든 필드를 입력해주세요.");
+                        return;
+                    }
+
+                    // 날짜 유효성 확인
+                    if (new Date(startDate) > new Date(dueDate)) {
+                        alert("시작 날짜는 마감 날짜보다 앞서야 합니다.");
+                        return;
+                    }
+
+                    // 권한 검증
+                    const isEditable = userRole === "팀장" || userIdx == assignedTo;
+                    console.log("isEditable:", isEditable, "userRole:", userRole, "userIdx:", userIdx, "assignedTo:", assignedTo);
+
+                    if (!isEditable) {
+                        alert("작업 상태를 변경할 권한이 없습니다.");
+                        return;
+                    }
+
+                    // AJAX 요청
                     $.ajax({
                         url: `${API_URL}/tasks/update`,
                         method: "PUT",
@@ -1545,18 +794,28 @@
                             taskId,
                             taskName,
                             description,
+                            startDate,
                             dueDate,
-                            changedBy: sessionStorage.getItem("userIdx"),
+                            status: status || 1,
+                            changedBy: userIdx,
+                            assignedTo // 추가
                         }),
-                        success: function () {
+                        success: function (response) {
+                            alert("작업이 성공적으로 저장되었습니다.");
                             $("#editTaskPopup").fadeOut();
                             $(".popup-background").fadeOut();
-                            fetchSprints(); // 스프린트 새로고침
+                            fetchSprints(); // 화면 새로고침
                         },
                         error: function (err) {
-                        },
+                            console.error("작업 저장 오류:", err);
+                            alert("작업 저장 중 오류가 발생했습니다.");
+                        }
                     });
                 });
+
+
+
+
 
                 // 작업 삭제
                 $("#deleteTaskBtn").click(function () {
@@ -1595,9 +854,9 @@
         // 함수 정의
         function openAddTaskPopup(sprintId, sprintEndDate, sprintName) {
             if (!sprintId || !sprintEndDate || !sprintName) {
+                alert("스프린트 정보를 확인해주세요.");
                 return;
             }
-
 
             // 팝업에 스프린트 이름 설정
             $("#addTaskPopup .popup-header").text(`작업 추가 - ${sprintName}`);
@@ -1606,9 +865,10 @@
             $("#taskCreateBtn").data("sprint-id", sprintId);
             $("#taskDueDate").attr("max", sprintEndDate); // 마감 날짜의 최대값 설정
 
-            // 마감 날짜 기본값을 오늘 날짜로 설정
+            // 시작 날짜와 마감 날짜 기본값 설정
             const today = new Date().toISOString().split("T")[0];
-            $("#taskDueDate").val(today);
+            $("#taskStartDate").val(today); // 시작 날짜 기본값
+            $("#taskDueDate").val(today);   // 마감 날짜 기본값
 
             // 팝업 초기화 및 열기
             $("#taskName").val("");
@@ -1622,31 +882,65 @@
 
         // 작업 편집 팝업 열기
         function openEditTaskPopup(taskId) {
+            if (!taskId) {
+                console.error("작업 ID가 전달되지 않았습니다.");
+                alert("작업 ID가 유효하지 않습니다. 페이지를 새로고침합니다.");
+                window.location.reload(); // 작업 ID가 없으면 새로고침
+                return;
+            }
+
             $.ajax({
                 url: `${API_URL}/tasks/${taskId}`,
                 method: "GET",
                 success: function (task) {
-                    $("#editTaskName").val(task.task_name || "");
-                    $("#editTaskDescription").val(task.description || "");
-                    $("#editTaskDueDate").val(task.due_date ? task.due_date.split("T")[0] : "");
+                    // 작업 ID 저장 (팝업에서 사용)
+                    $("#saveEditTaskBtn").data("task-id", taskId);
 
-                    // 저장 및 삭제 버튼 활성화 여부
-                    if (userRole === "팀원") {
+                    // 작업 이름 및 설명 설정
+                    $("#editTaskName").val(task.taskName || "");
+                    $("#editTaskDescription").val(task.description || "");
+
+                    // 시작 날짜 및 마감 날짜 설정
+                    $("#editTaskStartDate").val(task.startDate ? task.startDate.split("T")[0] : "");
+                    $("#editTaskDueDate").val(task.dueDate ? task.dueDate.split("T")[0] : "");
+
+                    // 숨겨진 필드에 assignedTo 설정
+                    $("#editTaskAssignedTo").val(task.assignedTo || "");
+
+                    // 수정 권한 확인
+                    const isEditable = userRole === "팀장" || userIdx == task.assignedTo;
+                    console.log("isEditable:", isEditable, "userRole:", userRole, "userIdx:", userIdx, "assignedTo:", task.assignedTo);
+
+                    if (!isEditable) {
+                        $("#editTaskName, #editTaskDescription, #editTaskStartDate, #editTaskDueDate, #editTaskStatus").prop("disabled", true);
                         $("#saveEditTaskBtn, #deleteTaskBtn").hide();
                     } else {
+                        $("#editTaskName, #editTaskDescription, #editTaskStartDate, #editTaskDueDate, #editTaskStatus").prop("disabled", false);
                         $("#saveEditTaskBtn, #deleteTaskBtn").show();
                     }
 
+                    // 작업 상태 로드
+                    loadTaskStatus(task.statusId, isEditable);
+
+                    // 팝업 열기
                     $(".popup-background").fadeIn();
                     $("#editTaskPopup").fadeIn();
                 },
                 error: function (err) {
                     console.error("작업 편집 로드 오류:", err);
+                    alert("작업 정보를 불러오는 중 오류가 발생했습니다. 페이지를 새로고침합니다.");
+                    window.location.reload(); // 오류 시 새로고침
                 }
             });
         }
 
-        function loadTaskStatus(selectedStatusId) {
+
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+        // 작업 상태 드롭다운을 로드하고 선택된 상태를 표시
+        function loadTaskStatus(selectedStatusId, isEditable) {
             $.ajax({
                 url: `${API_URL}/tasks/status-list`,
                 method: "GET",
@@ -1658,22 +952,23 @@
                         const isSelected = status.id === selectedStatusId ? "selected" : "";
                         statusDropdown.append(`<option value="${status.id}" ${isSelected}>${status.name}</option>`);
                     });
+
+                    // 상태 변경 권한 설정
+                    if (!isEditable) {
+                        statusDropdown.prop("disabled", true);
+                    }
                 },
                 error: function (err) {
+                    console.error("작업 상태 로드 오류:", err);
                 }
             });
         }
 
-        function loadTaskPriority(selectedPriority) {
-            const priorities = ["낮음", "중간", "높음", "긴급"];
-            const priorityDropdown = $("#editTaskPriority");
-            priorityDropdown.empty();
 
-            priorities.forEach(priority => {
-                const isSelected = priority === selectedPriority ? "selected" : "";
-                priorityDropdown.append(`<option value="${priority}" ${isSelected}>${priority}</option>`);
-            });
-        }
+
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
 
 
 
