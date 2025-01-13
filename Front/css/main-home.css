@@ -334,6 +334,24 @@ button {
     padding-left: 0;
     padding-top: 20px;
     padding-bottom: 20px;
+    position: relative;
+}
+.text-div-2::after {
+    content: "";
+    /* 반드시 설정 필요 */
+    display: block;
+    position: absolute;
+    /* 선 위치 조정 */
+    top: 0;
+    /* main-footer 상단에 배치 */
+    left: 0;
+    width: 100%;
+    /* 부모 요소 너비에 맞춤 */
+    height: 1px;
+    /* 선 두께 설정 */
+    background-color: #0000001a;
+    /* 원하는 색상 */
+    box-sizing: border-box;
 }
 
 .tap-group {
