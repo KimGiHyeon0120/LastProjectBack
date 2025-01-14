@@ -221,15 +221,15 @@ router.get('/get-idx', async (req, res) => {
 
 //프로필 가져오기
 router.get('/profile-user', async (req, res) => {
+    // 사용자 ID 가져오기 (인증된 사용자를 가정)
+    const userId = req.query;
     try {
-        // 사용자 ID 가져오기 (인증된 사용자를 가정)
-        const userId = req.query;
-
+        
         // DB에서 사용자 정보 조회
         const [rows] = await connection.promise().query(
             `SELECT user_name, user_email, user_profile_image 
              FROM Users 
-             WHERE user_idx = ?`,
+             WHERE user_id = ?`,
             [userId]
         );
 
