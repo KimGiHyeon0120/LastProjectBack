@@ -1,0 +1,168 @@
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+.projectList-container {
+    padding: 0px  40px;
+    width: calc(100% - 80px); /* 좌우 padding 40px씩 제외 */
+
+}
+
+.projectList-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.projectList-header h1 {
+    font-size: 24px;
+}
+
+.projectList-create-btn {
+    background-color: rgb(35, 131, 226);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.projectList-create-btn:hover {
+    background-color: rgb(28, 113, 183);
+}
+
+.projectList-filters {
+    margin: 20px 0;
+    display: flex;
+    gap: 10px;
+    position: relative;
+    flex: 1; /* 유동적인 너비 */
+    max-width: 300px; /* 최대 너비를 제한 */
+    width: 100%; /* 전체 너비를 차지하지만 최대 300px로 제한 */
+}
+
+.projectList-filters label {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: #666;
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+.projectList-filters input {
+    width: 100%;
+    padding: 20px 10px 5px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.projectList-filters input:focus {
+    border: 2px solid rgb(35, 131, 226);
+}
+
+.projectList-filters input:focus + label,
+.projectList-filters input:not(:placeholder-shown) + label {
+    top: 10px;
+    font-size: 12px;
+}
+
+
+
+.projectList-search-bar {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.projectList-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 14px
+}
+
+.projectList-table th {
+    padding: 4px 8px;
+    text-align: left; /* 기본적으로 왼쪽 정렬 */
+    border-bottom: 2px solid #ddd;
+}
+.projectList-table th:nth-child(2), /* '유형' 열 */
+.projectList-table td:nth-child(2) {
+    padding-right: 100px; /* '유형' 열을 좀 더 왼쪽으로 이동 */
+}
+
+.projectList-table th:nth-child(3), /* '유형' 열 */
+.projectList-table td:nth-child(3) {
+    padding-right: 100px; /* '유형' 열을 좀 더 왼쪽으로 이동 */
+}
+.projectList-table td {
+    padding: 4px 8px;
+    height: 48px;
+    text-align: left; /* 기본적으로 왼쪽 정렬 */
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.settings-btn {
+    background: none; /* 배경 없애기 */
+    border: none; /* 테두리 없애기 */
+    width: 32px;
+    height: 32px;
+    
+    padding: 0px 2px; /* 좌우 padding 설정 */
+    cursor: pointer; /* 클릭할 수 있는 버튼처럼 보이게 */
+    border-radius: 4px; /* 모서리 둥글게 */
+}   
+
+.settings-btn:hover {
+    background-color: #e0e0e0; /* 조금 더 진한 색으로 변경 */
+}
+
+.settings-btn img {
+    width: 24px; /* 이미지 크기 설정 */
+    height: 24px; /* 이미지 크기 설정 */
+
+}
+.projectList-table tr:hover {
+    background-color: #f1f1f1;
+}
+.projectList-table thead tr:hover {
+    background-color: inherit; /* 기존 배경색 유지 */
+}
+
+
+.projectList-table th:last-child,
+.projectList-table td:last-child {
+    text-align: right; /* 마지막 열 오른쪽 정렬 */
+}
+
+.projectList-table tbody tr:last-child {
+    border-bottom: 2px solid #ddd;
+}
+/* 프로젝트 이름에 대한 스타일 */
+.project-name {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    display: inline-block; /* div의 기본 display 속성인 block을 inline-block으로 변경 */
+    padding: 5px 3px; /* 패딩을 추가하여 클릭 영역을 넓힘 */
+}
+
+/* 호버 효과: 텍스트 굵게, 파란색, 배경 없음 */
+.project-name:hover {
+    font-weight: bold;
+    color: rgb(35, 131, 226); /* hover 시 색상 */;
+    border: 2px solid rgb(35, 131, 226); /* 파란색 테두리 */
+}
