@@ -1,0 +1,471 @@
+
+
+
+        /* 작업 진행 상태 보드 컨테이너 */
+        .board {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+            overflow: visible;
+            /* 드롭다운이 보일 수 있도록 설정 */
+            position: relative;
+            /* 자식 요소 절대 위치 계산을 위해 */
+        }
+
+        .board-column {
+            flex: 1;
+            background-color: #f9f9f9;
+   
+            border-radius: 6px;
+            padding: 15px;
+            min-height: 300px;
+          
+        }
+
+        .board-column h3 {
+            margin-top: 0;
+            font-size: 18px;
+            color: #333;
+            text-align: center;
+        }
+
+        /* 작업 카드 */
+        .task {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            cursor: grab;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .task:hover {
+            background-color: #f0f9ff;
+            transform: translateY(-2px);
+        }
+
+        /* 작업 카드 내부 텍스트 */
+        .task p {
+            margin: 0;
+            color: #333;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        /* 작업 상태 칸 */
+        .tasks {
+            border-radius: 4px;
+            /* 모서리 둥글게 */
+            padding: 10px;
+            /* 여백 */
+            background-color: #f9f9f9;
+            transition: background-color 0.3s ease;
+            min-height: 100px;
+        }
+
+        .tasks.empty:hover {
+            background-color: #e6f7ff;
+            /* 드롭 가능 강조 */
+        }
+
+        /* 드롭다운 활성화 시 hover 효과 비활성화 */
+        .task.dropdown-active:hover {
+            background-color: initial;
+            /* 원래 배경색 유지 */
+            transform: none;
+            /* 움직임 제거 */
+        }
+
+
+        /*프로필 사진*/
+        .profile-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .profile-image {
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            transition: transform 0.2s ease;
+        }
+
+        .profile-image:hover {
+            transform: scale(1.1);
+        }
+
+
+        .assignee-section {
+            position: relative;
+            display: inline-block;
+        }
+
+        .assignee-dropdown {
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        /* 담당자 섹션 */
+        .assignee-section {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* 드롭다운 버튼 */
+        .assignee-dropdown {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        /* 드롭다운 내 이미지 */
+        .assignee-image {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+
+        /* 드롭다운 내 이름 */
+        .assignee-name {
+            font-size: 14px;
+            color: #333;
+        }
+
+        /* 드롭다운 옵션 */
+        .dropdown-options {
+            position: absolute;
+            /* 절대 위치 */
+            top: 60px;
+            /* 프로필 이미지 바로 아래로 위치 조정 */
+            left: 0;
+            z-index: 2000;
+            /* 높은 z-index 설정 */
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: none;
+            /* 기본적으로 숨김 */
+            padding: 10px;
+            min-width: 150px;
+            max-width: 200px;
+            overflow-y: auto;
+            /* 스크롤 가능 */
+            white-space: nowrap;
+        }
+
+        /* 드롭다운이 보일 때 */
+        .dropdown-options.show {
+            display: block;
+            z-index: 3000;
+            /* 드롭다운이 최상단으로 올라오도록 설정 */
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            padding: 5px;
+            cursor: pointer;
+            white-space: nowrap;
+            /* 텍스트 줄바꿈 방지 */
+        }
+
+        .dropdown-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .dropdown-image {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        /* 드롭다운 이미지 */
+        .dropdown-image {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        /* 드롭다운 이름 */
+        .dropdown-item span {
+            font-size: 14px;
+            color: #333;
+        }
+
+        /* 팝업 컨테이너 */
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            /* 더 뚜렷한 그림자 */
+            z-index: 1000;
+            /* 배경보다 위에 위치 */
+            padding: 20px;
+        }
+
+        /* 팝업 헤더 */
+        .popup-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #333;
+        }
+
+        /* 폼 내부 스타일 */
+        .popup-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* 입력 필드 스타일 */
+        .popup-form input,
+        .popup-form textarea,
+        .popup-form select {
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .popup-form input:focus,
+        .popup-form textarea:focus,
+        .popup-form select:focus {
+            outline: none;
+            border-color: #40a9ff;
+            box-shadow: 0 0 6px rgba(64, 169, 255, 0.5);
+        }
+
+        /* 텍스트 영역 스타일 */
+        .popup-form textarea {
+            resize: none;
+            height: 100px;
+        }
+
+        /* 버튼 섹션 */
+        .popup-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+
+        .popup-buttons button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* 취소 버튼 */
+        .popup-buttons .cancel-btn {
+            background-color: #ddd;
+            color: #333;
+        }
+
+        .popup-buttons .cancel-btn:hover {
+            background-color: #bbb;
+        }
+
+        /* 저장 버튼 */
+        .popup-buttons .save-btn {
+            background-color: #40a9ff;
+            color: #fff;
+        }
+
+        .popup-buttons .save-btn:hover {
+            background-color: #1890ff;
+        }
+
+        /* 팝업 배경 */
+        /* 팝업 배경 (오버레이) */
+        .popup-background {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            /* 어두운 반투명 배경 */
+            z-index: 999;
+            /* 팝업 아래에 위치 */
+        }
+
+        .popup .activity-tabs {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0;
+        }
+
+        .popup .tab-button {
+            flex: 1;
+            padding: 10px;
+            margin: 0 5px;
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .popup .tab-button.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .popup .activity-content {
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            background: #fafafa;
+        }
+
+
+
+        .mention-container {
+            position: relative;
+            /* 부모 요소에 relative 추가 */
+        }
+
+        #mentionDropdown {
+            position: fixed;
+            top: 100px;
+            left: 100px;
+            width: 300px;
+            height: auto;
+            z-index: 9999;
+            background-color: white;
+            border: 1px solid red;
+            /* 시각적으로 확인하기 위한 빨간 테두리 */
+            display: block;
+            /* 항상 보이도록 설정 */
+        }
+
+        #mentionDropdown .dropdown-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        #mentionDropdown .dropdown-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        #mentionDropdown .no-results {
+            color: #888;
+            padding: 10px;
+            text-align: center;
+        }
+
+
+
+        .dropdown-item {
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+            background: #f0f0f0;
+        }
+
+        .date-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            /* 좌우 간격 */
+            margin-bottom: 15px;
+            /* 아래 여백 */
+        }
+
+        .date-field {
+            flex: 1;
+            /* 양쪽 필드 크기를 동일하게 설정 */
+        }
+
+        .date-field label {
+            display: block;
+            margin-bottom: 5px;
+            /* 레이블과 필드 간격 */
+            font-weight: bold;
+        }
+
+        .date-field input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        #notificationDropdown {
+            position: absolute;
+            top: 140px;
+            right: 0;
+            width: 300px;
+            max-height: 400px;
+            background: white;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            display: none;
+            flex-direction: column;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        #notificationDropdown.show {
+            display: flex;
+        }
+
+        .notification-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .notification-item.unread {
+            font-weight: bold;
+            background: #f9f9f9;
+        }
+
+        .notification-item.read {
+            font-weight: normal;
+        }
+
+        .mark-all-btn {
+            padding: 10px;
+            text-align: center;
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+        }
