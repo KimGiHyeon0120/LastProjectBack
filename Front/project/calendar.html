@@ -52,25 +52,24 @@
             const calendarEl = document.getElementById('calendar-container');
 
             const calendar = new FullCalendar.Calendar(calendarEl, {
-                height: '900px',
-
+                height: 'auto',
                 expandRows: false,
                 slotMinTime: '08:00',
                 slotMaxTime: '20:00',
-
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
                     right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
                 },
                 initialView: 'dayGridMonth',
-                initialDate: currentDate,  // 현재 날짜로 초기화
+                initialDate: currentDate, // 현재 날짜로 초기화
                 locale: 'ko',
                 navLinks: true,
-                editable: true,  // 이벤트 수정 가능
+                editable: true, // 이벤트 수정 가능
                 selectable: true, // 이벤트 생성 가능
                 nowIndicator: true,
-                eventResizableFromStart: true,  // 시작일도 조정 가능
+                eventResizableFromStart: true, // 시작일도 조정 가능
+                showNonCurrentDates: false,
                 eventAdd: function (obj) {
                     updateEventOnServer(obj.event); // 새 이벤트 추가
                 },
@@ -83,7 +82,26 @@
                 eventResize: function (obj) {
                     updateEventOnServer(obj.event); // 이벤트 크기 변경(시작일/종료일 변경)
                 },
-                events: []  // 초기에는 이벤트 없음
+                dayCellDidMount: function (info) {
+                    const currentMonth = currentDate.getMonth();
+                    const currentYear = currentDate.getFullYear();
+
+                    // 다음 달의 첫 주 계산
+                    const nextMonth = currentMonth + 1;
+                    const firstDayOfNextMonth = new Date(currentYear, nextMonth, 1);
+                    const firstWeekEnd = new Date(currentYear, nextMonth, 7 - firstDayOfNextMonth.getDay());
+
+                    const cellDate = new Date(info.date);
+
+                    // 다음 달이고 첫 주에 해당하면 숨기기
+                    if (
+                        cellDate.getMonth() === nextMonth &&
+                        cellDate.getTime() <= firstWeekEnd.getTime()
+                    ) {
+                        info.el.style.display = 'none'; // 셀 숨기기
+                    }
+                },
+                events: [] // 초기에는 이벤트 없음
             });
 
             await renderTasks(calendar, projectId); // 작업 데이터 렌더링
@@ -113,7 +131,7 @@
             const calendarEl = document.getElementById('calendar-container');
 
             const calendar = new FullCalendar.Calendar(calendarEl, {
-                height: '900px',
+                height: 'auto',
                 expandRows: false,
                 slotMinTime: '08:00',
                 slotMaxTime: '20:00',
@@ -126,36 +144,70 @@
                 initialDate: currentDate,
                 locale: 'ko',
                 navLinks: true,
-                editable: true, // 이벤트 수정 가능
-                selectable: true, // 이벤트 생성 가능
+                editable: true,
+                selectable: true,
                 nowIndicator: true,
-                eventResizableFromStart: true, // 시작일도 조정 가능
+                eventResizableFromStart: true,
                 eventAdd: function (obj) {
-                    updateEventOnServer(obj.event); // 새 이벤트 추가
+                    updateEventOnServer(obj.event);
                 },
                 eventChange: function (obj) {
-                    updateEventOnServer(obj.event); // 이벤트 변경
+                    updateEventOnServer(obj.event);
                 },
                 eventRemove: function (obj) {
-                    deleteEventOnServer(obj.event); // 이벤트 삭제
+                    deleteEventOnServer(obj.event);
                 },
                 eventResize: function (obj) {
-                    updateEventOnServer(obj.event); // 이벤트 크기 변경(시작일/종료일 변경)
+                    updateEventOnServer(obj.event);
                 },
-                eventResizeStart: function (info) {
-                    // 리사이즈 시작 시 스타일 추가
-                    info.el.classList.add('task-resizing');
-                    console.log('Event resize started:', info.event.title);
-                },
-                eventResizeStop: function (info) {
-                    // 리사이즈 종료 시 스타일 제거
-                    info.el.classList.remove('task-resizing');
-                    console.log('Event resize stopped:', info.event.title);
+                eventContent: function (info) {
+                    const { extendedProps } = info.event;
+
+                    const profileImage = extendedProps.assignedToImage || '../img/default-profile.png';
+                    const assignedToName = extendedProps.assignedToName || '담당자 없음';
+
+                    // 이벤트 요소 생성
+                    const titleEl = document.createElement('div');
+                    titleEl.innerText = info.event.title;
+                    titleEl.style.marginBottom = '5px'; // 제목과 다른 요소 간격 추가
+
+                    const imageEl = document.createElement('img');
+                    imageEl.src = profileImage;
+                    imageEl.alt = assignedToName;
+                    imageEl.style.width = '30px';
+                    imageEl.style.height = '30px';
+                    imageEl.style.borderRadius = '50%';
+                    imageEl.style.marginBottom = '5px';
+
+                    const nameEl = document.createElement('span');
+                    nameEl.innerText = assignedToName;
+                    nameEl.style.fontSize = '12px';
+
+                    // 컨테이너에 요소 추가
+                    const containerEl = document.createElement('div');
+                    containerEl.style.display = 'flex';
+                    containerEl.style.flexDirection = 'column'; // 세로 정렬
+                    containerEl.style.alignItems = 'left'; // 가운데 정렬
+                    containerEl.style.justifyContent = 'center'; // 세로 가운데 정렬
+
+                    containerEl.appendChild(titleEl);
+
+                    const containerE2 = document.createElement('div');
+                    containerE2.style.display = 'flex';
+                    containerE2.style.flexDirection = 'Row'; // 가로로 정렬
+                    containerE2.style.alignItems = 'center'; // 수평 가운데 정렬
+                    containerE2.style.alignItems = 'left'; // 가운데 정렬
+                    containerE2.style.textAlign = 'center'; // 텍스트 가운데 정렬
+
+                    containerE2.appendChild(imageEl);
+                    containerE2.appendChild(nameEl);
+
+                    return { domNodes: [containerEl, containerE2] };
                 },
                 events: [] // 초기에는 이벤트 없음
             });
 
-            await renderTasks(calendar, projectId); // 작업 데이터 렌더링
+            await renderTasks(calendar, projectId);
             calendar.render();
             console.log("FullCalendar Initialized");
         }
@@ -169,7 +221,11 @@
         async function updateEventOnServer(event) {
             try {
                 const statusId = mapStatusToId(event.extendedProps.status); // 상태 이름 -> ID 변환
-
+        
+                // 날짜를 로컬 시간대에 맞게 처리
+                const startDate = event.start.toLocaleDateString('en-CA'); // YYYY-MM-DD 형식 반환
+                const endDate = event.end ? event.end.toLocaleDateString('en-CA') : null; // 종료일 없을 때 null 처리
+        
                 const requestData = {
                     taskId: event.id,
                     taskName: event.title,
@@ -177,12 +233,13 @@
                     assignedTo: event.extendedProps.assignedTo || null,
                     status: statusId || 1, // 상태가 없으면 기본값 1
                     priority: event.extendedProps.priority || '낮음',
-                    dueDate: event.end.toISOString().split('T')[0],
-                    startDate: event.start.toISOString().split('T')[0],
+                    startDate: startDate,
+                    dueDate: endDate,
                     changedBy: userIdx // 변경자 ID
                 };
-
-
+        
+                console.log("업데이트 요청 데이터:", requestData);
+        
                 const response = await fetch(`${API_URL}/tasks/update`, {
                     method: 'PUT',
                     headers: {
@@ -190,15 +247,16 @@
                     },
                     body: JSON.stringify(requestData)
                 });
-
+        
                 if (!response.ok) {
                     throw new Error('이벤트 업데이트 실패');
                 }
-
+        
             } catch (error) {
                 console.error('이벤트 업데이트 오류:', error);
             }
         }
+        
 
         // ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -232,11 +290,11 @@
         // 우선순위에 따른 색상 반환 함수
         function getColorByPriority(priority, type = 'background') {
             const colors = {
-                긴급: { background: '#ff4d4d', border: '#ff1a1a', text: 'white' },
-                높음: { background: '#ffcc00', border: '#e6b800', text: 'black' },
-                중간: { background: '#66b3ff', border: '#3399ff', text: 'black' },
-                낮음: { background: '#99e699', border: '#66b366', text: 'black' },
-                기본: { background: '#d3d3d3', border: '#a9a9a9', text: 'black' }
+                긴급: { background: '#555555', border: '#444444', text: 'white' }, // 가장 진한 회색
+                높음: { background: '#666666', border: '#555555', text: 'white' }, // 진한 회색
+                중간: { background: '#777777', border: '#666666', text: 'white' }, // 중간 회색
+                낮음: { background: '#888888', border: '#777777', text: 'white' }, // 밝은 회색
+                기본: { background: '#999999', border: '#888888', text: 'black' }  // 가장 밝은 회색
             };
 
             return colors[priority]?.[type] || colors.기본[type];
@@ -256,6 +314,20 @@
             } catch (error) {
                 console.error("API 호출 오류:", error);
                 return [];
+            }
+        }
+
+        // API 호출 함수 (팀장,담당자 데이터 가져오기)
+        async function fetchUserRole(projectId, userIdx) {
+            try {
+                const response = await fetch(`${API_URL}/project/role?projectId=${projectId}&userIdx=${userIdx}`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch user role');
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching user role:', error);
+                return null;
             }
         }
 
