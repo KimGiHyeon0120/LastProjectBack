@@ -10,6 +10,15 @@ body {
     margin-top: 80px;
 }
 
+.btn-area {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: left;
+    margin-left: 200px;
+    margin-right: 200px;
+}
+
 .sprint-board {
     margin-top: 15px;
     display: flex;
@@ -34,6 +43,8 @@ body {
 
 .sprint:hover {
     transform: translateY(-2px);
+    cursor: pointer;
+    border: 1px solid black;
     /* 살짝 떠오르는 효과 */
 }
 
@@ -134,15 +145,6 @@ body {
 #addSprintBtn:hover {
     background-color: #1890ff;
 }
-
-
-
-
-
-
-
-
-
 
 
 /* 팝업 스타일 */
