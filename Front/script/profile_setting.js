@@ -13,7 +13,7 @@ const connection = mysql.createConnection({
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-router.put('/add-member', async (req, res) => {
+router.post('/profile-setting', async (req, res) => {
     const { userId, userName, userEmail, userProfileImage } = req.body;
 
     if (!userId || (!userName && !userEmail && !userProfileImage)) {
