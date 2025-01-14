@@ -7,7 +7,12 @@ body {
 }
 
 .calendar {
+    position: relative;
     text-align: center;
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    overflow: hidden;
 }
 
 .header {
@@ -20,20 +25,14 @@ body {
 .header button {
     border: none;
     background: none;
-    font-size: 20px; /* Increased button font size */
+    font-size: 20px;
     cursor: pointer;
 }
 
-.weekdays, .days {
+.weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 0;
-    background-color: #ddd;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-.weekdays {
+    /* 7열 그리드 */
     background-color: #f0f0f0;
     font-weight: bold;
     border: 1px solid #ddd;
@@ -43,9 +42,9 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 60px; /* Increased height of weekdays */
+    height: 60px;
     border-right: 1px solid #ddd;
-    font-size: 18px; /* Increased font size for weekdays */
+    font-size: 18px;
 }
 
 .weekday:last-child {
@@ -53,55 +52,178 @@ body {
 }
 
 .days {
-    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    /* 7열 그리드 */
+    grid-auto-rows: minmax(150px, auto);
+    /* 날짜 셀 자동 높이 */
     border-top: 1px solid #ddd;
+    gap: 0;
+    /* 셀 간 간격 제거 */
 }
 
-.day {
-    width: 100px; /* Increased width */
-    height: 120px; /* Increased height */
+.day-wrapper {
     display: flex;
-    align-items: flex-start; /* 날짜를 상단으로 정렬 */
-    justify-content: flex-end; /* 날짜를 오른쪽으로 정렬 */
-    background-color: white; /* 배경색 하얀색 */
-    border-left: 1px solid #ddd;
+    flex-direction: column;
+    border: 1px solid #ddd;
     box-sizing: border-box;
-    padding: 10px; /* Increased padding */
-    position: relative;
-    font-size: 20px; /* Increased font size for dates */
 }
 
-.day.blank {
-    background-color: #f0f0f0;
-    color: #aaa;
-}
-
-.day.sun {
-    background-color: #f8d7da; /* 일요일 색상 */
-}
-
-.day.sat {
-    background-color: #d1ecf1; /* 토요일 색상 */
-}
-
-.day:last-child {
-    border-right: 1px solid #ddd;
-}
-
-/* 가로줄 추가 */
 .day {
-    border-bottom: 1px solid #ddd; /* 가로줄 추가 */
+    min-width: 110px;
+    min-height: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 10px;
+    background-color: white;
+    border-bottom: 1px solid #ddd;
+    box-sizing: border-box;
 }
 
-/* 오늘 날짜 숫자만 강조 */
-.day.today span {
-    background-color: #ff6961; /* 오늘 날짜 숫자 배경색 */
-    color: white; /* 숫자 텍스트 색상 */
-    padding: 3px; /* Adjust padding for the smaller circle */
-    border-radius: 50%; /* 원형 강조 */
-    display: inline-block;
-    width: 23px; /* 원의 크기 */
-    height: 23px; /* 원의 크기 */
-    text-align: center; /* 숫자 중앙 정렬 */
-    line-height: 15px; /* 숫자 세로 중앙 정렬 */
+.tasks {
+    min-height: 100px;
+    width: 100%;
+    padding: 5px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
 }
+
+/* 하나의 div로 시작일과 종료일을 포함한 작업 스타일 */
+.task {
+    position: relative;
+    height: 30px;
+    /* 작업 높이 */
+    margin: 2px 0;
+    /* 작업 간 간격 */
+    background-color: rgba(0, 128, 255, 0.5);
+    border: 1px solid rgba(0, 128, 255, 0.8);
+    border-radius: 5px;
+    color: white;
+    padding: 5px;
+    font-size: 12px;
+    text-align: center;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+/* 시작일 스타일 */
+.task-start {
+    border-left: 4px solid green;
+}
+
+/* 종료일 스타일 */
+.task-end {
+    border-right: 4px solid red;
+}
+
+/* 중간 날짜 스타일 */
+.task-middle {
+    background-color: rgba(0, 128, 255, 0.7);
+}
+
+
+
+/* 작업 Hover 효과 */
+.task:hover {
+    background-color: rgba(0, 128, 255, 0.7);
+    cursor: pointer;
+}
+
+/* 툴바 버튼 숨기기 */
+.fc-header-toolbar .fc-prev-button,
+.fc-header-toolbar .fc-next-button,
+.fc-header-toolbar .fc-today-button,
+.fc-header-toolbar .fc-dayGridMonth-button,
+.fc-header-toolbar .fc-timeGridWeek-button,
+.fc-header-toolbar .fc-timeGridDay-button,
+.fc-header-toolbar .fc-listWeek-button {
+    display: none !important;
+}
+
+#calendar-container {
+    width: 700px;
+    /* 원하는 가로 크기로 조정 */
+    margin: 0 auto;
+    /* 가운데 정렬 */
+}
+
+/* 드래그 박스의 스타일 */
+#external-events {
+    position: fixed;
+    left: 20px;
+    top: 20px;
+    width: 100px;
+    padding: 0 10px;
+    border: 1px solid #ccc;
+    background: #eee;
+    text-align: left;
+}
+
+#external-events h4 {
+    font-size: 16px;
+    margin-top: 0;
+    padding-top: 1em;
+}
+
+#external-events .fc-event {
+    margin: 3px 0;
+    cursor: move;
+}
+
+#external-events p {
+    margin: 1.5em 0;
+    font-size: 11px;
+    color: #666;
+}
+
+#external-events p input {
+    margin: 0;
+    vertical-align: middle;
+}
+
+#calendar-wrap {
+    margin-left: 200px;
+}
+
+#calendar1 {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+/* 기존 스타일 유지*/
+/*
+.task-resizing {
+    background-color: rgba(255, 165, 0, 0.7);
+    cursor: grabbing;
+    border: 2px dashed #ff8c00;
+} */
+
+/* 리사이즈 핸들러 스타일 */
+/* .fc-event::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 10px;
+    height: 10px;
+    background-color: #ff8c00;
+    cursor: se-resize;
+    z-index: 10;
+} */
+
+/* 시작일 리사이즈 핸들러 */
+/* .fc-event::before {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 10px;
+    height: 10px;
+    background-color: #ff8c00;
+    cursor: sw-resize;
+    z-index: 10;
+} */
