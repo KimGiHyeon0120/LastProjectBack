@@ -219,11 +219,40 @@ router.get('/get-idx', async (req, res) => {
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
+//프로필 가져오기
+router.get('/profile-user', async (req, res) => {
+    try {
+        // 사용자 ID 가져오기 (인증된 사용자를 가정)
+        const userId = req.query;
+
+        // DB에서 사용자 정보 조회
+        const [rows] = await connection.promise().query(
+            `SELECT user_name, user_email, user_profile_image 
+             FROM Users 
+             WHERE user_idx = ?`,
+            [userId]
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
+        }
+
+        // 사용자 정보 반환
+        res.status(200).json({
+            name: rows[0].user_name,
+            email: rows[0].user_email,
+            profileImage: rows[0].user_profile_image || '../profile/default-profile.png',
+        });
+    } catch (error) {
+        console.error('프로필 조회 오류:', error);
+        res.status(500).json({ message: '서버 오류가 발생했습니다.' });
+    }
+});
 
 
 //프로필 설정
 router.post('/profile-setting', async (req, res) => {
-    const { userId, userName, userEmail, userProfileImage } = req.body;
+    const { userId, userName, userProfileImage } = req.body;
 
     if (!userId || (!userName && !userEmail && !userProfileImage)) {
         return res.status(400).json({ message: '수정할 필드 또는 사용자 ID가 누락되었습니다.' });
@@ -233,11 +262,10 @@ router.post('/profile-setting', async (req, res) => {
         const [updated] = await User.update(
             {
                 user_name: userName,
-                user_email: userEmail,
                 user_profile_image: userProfileImage,
             },
             {
-                where: { user_idx: userId },
+                where: { user_id: userId },
                 individualHooks: true,
             }
         );
