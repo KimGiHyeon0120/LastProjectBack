@@ -123,13 +123,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-$(function () {
-    // 헤더를 로드
-    $("header").load("../project/header.html", () => {
-        console.log("헤더 로드 완료");
-        initializeNotificationHandlers();
-    });
-});
+
 
 // 알림 핸들러 초기화
 function initializeNotificationHandlers() {
