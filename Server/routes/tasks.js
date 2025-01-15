@@ -91,9 +91,10 @@ router.get('/list', async (req, res) => {
 
         const params = sprintId ? [projectId, sprintId] : [projectId];
         const [tasks] = await connection.promise().query(query, params);
-
+        
         // 우선순위 자동 설정
         const now = new Date();
+        
         tasks.forEach(task => {
             if (task.dueDate) {
                 const dueDate = new Date(task.dueDate);
