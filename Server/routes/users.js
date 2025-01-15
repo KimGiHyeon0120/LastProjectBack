@@ -219,6 +219,15 @@ router.get('/get-idx', async (req, res) => {
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
+
+
+
+
+
+
+
+
+
 //프로필 가져오기
 router.get('/profile-user', async (req, res) => {
     // 사용자 ID 가져오기 (인증된 사용자를 가정)
@@ -250,6 +259,13 @@ router.get('/profile-user', async (req, res) => {
 });
 
 
+
+
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
 //프로필 설정
 router.post('/profile-setting', async (req, res) => {
     const { user_idx, user_name, user_profile_image } = req.body;
@@ -279,35 +295,51 @@ router.post('/profile-setting', async (req, res) => {
 });
 
 
+
+
+
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+
+
 // 비밀번호 조회
 router.post('/password-verify', async (req, res) => {
-    const {user_idx, user_password }= req.body;
+    const { user_idx, user_password } = req.body;
 
     if (!user_password) {
-        return res.status(400).json({ message: '비밀번호가 입력되지 않았습니다.'});
+        return res.status(400).json({ message: '비밀번호가 입력되지 않았습니다.' });
     }
 
     const query = `SELECT user_password FROM Users WHERE user_idx = ?`;
     connection.query(query, [user_idx], async (err, result) => {
-        if(err) {
+        if (err) {
             console.error(err);
-            return res.status(500).json({message : '검색 실패'});
+            return res.status(500).json({ message: '검색 실패' });
         }
-        if(result.length === 0 ) {
-            return res.status(401).json({message : '비밀번호가 잘못 되었습니다.'});
-        }
-
-        const { userPassword : hashedPassword } = result[0];
-
-        const isMatch = await bcrypt.compare(user_password, hashedPassword);
-        if (!isMatch) {
-            return res.status(401).json({ message: '비밀번호가 잘못되었습니다.' });
+        if (result.length === 0) {
+            return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
         }
 
-        // 비밀번호가 일치하는 경우
-        res.status(200).json({ message: '비밀번호 확인 완료.'});
+        const { user_password: hashedPassword } = result[0];
+
+        try {
+            const isMatch = await bcrypt.compare(user_password, hashedPassword);
+            if (!isMatch) {
+                return res.status(401).json({ message: '비밀번호가 잘못되었습니다.' });
+            }
+
+            // 비밀번호가 일치하는 경우
+            res.status(200).json({ message: '비밀번호 확인 완료.' });
+        } catch (compareErr) {
+            console.error(compareErr);
+            res.status(500).json({ message: '비밀번호 확인 중 오류가 발생했습니다.' });
+        }
     });
-})
+});
 
 
 
