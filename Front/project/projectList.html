@@ -8,7 +8,7 @@
     <link rel="icon" sizes="48x48" href="../img/android-icon-48x48.png">
     <link rel="apple-touch-icon" sizes="48x48" href="../img/android-icon-48x48.png">
     <script src="../script/header.js"></script>
-    <link rel="stylesheet" href="../css/projectList.css">
+    <link rel="stylesheet" href="../../Front/profile/">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 
@@ -65,6 +65,7 @@
                 return new Promise((resolve, reject) => {
                     $.ajax({
                         url: `http://localhost:3000/api/users/get-idx?userId=${userId}`,
+
                         method: "GET",
                         success: function (data) {
                             resolve(data.user_idx);

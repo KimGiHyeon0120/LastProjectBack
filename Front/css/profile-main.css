@@ -1,0 +1,61 @@
+/* 프로필 페이지 기본 스타일 */
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f9f9f9;
+}
+
+
+
+/* 컨테이너 스타일 */
+.profile-container {
+    width: 350px;
+    background: #ffffff;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    text-align: center;
+}
+
+/* 프로필 사진 */
+.profile-picture img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 3px solid #ddd;
+    margin-bottom: 15px;
+}
+
+/* 사용자 정보 */
+.profile-info h2 {
+    font-size: 22px;
+    margin: 10px 0;
+    color: #333;
+}
+
+.profile-info p {
+    font-size: 16px;
+    color: #666;
+}
+
+/* 버튼 스타일 */
+.profile-actions button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #007BFF;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.profile-actions button:hover {
+    background-color: #0056b3;
+}
