@@ -50,7 +50,7 @@
     </div>
     <script>
         $(document).ready(function () {
-            const API_URL = "http://192.168.20.37:3000/api/project/list-by-user";
+            const API_URL = "http://localhost:3000/api/project/list-by-user";
 
             const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
             if (!loggedInUser || !loggedInUser.user_id) {
@@ -64,7 +64,7 @@
             function fetchUserIdx() {
                 return new Promise((resolve, reject) => {
                     $.ajax({
-                        url: `http://192.168.20.37:3000/api/users/get-idx?userId=${userId}`,
+                        url: `http://localhost:3000/api/users/get-idx?userId=${userId}`,
                         method: "GET",
                         success: function (data) {
                             resolve(data.user_idx);

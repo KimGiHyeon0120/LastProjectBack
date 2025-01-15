@@ -23,6 +23,14 @@
         <div class="projectList-filters">
             <input type="text" id="search" placeholder="">
             <label for="search">프로젝트 검색</label>
+
+            <!-- 스프린트 필터 -->
+            <div class="dropdown-container" style="position: relative;">
+                <button id="sprintDropdownButton" class="sprint-dropdown-button">스프린트 선택 </button>
+                <div id="sprintDropdownContent" class="sprint-dropdown-content">
+                    <!-- 스프린트 항목이 여기에 동적으로 추가됩니다 -->
+                </div>
+            </div>
         </div>
         <div class="content">
             <!-- 작업 진행 상태 보드 -->
@@ -30,8 +38,6 @@
                 <!-- 스프린트 및 작업 데이터가 동적으로 추가됩니다 -->
             </div>
         </div>
-
-
     </div>
 
 
@@ -96,7 +102,9 @@
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
         const projectId = sessionStorage.getItem("projectId");
         const userIdx = sessionStorage.getItem("userIdx"); // 로그인된 사용자 ID
-        const API_URL = "http://192.168.20.37:3000/api";
+        const userIdxh = localStorage.getItem("userIdx"); // 사용자 ID
+        const projectIdh = localStorage.getItem("projectId"); // 프로젝트 ID
+        const API_URL = "http://localhost:3000/api";
         //192.168.20.37
 
         let userRole = null;
@@ -179,7 +187,6 @@
                             : '../profile/default-profile.png';
 
                         const assignedToName = userMap[task.assignedTo] || '담당자 없음';
-                        console.log(task);
                         return `
                             <div class="task" draggable="true" ondragstart="dragTask(event)" data-task-id="${task.taskId}" data-assigned-to="${assignedToName}">
 <div class="work-item" onclick="openEditTaskPopup(${task.taskId})">
@@ -328,7 +335,6 @@
 
             // 담당자 드롭다운 열기/닫기
             window.toggleAssigneeDropdown = function (taskId) {
-                console.log(`Task ID ${taskId}의 드롭다운 열기/닫기 시도`);
 
                 // 현재 열려 있는 드롭다운 닫기
                 document.querySelectorAll('.dropdown-options').forEach(dropdown => {
@@ -365,10 +371,6 @@
 
             // 작업 담당자 할당 및 UI 업데이트
             window.selectAssignee = function (taskId, userId, profileImage, userName) {
-                console.log("selectAssignee 함수 실행");
-                console.log("User Role:", userRole);
-                console.log("Task ID:", taskId);
-                console.log("User ID:", userId);
 
                 if (!taskId) {
                     console.error("Task ID가 필요합니다.");
@@ -380,7 +382,6 @@
                     return;
                 }
 
-                console.log("팀장 확인 완료, 담당자 변경 실행");
 
                 // UI 업데이트
                 const dropdown = document.getElementById(`dropdown_${taskId}`);
@@ -400,7 +401,6 @@
                 dropdown.classList.remove('show');
                 dropdown.closest('.task')?.classList.remove('dropdown-active');
 
-                console.log(`Task ID ${taskId}의 UI가 업데이트되었습니다.`);
 
                 // 서버 요청
                 $.ajax({
@@ -409,7 +409,6 @@
                     contentType: "application/json",
                     data: JSON.stringify({ taskId, assignedTo: userId, changedBy: userIdx }),
                     success: function () {
-                        console.log(`Task ID ${taskId} 담당자가 ${userName}로 변경되었습니다.`);
                         fetchTasksAndMembers(); // 작업 목록 새로고침
                     },
                     error: function (err) {
@@ -423,7 +422,6 @@
                 const dropdownButton = e.target.closest('.assignee-dropdown');
                 if (dropdownButton) {
                     const taskId = dropdownButton.closest('.task').dataset.taskId;
-                    console.log(`Task ID ${taskId}의 드롭다운 클릭`);
                     window.toggleAssigneeDropdown(taskId);
                 }
             });
@@ -733,13 +731,6 @@
                     return;
                 }
 
-                console.log("멘션 생성 요청 데이터:", {
-                    taskId,
-                    mentionMessage,
-                    mentionedUsers,
-                    sentBy: userIdx,
-                });
-
                 $.ajax({
                     url: `${API_URL}/mentions/send`,
                     method: "POST",
@@ -797,7 +788,6 @@
                 const match = mentionPattern.exec(inputVal.slice(0, caretPos));
                 const searchQuery = match ? match[1] : "";
 
-                console.log("현재 검색어:", searchQuery); // 디버깅 로그
 
                 if (searchQuery) {
                     // 서버에 검색 요청
@@ -883,15 +873,107 @@
 
 
 
-            // 초기 데이터 로드
+
+
+
+
+
+
+
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
             fetchTasksAndMembers();
+
         });
 
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
 
+        document.addEventListener('DOMContentLoaded', function () {
+            const sprintDropdownButton = document.getElementById('sprintDropdownButton');
+            const sprintDropdownContent = document.getElementById('sprintDropdownContent');
 
+            if (!sprintDropdownButton || !sprintDropdownContent) {
+                console.error('스프린트 드롭다운 요소를 찾을 수 없습니다.');
+                return;
+            }
+
+            // 드롭다운 열기/닫기
+            sprintDropdownButton.addEventListener('click', function (e) {
+                e.stopPropagation(); // 이벤트 버블링 방지
+                sprintDropdownContent.classList.toggle('show');
+            });
+
+            // 외부 클릭 시 드롭다운 닫기
+            document.addEventListener('click', function (event) {
+                if (!sprintDropdownButton.contains(event.target) && !sprintDropdownContent.contains(event.target)) {
+                    sprintDropdownContent.classList.remove('show');
+                }
+            });
+
+            // 스프린트 필터 로드
+            async function loadSprintFilters(projectId) {
+                try {
+                    const response = await fetch(`${API_URL}/sprint/list?projectId=${projectId}`);
+                    const sprints = await response.json();
+
+                    const sprintDropdownContent = document.getElementById('sprintDropdownContent');
+                    sprintDropdownContent.innerHTML = ''; // 기존 콘텐츠 초기화
+
+                    sprints.forEach(sprint => {
+                        const sprintDiv = document.createElement('div');
+                        sprintDiv.className = 'sprint-item'; // 개별 스프린트 클래스
+
+                        sprintDiv.innerHTML = `
+                            <input type="checkbox" class="sprint-checkbox" value="${sprint.sprintName}">
+                            <span class="sprint-name">${sprint.sprintName}</span>
+                        `;
+                        sprintDropdownContent.appendChild(sprintDiv);
+                    });
+                } catch (err) {
+                    console.error('스프린트 필터 로드 오류:', err);
+                }
+            }
+
+
+            // 필터 적용
+            async function applyFilters() {
+                const checkedSprints = Array.from(document.querySelectorAll('.sprint-checkbox:checked')).map(cb => cb.value);
+
+                const params = new URLSearchParams({
+                    projectId,
+                });
+
+                // 스프린트가 선택되지 않은 경우, 모든 작업 표시
+                if (checkedSprints.length > 0) {
+                    params.append('sprints', checkedSprints.join(','));
+                }
+
+                try {
+                    const response = await fetch(`${API_URL}/tasks/filter?${params}`);
+                    if (!response.ok) {
+                        throw new Error(`필터링 실패: ${response.statusText}`);
+                    }
+                    const filteredTasks = await response.json();
+                    renderTasks([], filteredTasks); // 기존 작업 렌더링 함수 호출
+                } catch (err) {
+                    console.error('필터링 오류:', err);
+                }
+            }
+
+            // 체크박스 변경 이벤트 연결
+            sprintDropdownContent.addEventListener('change', applyFilters);
+
+            // 초기화
+            const projectId = sessionStorage.getItem('projectId');
+            if (projectId) {
+                loadSprintFilters(projectId);
+            }
+        });
 
 
     </script>
