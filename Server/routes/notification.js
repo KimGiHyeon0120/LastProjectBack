@@ -134,13 +134,25 @@ router.post('/mentions/send', async (req, res) => {
 
 // 알림 조회 (사용자별)
 router.get('/', async (req, res) => {
-    const { userId, isTeamLeader } = req.query;
+    const { userId, projectId } = req.query;
 
-    if (!userId) {
-        return res.status(400).json({ message: '사용자 ID는 필수입니다.' });
+    if (!userId || !projectId) {
+        return res.status(400).json({ message: '사용자 ID와 프로젝트 ID는 필수입니다.' });
     }
 
     try {
+        // 팀장 여부 확인
+        const [teamLeaderCheck] = await connection.promise().query(
+            `SELECT pr.project_role_name 
+             FROM Project_Members pm
+             JOIN Project_Roles pr ON pm.project_role_id = pr.project_role_id
+             WHERE pm.user_idx = ? AND pm.project_id = ?`,
+            [userId, projectId]
+        );
+
+        const isTeamLeader = teamLeaderCheck.some(role => role.project_role_name === '팀장');
+
+        // 알림 데이터 조회
         let query = `
             SELECT n.notification_id, n.message, n.related_project_id, n.related_task_id, 
                    n.is_read_by_assignee, n.read_by_team_leader, n.created_at, 
@@ -155,21 +167,13 @@ router.get('/', async (req, res) => {
 
         const queryParams = [];
 
-        // 팀장인지 확인하고 쿼리 조건 추가
-        if (isTeamLeader === 'true') {
-            query += `WHERE n.related_project_id IN (
-                        SELECT pm.project_id
-                        FROM Project_Members pm
-                        JOIN Project_Roles pr ON pm.project_role_id = pr.project_role_id
-                        WHERE pm.user_idx = ? AND pr.project_role_name = '팀장'
-                      )`;
-            queryParams.push(userId);
+        if (isTeamLeader) {
+            query += `WHERE n.related_project_id = ? ORDER BY n.created_at DESC`;
+            queryParams.push(projectId);
         } else {
-            query += `WHERE n.user_idx = ?`;
-            queryParams.push(userId);
+            query += `WHERE n.related_project_id = ? AND n.user_idx = ? ORDER BY n.created_at DESC`;
+            queryParams.push(projectId, userId);
         }
-
-        query += ` ORDER BY n.created_at DESC`;
 
         const [notifications] = await connection.promise().query(query, queryParams);
 
@@ -177,16 +181,12 @@ router.get('/', async (req, res) => {
             return res.status(404).json({ message: '알림이 없습니다.' });
         }
 
-        res.status(200).json(notifications);
+        res.status(200).json({ isTeamLeader, notifications });
     } catch (err) {
         console.error('알림 조회 오류:', err);
-        res.status(500).json({ 
-            message: '알림 조회 중 오류가 발생했습니다.', 
-            error: err.message 
-        });
+        res.status(500).json({ message: '알림 조회 중 오류가 발생했습니다.' });
     }
 });
-
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 읽지 않은 알림 조회
@@ -221,48 +221,77 @@ router.get('/unread', async (req, res) => {
 
 // 개별 알림 읽음 처리
 router.put('/mark-as-read', async (req, res) => {
-    const { notificationId, role } = req.body; // role은 'assignee' 또는 'team_leader'
+    const { notificationId, role } = req.body;
 
-    if (!notificationId || !role) {
-        return res.status(400).json({ message: '알림 ID와 역할 정보는 필수입니다.' });
+    // 역할 유효성 확인
+    const validRoles = {
+        assignee: 'is_read_by_assignee',
+        team_leader: 'read_by_team_leader'
+    };
+
+    if (!notificationId || !validRoles[role]) {
+        return res.status(400).json({ message: '올바른 알림 ID와 역할 정보가 필요합니다.' });
     }
 
-    const field = role === 'assignee' ? 'is_read_by_assignee' : 'read_by_team_leader';
+    const field = validRoles[role];
 
     try {
-        await connection.promise().query(
+        // 알림 읽음 상태 업데이트
+        const [result] = await connection.promise().query(
             `UPDATE Notifications
              SET ${field} = 1
              WHERE notification_id = ?`,
             [notificationId]
         );
 
-        res.status(200).json({ message: '알림이 읽음 상태로 업데이트되었습니다.' });
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: '알림 ID를 찾을 수 없습니다.' });
+        }
+
+        // 업데이트된 알림 반환
+        const [updatedNotification] = await connection.promise().query(
+            `SELECT * FROM Notifications WHERE notification_id = ?`,
+            [notificationId]
+        );
+
+        res.status(200).json({
+            message: '알림이 읽음 상태로 업데이트되었습니다.',
+            notification: updatedNotification[0]
+        });
     } catch (err) {
         console.error('알림 읽음 처리 오류:', err);
         res.status(500).json({ message: '알림 읽음 처리 중 오류가 발생했습니다.' });
     }
 });
 
-
-
 // 모든 알림 읽음 처리
 router.put('/mark-all-as-read', async (req, res) => {
-    const { userId, role } = req.body; // role은 'assignee' 또는 'team_leader'
+    const { userId, projectId, role } = req.body;
 
-    if (!userId || !role) {
-        return res.status(400).json({ message: '사용자 ID와 역할 정보는 필수입니다.' });
+    // 역할 유효성 확인
+    const validRoles = {
+        assignee: 'is_read_by_assignee',
+        team_leader: 'read_by_team_leader'
+    };
+
+    if (!userId || !projectId || !validRoles[role]) {
+        return res.status(400).json({ message: '사용자 ID, 프로젝트 ID, 역할 정보는 필수입니다.' });
     }
 
-    const field = role === 'assignee' ? 'is_read_by_assignee' : 'read_by_team_leader';
+    const field = validRoles[role];
 
     try {
-        await connection.promise().query(
+        // 모든 알림 읽음 상태 업데이트
+        const [result] = await connection.promise().query(
             `UPDATE Notifications
              SET ${field} = 1
-             WHERE user_idx = ? AND ${field} = 0`,
-            [userId]
+             WHERE related_project_id = ? AND user_idx = ? AND ${field} = 0`,
+            [projectId, userId]
         );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: '읽지 않은 알림이 없습니다.' });
+        }
 
         res.status(200).json({ message: '모든 알림이 읽음 상태로 업데이트되었습니다.' });
     } catch (err) {
@@ -270,6 +299,5 @@ router.put('/mark-all-as-read', async (req, res) => {
         res.status(500).json({ message: '모든 알림 읽음 처리 중 오류가 발생했습니다.' });
     }
 });
-
 
 module.exports = router;
