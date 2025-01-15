@@ -24,3 +24,33 @@ function updateProfilePreview() {
         reader.readAsDataURL(fileInput.files[0]); // 선택된 파일을 읽음
     }
 }
+
+function settingProfile() {
+    const fileInput = document.getElementById('profile-image-input');
+    const userName = document.getElementById('user-name');
+    const userIdx = sessionStorage.getItem("userIdx");
+
+
+    $.ajax({
+        url: `${API_URL}/project/profile-setting`,
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            user_idx: userIdx,
+            user_profile_image: fileInput.value,
+            user_name: userName.value
+        }),
+        success: (response) => {
+            console.log(response);
+            if(response.message === '프로필이 성공적으로 수정되었습니다.') {
+                alert('변경사항이 저장 되었습니다.');
+                window.location.href = '../project/profile-main.html'
+            } else {
+                alert('변경에 실패했습니다.')
+                userName.value = '';
+                fileInput.value = '../profile/default-profile.png';
+                userName.focus();
+            }
+        }
+    })
+}
