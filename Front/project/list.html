@@ -20,6 +20,7 @@
         <div class="header">
             <h1>작업 진행 상태</h1>
         </div>
+        <input type="text">
         <div class="content">
             <!-- 작업 진행 상태 보드 -->
             <div class="board" id="sprintBoard">
@@ -209,7 +210,11 @@
 
                     const columnHTML = `
                         <div class="board-column" data-status="${status.name}">
-                            <h3>${status.name}</h3>
+
+      <div class="status-header">
+    <span class="status-icon">●</span>
+    <h3 class="status-name">${status.name}</h3>
+</div>
                             <div class="tasks ${tasksForStatus.length === 0 ? "empty" : ""}" 
                                  ondragover="allowDrop(event)" 
                                  ondrop="dropTask(event, '${status.id}')">
@@ -221,7 +226,6 @@
                     sprintBoard.append(columnHTML);
                 });
             }
-
 
 
 

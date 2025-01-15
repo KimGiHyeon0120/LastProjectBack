@@ -17,19 +17,58 @@ body{
 .board-column {
     flex: 1;
     background-color: #f9f9f9;
-    
-    border-radius: 6px;
+    border-radius: 4px;
     padding: 15px;
-    min-height: 300px;
-
+}
+/* 상태 헤더 컨테이너 */
+.status-header {
+    display: inline-flex; /* 가로 배치 및 내용 크기 자동 조정 */
+    align-items: center; /* 세로 중앙 정렬 */
+    margin-bottom: 8px; /* 아래 간격 */
+    padding: 4px 8px; /* 내부 여백 */
+    border-radius: 4px; /* 둥근 모서리 */
+    margin-left: 10px;
 }
 
-.board-column h3 {
-    margin-top: 0;
+/* 상태 아이콘 스타일 */
+.status-icon {
+    font-size: 9px; /* 아이콘 크기 */
+    margin-right: 8px; /* 텍스트와 간격 */
+    display: inline-block;
+}
+
+/* 상태 이름 스타일 */
+.status-name {
     font-size: 18px;
     color: #333;
     text-align: left;
-    margin-left: 15px;
+    margin: 0;
+}
+
+/* 상태별 스타일 - 헤더 배경색 */
+.board-column[data-status="할 일"] .status-header {
+    background-color: #E3E2E0;
+}
+
+.board-column[data-status="진행 중"] .status-header {
+    background-color: #D3E5EF;
+}
+
+.board-column[data-status="완료"] .status-header {
+    background-color: #DBEDDB;
+}
+
+/* 상태별 스타일 - 아이콘 색상 */
+.board-column[data-status="할 일"] .status-icon {
+    color: #91918E; 
+}
+
+.board-column[data-status="진행 중"] .status-icon {
+    color: #5B97BD; 
+}
+
+.board-column[data-status="완료"] .status-icon {
+    color: #6C9B7D;
 }
 
 /* 작업 카드 */
