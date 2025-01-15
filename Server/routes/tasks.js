@@ -125,7 +125,7 @@ router.get('/list', async (req, res) => {
         const [tasks] = await connection.promise().query(query, params);
         // 우선순위 자동 설정
         const now = new Date();
-        
+
         tasks.forEach(task => {
             if (task.dueDate) {
                 const dueDate = new Date(task.dueDate);
@@ -180,6 +180,7 @@ SELECT
     t.priority, 
     DATE_FORMAT(DATE_ADD(t.due_date, INTERVAL 1 DAY), '%Y년 %m월 %d일') AS dueDate, -- '년 월 일' 형식
     DATE_FORMAT(DATE_ADD(t.start_date, INTERVAL 1 DAY), '%Y년 %m월 %d일') AS startDate, -- '년 월 일' 형식
+    
     t.assigned_to AS assignedTo, 
     COALESCE(u.user_name, '담당자 없음') AS assignedToName,
     COALESCE(u.user_profile_image, '../profile/default-profile.png') AS assignedToImage
@@ -862,6 +863,120 @@ router.get('/activity/task', async (req, res) => {
 
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+router.get('/tasks/search', async (req, res) => {
+    const { keyword, projectId, sprints } = req.query;
+
+    if (!projectId) {
+        return res.status(400).json({ message: 'projectId는 필수입니다.' });
+    }
+
+    try {
+        const sprintFilter = sprints ? `AND t.sprint_id IN (${sprints.split(',').map(() => '?').join(',')})` : '';
+        const searchKeyword = `%${keyword || ''}%`;
+
+        const query = `
+            SELECT 
+                t.task_id AS taskId, 
+                t.task_name AS taskName, 
+                t.description, 
+                t.Tasks_status_id AS statusId,
+                s.Tasks_status_name AS statusName, 
+                t.priority, 
+                t.due_date AS dueDate,
+                t.start_date AS startDate,
+                t.assigned_to AS assignedTo, 
+                
+                COALESCE(u.user_name, '담당자 없음') AS assignedToName,
+                COALESCE(u.user_profile_image, '../profile/default-profile.png') AS assignedToImage
+            FROM Tasks t
+            LEFT JOIN Tasks_status s ON t.Tasks_status_id = s.Tasks_status_id
+            LEFT JOIN Users u ON t.assigned_to = u.user_idx
+            WHERE t.project_id = ?
+            AND (
+                t.task_name LIKE ? OR
+                t.description LIKE ? OR
+                u.user_name LIKE ?
+            )
+            ${sprintFilter}
+            ORDER BY t.due_date ASC;
+        `;
+
+        const params = [projectId, searchKeyword, searchKeyword, searchKeyword];
+        if (sprints) {
+            params.push(...sprints.split(','));
+        }
+
+        const [tasks] = await connection.promise().query(query, params);
+
+        if (tasks.length === 0) {
+            return res.status(404).json({ message: '검색 결과가 없습니다.' });
+        }
+
+        res.status(200).json(tasks);
+    } catch (err) {
+        console.error('작업 검색 오류:', err);
+        res.status(500).json({ message: '작업 검색 중 오류가 발생했습니다.' });
+    }
+});
+
+
+
+
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+router.get('/tasks/filter', async (req, res) => {
+    const { projectId, sprints } = req.query;
+
+    if (!projectId) {
+        return res.status(400).json({ message: 'projectId는 필수입니다.' });
+    }
+
+    try {
+        const sprintFilter = sprints ? `AND t.sprint_id IN (${sprints.split(',').map(() => '?').join(',')})` : '';
+
+        const query = `
+            SELECT 
+                t.task_id AS taskId,
+                t.task_name AS taskName,
+                t.description,
+                t.assigned_to AS assignedTo,
+                t.Tasks_status_id AS statusId,
+                t.priority,
+                t.start_date AS startDate,
+                t.due_date AS dueDate,
+                DATE_ADD(t.start_date, INTERVAL 1 DAY) AS startDate,
+                DATE_ADD(t.due_date, INTERVAL 1 DAY) AS dueDate,
+                COALESCE(sp.sprint_name, '스프린트 없음') AS sprintName,
+                COALESCE(sp.start_date, NULL) AS sprintStartDate,
+                COALESCE(sp.end_date, NULL) AS sprintEndDate
+            FROM Tasks t
+            LEFT JOIN Sprints sp ON t.sprint_id = sp.sprint_id
+            WHERE t.project_id = ?
+            ${sprintFilter}
+            ORDER BY t.due_date ASC;
+        `;
+
+        const params = [projectId];
+        if (sprints) {
+            params.push(...sprints.split(','));
+        }
+
+        const [tasks] = await connection.promise().query(query, params);
+
+        if (tasks.length === 0) {
+            return res.status(404).json({ message: '검색 결과가 없습니다.' });
+        }
+
+        res.status(200).json(tasks);
+    } catch (err) {
+        console.error('작업 필터링 중 오류 발생:', err);
+        res.status(500).json({ message: '작업 필터링 중 오류가 발생했습니다.' });
+    }
+});
+
 
 
 
