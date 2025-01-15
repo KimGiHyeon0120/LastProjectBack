@@ -108,6 +108,189 @@
         //192.168.20.37
 
         let userRole = null;
+        let teamMembers = []; // 전역 변수로 선언
+        let allTasks = []; // 모든 작업 데이터를 저장
+        let statuses = []; // 모든 상태 데이터를 저장
+
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+        // 상태 목록을 불러오는 함수
+        async function loadStatuses() {
+            try {
+                const response = await fetch(`${API_URL}/tasks/status-list`);
+                const statuses = await response.json();
+                return statuses;  // 상태 목록 반환
+            } catch (err) {
+                console.error('상태 목록을 불러오는 중 오류가 발생했습니다:', err);
+            }
+        }
+
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+        // 작업 상태 및 작업 데이터를 가져오기
+        async function fetchTasksAndMembers() {
+            try {
+                const statusResponse = await $.get(`${API_URL}/tasks/status-list`);
+                statuses = statusResponse;
+
+                const taskResponse = await $.get(`${API_URL}/tasks/list2`, { projectId });
+                allTasks = taskResponse; // 모든 작업 데이터를 저장
+
+                const membersResponse = await $.get(`${API_URL}/project/members`, { projectId });
+                teamMembers = membersResponse;
+
+                // teamMembers를 활용하여 userIdx -> 이름 매핑 객체 생성
+                const userMap = {};
+                teamMembers.forEach(member => {
+                    userMap[member.userId] = member.userName;
+                });
+
+                // 전역 변수로 저장
+                window.userMap = userMap;
+
+                // 초기 렌더링
+                renderTasks(statuses, allTasks, teamMembers);
+
+                // 드롭다운 이벤트를 재연결
+                document.querySelectorAll('.assignee-section .assignee-dropdown').forEach(dropdownButton => {
+                    dropdownButton.addEventListener('click', function (event) {
+                        const taskId = event.currentTarget.closest('.task').dataset.taskId;
+                        window.toggleAssigneeDropdown(taskId);
+                    });
+                });
+            } catch (err) {
+                console.error("Error fetching tasks and members:", err);
+            }
+        }
+
+
+
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+        // 작업 렌더링
+        function renderTasks(statuses, tasks, teamMembers) {
+            const sprintBoard = $("#sprintBoard");
+            sprintBoard.empty(); // 화면 초기화
+
+            // 상태별로 작업을 필터링하여 렌더링
+            statuses.forEach(status => {
+
+                // 해당 상태의 작업 필터링
+                const tasksForStatus = tasks.filter(task => {
+                    const taskStatusId = task.Tasks_status_id || task.statusId || task.status_id; // 상태 값을 가져옴
+                    return taskStatusId === status.id;
+                });
+
+
+                // 각 작업에 대한 HTML 생성
+                const tasksHTML = tasksForStatus.map(task => {
+                    // 담당자 정보 처리
+                    const assignedMember = teamMembers.find(member =>
+                        member.userId === task.assigned_to || member.userId === task.assignedTo
+                    );
+                    const profileImage = assignedMember?.profileImage || '../profile/default-profile.png';
+                    const assignedToName = assignedMember?.userName || '담당자 없음';
+
+                    // 날짜 변환 함수
+                    const parseDate = dateStr => {
+                        if (!dateStr) return null;
+                        const standardizedDate = dateStr.replace(/[년월일]/g, '').trim().replace(/\s+/g, '-');
+                        const parsedDate = new Date(standardizedDate);
+                        return isNaN(parsedDate) ? null : parsedDate;
+                    };
+
+                    const adjustDate = date => {
+                        if (!date) return null;
+                        const adjustedDate = new Date(date);
+                        adjustedDate.setDate(adjustedDate.getDate() - 1); // 날짜에서 1일을 뺌
+                        return adjustedDate;
+                    };
+
+                    const formatDate = date => {
+                        if (!date) return 'N/A';
+                        return `${date.getFullYear()}. ${String(date.getMonth() + 1).padStart(2, '0')}. ${String(date.getDate()).padStart(2, '0')}.`;
+                    };
+
+                    // 날짜 정보 처리
+                    const startDateRaw = task.start_date || task.startDate;
+                    const dueDateRaw = task.due_date || task.dueDate;
+
+                    // start_date와 due_date는 원래 값 유지
+                    const startDateOriginal = formatDate(parseDate(task.start_date));
+                    const dueDateOriginal = formatDate(parseDate(task.due_date));
+
+                    // startDate와 dueDate는 -1일 조정
+                    const startDate = formatDate(adjustDate(parseDate(startDateRaw)));
+                    const dueDate = formatDate(adjustDate(parseDate(dueDateRaw)));
+
+                    // 디버깅 로그
+                    console.log("=== 날짜 정보 ===");
+                    console.log("원래 Start Date:", startDateOriginal);
+                    console.log("조정된 Start Date:", startDate);
+                    console.log("원래 Due Date:", dueDateOriginal);
+                    console.log("조정된 Due Date:", dueDate);
+                    console.log("=================");
+
+
+
+                    // 스프린트 이름 처리
+                    const sprintName = task.sprintName || task.sprint_name || '스프린트 없음';
+
+
+
+                    return `
+                        <div class="task" draggable="true" ondragstart="dragTask(event)" data-task-id="${task.taskId || task.task_id}" data-assigned-to="${assignedToName}">
+                            <div class="work-item" onclick="openEditTaskPopup(${task.taskId || task.task_id})">
+                                <p class="sprint-name">${sprintName}</p>
+                                <p class="task-name">${task.taskName || task.task_name || '작업 이름 없음'}</p>
+                                <p class="task-dates">${startDate || startDateRaw} ~ ${dueDate || dueDateRaw}</p>
+                            </div>
+                
+                            <div class="assignee-section">
+                                <div class="assignee-dropdown" onclick="window.toggleAssigneeDropdown(${task.taskId || task.task_id})">
+                                    <img src="${profileImage}" class="assignee-image" alt="프로필">
+                                    <span class="assignee-name">${assignedToName}</span>
+                                </div>
+                                <div class="dropdown-options hidden" id="dropdown_${task.taskId || task.task_id}">
+                                    ${teamMembers.map(member => `
+                                        <div class="dropdown-item" onclick="selectAssignee(${task.taskId || task.task_id}, ${member.userId}, '${member.profileImage || '../profile/default-profile.png'}', '${member.userName}')">
+                                            <img src="${member.profileImage || '../profile/default-profile.png'}" class="dropdown-image" alt="프로필">
+                                            <span>${member.userName}</span>
+                                        </div>
+                                    `).join('')}
+                                    <div class="dropdown-item" onclick="selectAssignee(${task.taskId || task.task_id}, null, '../profile/default-profile.png', '담당자 없음')">
+                                        <img src="../profile/default-profile.png" class="dropdown-image" alt="프로필">
+                                        <span>담당자 없음</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                // 상태별 작업 컬럼 생성
+                const columnHTML = `
+                    <div class="board-column" data-status="${status.name}">
+                        <div class="status-header">
+                            <span class="status-icon">●</span>
+                            <h3 class="status-name">${status.name}</h3>
+                        </div>
+                        <div class="tasks ${tasksForStatus.length === 0 ? "empty" : ""}" ondragover="allowDrop(event)" ondrop="dropTask(event, '${status.id}')">
+                            ${tasksHTML}
+                        </div>
+                    </div>
+                `;
+
+                sprintBoard.append(columnHTML);
+            });
+        }
+
+
+
+
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
 
         $(document).ready(function () {
 
@@ -132,110 +315,12 @@
             if (!projectId) {
                 return;
             }
-            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-            // 작업 상태 및 작업 데이터를 가져오기
-            async function fetchTasksAndMembers() {
-                try {
-                    const statusResponse = await $.get(`${API_URL}/tasks/status-list`);
-                    const statuses = statusResponse;
-
-                    const taskResponse = await $.get(`${API_URL}/tasks/list2`, { projectId });
-                    const tasks = taskResponse;
-
-                    const membersResponse = await $.get(`${API_URL}/project/members`, { projectId });
-                    const teamMembers = membersResponse;
-
-                    // teamMembers를 활용하여 userIdx -> 이름 매핑 객체 생성
-                    const userMap = {};
-                    teamMembers.forEach(member => {
-                        userMap[member.userId] = member.userName;
-                    });
-
-                    // 전역 변수로 저장
-                    window.userMap = userMap;
-
-                    renderTasks(statuses, tasks, teamMembers);
-
-                    // 드롭다운 이벤트를 재연결
-                    document.querySelectorAll('.assignee-section .assignee-dropdown').forEach(dropdownButton => {
-                        dropdownButton.addEventListener('click', function (event) {
-                            const taskId = event.currentTarget.closest('.task').dataset.taskId;
-                            window.toggleAssigneeDropdown(taskId);
-                        });
-                    });
-                } catch (err) {
-                    console.error("Error fetching tasks and members:", err);
-                }
-            }
 
 
 
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-            // 작업 렌더링
-            function renderTasks(statuses, tasks, teamMembers) {
-                const sprintBoard = $("#sprintBoard");
-                sprintBoard.empty();
-
-                statuses.forEach(status => {
-                    const tasksForStatus = tasks.filter(task => task.statusId === status.id);
-
-                    const tasksHTML = tasksForStatus.map(task => {
-                        const profileImage = task.assignedToImage && task.assignedToImage.trim()
-                            ? task.assignedToImage
-                            : '../profile/default-profile.png';
-
-                        const assignedToName = userMap[task.assignedTo] || '담당자 없음';
-                        return `
-                            <div class="task" draggable="true" ondragstart="dragTask(event)" data-task-id="${task.taskId}" data-assigned-to="${assignedToName}">
-<div class="work-item" onclick="openEditTaskPopup(${task.taskId})">
-    <p class="sprint-name">${task.sprintName}</p>
-    <p class="task-name">${task.taskName}</p>
-    <p class="task-dates">${task.startDate} ~ ${task.dueDate}</p>
-</div>
-
-
-                                <div class="assignee-section">
-                                    <div class="assignee-dropdown" onclick="window.toggleAssigneeDropdown(${task.taskId})">
-                                        <img src="${profileImage}" class="assignee-image" alt="프로필" >
-                                        <span class="assignee-name">${assignedToName}</span>
-                                    </div>
-                                    <div class="dropdown-options hidden" id="dropdown_${task.taskId}">
-                                        ${teamMembers.map(member => `
-                                            <div class="dropdown-item" onclick="selectAssignee(${task.taskId}, ${member.userId}, '${member.profileImage || '../profile/default-profile.png'}', '${member.userName}')">
-                                                <img src="${member.profileImage || '../profile/default-profile.png'}" class="dropdown-image" alt="프로필">
-                                                <span>${member.userName}</span>
-                                            </div>
-                                        `).join('')}
-                                        <div class="dropdown-item" onclick="selectAssignee(${task.taskId}, null, '../profile/default-profile.png', '담당자 없음')">
-                                            <img src="../profile/default-profile.png" class="dropdown-image" alt="프로필">
-                                            <span>담당자 없음</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-
-                    const columnHTML = `
-                        <div class="board-column" data-status="${status.name}">
-
-      <div class="status-header">
-    <span class="status-icon">●</span>
-    <h3 class="status-name">${status.name}</h3>
-</div>
-                            <div class="tasks ${tasksForStatus.length === 0 ? "empty" : ""}" 
-                                 ondragover="allowDrop(event)" 
-                                 ondrop="dropTask(event, '${status.id}')">
-                                ${tasksHTML}
-                            </div>
-                        </div>
-                    `;
-
-                    sprintBoard.append(columnHTML);
-                });
-            }
 
 
 
@@ -918,6 +1003,7 @@
             // 스프린트 필터 로드
             async function loadSprintFilters(projectId) {
                 try {
+                    // 서버에서 스프린트 목록 가져오기
                     const response = await fetch(`${API_URL}/sprint/list?projectId=${projectId}`);
                     const sprints = await response.json();
 
@@ -925,11 +1011,12 @@
                     sprintDropdownContent.innerHTML = ''; // 기존 콘텐츠 초기화
 
                     sprints.forEach(sprint => {
+                        // 각 스프린트 항목을 div로 생성
                         const sprintDiv = document.createElement('div');
                         sprintDiv.className = 'sprint-item'; // 개별 스프린트 클래스
 
                         sprintDiv.innerHTML = `
-                            <input type="checkbox" class="sprint-checkbox" value="${sprint.sprintName}">
+                            <input type="checkbox" class="sprint-checkbox" value="${sprint.sprintId}">
                             <span class="sprint-name">${sprint.sprintName}</span>
                         `;
                         sprintDropdownContent.appendChild(sprintDiv);
@@ -939,8 +1026,21 @@
                 }
             }
 
+            // 상태 목록을 불러오는 함수
+            async function loadStatuses() {
+                try {
+                    const response = await fetch(`${API_URL}/tasks/status-list`);
+                    const statuses = await response.json();
+                    return statuses;  // 상태 목록 반환
+                } catch (err) {
+                    console.error('상태 목록을 불러오는 중 오류가 발생했습니다:', err);
+                }
+            }
 
-            // 필터 적용
+
+
+
+            // 필터링 적용
             async function applyFilters() {
                 const checkedSprints = Array.from(document.querySelectorAll('.sprint-checkbox:checked')).map(cb => cb.value);
 
@@ -948,22 +1048,36 @@
                     projectId,
                 });
 
-                // 스프린트가 선택되지 않은 경우, 모든 작업 표시
+                // 체크된 스프린트가 있으면 추가
                 if (checkedSprints.length > 0) {
                     params.append('sprints', checkedSprints.join(','));
                 }
 
+                console.log(API_URL + '/tasks/tasks/filter?' + params.toString());  // 필터링된 URL을 콘솔에 출력
+
                 try {
-                    const response = await fetch(`${API_URL}/tasks/filter?${params}`);
+                    const response = await fetch(`${API_URL}/tasks/tasks/filter?${params.toString()}`);
                     if (!response.ok) {
                         throw new Error(`필터링 실패: ${response.statusText}`);
                     }
                     const filteredTasks = await response.json();
-                    renderTasks([], filteredTasks); // 기존 작업 렌더링 함수 호출
+
+                    // 상태 목록을 불러온 후 renderTasks로 전달
+                    const statuses = await loadStatuses(); // 상태 목록을 불러옴
+                    renderTasks(statuses, filteredTasks, teamMembers); // 필터링된 작업을 렌더링
                 } catch (err) {
                     console.error('필터링 오류:', err);
                 }
             }
+
+
+
+
+
+
+            fetchTasksAndMembers();
+
+
 
             // 체크박스 변경 이벤트 연결
             sprintDropdownContent.addEventListener('change', applyFilters);
