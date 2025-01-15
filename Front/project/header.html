@@ -8,7 +8,7 @@
             <div class="menu" onclick="toggleNav()">
                 <img src="../img/menu-icon.png" alt="메뉴 아이콘">
             </div>
-            
+
             <div class="logo-container">
                 <img src="../img/logo.png" alt="Plan It 로고">
             </div>
@@ -17,23 +17,33 @@
                 <a href="projectList.html">프로젝트</a>
             </div>
             <div class="nav-right">
-                <a href="#" class="notification">
-                    <img src="../img/notifications-icon.png" alt="알림 아이콘">
-                </a>
-                <a href="#" class="profile">
+                <!-- 알림 버튼 -->
+                <div id="notificationWrapper">
+                    <button class="header-notification-icon" id="notificationIcon">
+                        <img src="../img/notifications-icon.png" alt="알림 아이콘">
+                        <span id="notificationBadge" class="badge">0</span>
+                    </button>
+                    <div id="notificationDropdown" class="dropdown hidden">
+                        <!-- 알림 내용 동적 생성 -->
+                    </div>
+                </div>
+
+                <!-- 프로필 아이콘 -->
+                <a href="../Login/logout.html" class="profile">
                     <img src="../img/id-icon.png" alt="프로필 아이콘">
                 </a>
             </div>
         </div>
     </header>
-    
-    
+
+
     <div id="mySidebar">
-        <a href="summary.html" ><img src="../img/summary-icon.png" alt="요약 아이콘" class="icon"><span>요약</span></a>
-        <a href="calendar.html" ><img src="../img/calendar-icon.png" alt="캘린더 아이콘" class="icon"><span>캘린더</span></a>
-        <a href="list.html" ><img src="../img/timeline-icon.png" alt="타임라인 아이콘" class="icon"><span>타임라인</span></a>
-        <a href="board_main.html" ><img src="../img/board-icon.png" alt="보드 아이콘" class="icon"><span>보드</span></a>
-        <a href="#" ><img src="../img/Team-icon.png" alt="팀 아이콘" class="icon"><span>팀 관리</span></a>
+        <a href="summary.html"><img src="../img/summary-icon.png" alt="요약 아이콘" class="icon"><span>요약</span></a>
+        <a href="calendar.html"><img src="../img/calendar-icon.png" alt="캘린더 아이콘" class="icon"><span>캘린더</span></a>
+        <a href="list.html"><img src="../img/timeline-icon.png" alt="타임라인 아이콘" class="icon"><span>타임라인</span></a>
+        <a href="board_main.html"><img src="../img/board-icon.png" alt="보드 아이콘" class="icon"><span>보드</span></a>
+        <a href="#"><img src="../img/Team-icon.png" alt="팀 아이콘" class="icon"><span>팀 관리</span></a>
     </div>
-    
+
+
 </body>
