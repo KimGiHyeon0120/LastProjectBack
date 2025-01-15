@@ -128,7 +128,7 @@
                     const statusResponse = await $.get(`${API_URL}/tasks/status-list`);
                     const statuses = statusResponse;
 
-                    const taskResponse = await $.get(`${API_URL}/tasks/list`, { projectId });
+                    const taskResponse = await $.get(`${API_URL}/tasks/list2`, { projectId });
                     const tasks = taskResponse;
 
                     const membersResponse = await $.get(`${API_URL}/project/members`, { projectId });
@@ -173,13 +173,19 @@
                             : '../profile/default-profile.png';
 
                         const assignedToName = userMap[task.assignedTo] || '담당자 없음';
-                        console.log(task.assignedToImage)
+                        console.log(task);
                         return `
                             <div class="task" draggable="true" ondragstart="dragTask(event)" data-task-id="${task.taskId}" data-assigned-to="${assignedToName}">
-                                <p onclick="openEditTaskPopup(${task.taskId})">${task.taskName}</p>
+<div class="work-item" onclick="openEditTaskPopup(${task.taskId})">
+    <p class="sprint-name">${task.sprintName}</p>
+    <p class="task-name">${task.taskName}</p>
+    <p class="task-dates">${task.startDate} ~ ${task.dueDate}</p>
+</div>
+
+
                                 <div class="assignee-section">
-                                    <div class="assignee-dropdown">
-                                        <img src="${profileImage}" class="assignee-image" alt="프로필" onclick="window.toggleAssigneeDropdown(${task.taskId})">
+                                    <div class="assignee-dropdown" onclick="window.toggleAssigneeDropdown(${task.taskId})">
+                                        <img src="${profileImage}" class="assignee-image" alt="프로필" >
                                         <span class="assignee-name">${assignedToName}</span>
                                     </div>
                                     <div class="dropdown-options hidden" id="dropdown_${task.taskId}">
@@ -632,40 +638,40 @@
                     console.error("작업 ID가 필요합니다.");
                     return;
                 }
-            
+
                 console.log("loadActivityLogs 호출됨 - taskId:", taskId);
-            
+
                 $.ajax({
                     url: `${API_URL}/tasks/activity/task`,
                     method: "GET",
                     data: { taskId },
                     success: function (logs) {
                         console.log("API 응답 성공 - 데이터:", logs);
-            
+
                         const activityContent = $("#activityContent");
                         activityContent.empty(); // 기존 로그 제거
-            
+
                         if (!logs || logs.length === 0) {
                             console.log("활동 로그 없음");
                             activityContent.append(`<p class="no-logs">활동 로그가 없습니다.</p>`);
                             return;
                         }
-            
+
                         // 중복 제거 및 정렬 (필요한 경우)
                         const uniqueLogs = [...new Map(logs.map(log => [log.log_message + log.activity_date, log])).values()];
                         console.log("중복 제거된 로그:", uniqueLogs);
-            
+
                         uniqueLogs.forEach((log, index) => {
                             // 로그 데이터 유효성 검증
                             if (!log.log_message) {
                                 console.warn(`로그 데이터 유효하지 않음 - Index: ${index}`, log);
                                 return;
                             }
-            
+
                             const logType = log.log_type === "맨션" ? "mentions" : "logs";
                             const formattedDate = formatDate(log.activity_date || log.created_at || log.changed_at);
                             console.log(`로그 데이터 - Index: ${index}, Type: ${logType}, Date: ${formattedDate}, Message: ${log.log_message}`);
-            
+
                             activityContent.append(`
                                 <div class="activity-log" data-log-type="${logType}">
                                     <p><strong>${log.log_type || '기록'}</strong>: ${log.log_message}</p>
@@ -680,7 +686,7 @@
                     },
                 });
             }
-            
+
 
 
 
@@ -856,7 +862,7 @@
 
 
 
-            
+
 
 
             // 초기 데이터 로드
