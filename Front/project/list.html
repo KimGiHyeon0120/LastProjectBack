@@ -92,6 +92,8 @@
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
         const projectId = sessionStorage.getItem("projectId");
         const userIdx = sessionStorage.getItem("userIdx"); // 로그인된 사용자 ID
+        const userIdxh = localStorage.getItem("userIdx"); // 사용자 ID
+        const projectIdh = localStorage.getItem("projectId"); // 프로젝트 ID
         const API_URL = "http://192.168.20.37:3000/api";
         //192.168.20.37
 
@@ -128,7 +130,7 @@
                     const statusResponse = await $.get(`${API_URL}/tasks/status-list`);
                     const statuses = statusResponse;
 
-                    const taskResponse = await $.get(`${API_URL}/tasks/list`, { projectId });
+                    const taskResponse = await $.get(`${API_URL}/tasks/list2`, { projectId });
                     const tasks = taskResponse;
 
                     const membersResponse = await $.get(`${API_URL}/project/members`, { projectId });
@@ -165,7 +167,9 @@
                 sprintBoard.empty();
 
                 statuses.forEach(status => {
+                    // 현재 상태에 해당하는 작업 필터링
                     const tasksForStatus = tasks.filter(task => task.statusId === status.id);
+
 
                     const tasksHTML = tasksForStatus.map(task => {
                         const profileImage = task.assignedToImage && task.assignedToImage.trim()
@@ -173,9 +177,11 @@
                             : '../profile/default-profile.png';
 
                         const assignedToName = userMap[task.assignedTo] || '담당자 없음';
-                        console.log(task.assignedToImage)
+                        const sprintName = task.sprintName || '기타 작업'; // 스프린트 이름 없을 경우 '기타 작업'으로 설정
+
                         return `
                             <div class="task" draggable="true" ondragstart="dragTask(event)" data-task-id="${task.taskId}" data-assigned-to="${assignedToName}">
+                                <div class="sprint-name">${sprintName}</div> <!-- 스프린트 이름 표시 -->
                                 <p onclick="openEditTaskPopup(${task.taskId})">${task.taskName}</p>
                                 <div class="assignee-section">
                                     <div class="assignee-dropdown">
@@ -213,8 +219,6 @@
                     sprintBoard.append(columnHTML);
                 });
             }
-
-
 
 
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -313,7 +317,6 @@
 
             // 담당자 드롭다운 열기/닫기
             window.toggleAssigneeDropdown = function (taskId) {
-                console.log(`Task ID ${taskId}의 드롭다운 열기/닫기 시도`);
 
                 // 현재 열려 있는 드롭다운 닫기
                 document.querySelectorAll('.dropdown-options').forEach(dropdown => {
@@ -350,10 +353,6 @@
 
             // 작업 담당자 할당 및 UI 업데이트
             window.selectAssignee = function (taskId, userId, profileImage, userName) {
-                console.log("selectAssignee 함수 실행");
-                console.log("User Role:", userRole);
-                console.log("Task ID:", taskId);
-                console.log("User ID:", userId);
 
                 if (!taskId) {
                     console.error("Task ID가 필요합니다.");
@@ -365,7 +364,6 @@
                     return;
                 }
 
-                console.log("팀장 확인 완료, 담당자 변경 실행");
 
                 // UI 업데이트
                 const dropdown = document.getElementById(`dropdown_${taskId}`);
@@ -385,7 +383,6 @@
                 dropdown.classList.remove('show');
                 dropdown.closest('.task')?.classList.remove('dropdown-active');
 
-                console.log(`Task ID ${taskId}의 UI가 업데이트되었습니다.`);
 
                 // 서버 요청
                 $.ajax({
@@ -394,7 +391,6 @@
                     contentType: "application/json",
                     data: JSON.stringify({ taskId, assignedTo: userId, changedBy: userIdx }),
                     success: function () {
-                        console.log(`Task ID ${taskId} 담당자가 ${userName}로 변경되었습니다.`);
                         fetchTasksAndMembers(); // 작업 목록 새로고침
                     },
                     error: function (err) {
@@ -408,7 +404,6 @@
                 const dropdownButton = e.target.closest('.assignee-dropdown');
                 if (dropdownButton) {
                     const taskId = dropdownButton.closest('.task').dataset.taskId;
-                    console.log(`Task ID ${taskId}의 드롭다운 클릭`);
                     window.toggleAssigneeDropdown(taskId);
                 }
             });
@@ -548,12 +543,14 @@
                     }
                 });
             });
+
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
             // 팝업 닫기
             $("#cancelEditTaskBtn").click(function () {
                 $("#editTaskPopup").fadeOut();
                 $(".popup-background").fadeOut();
+                location.href = location.href;
             });
 
 
@@ -561,13 +558,12 @@
 
 
             // 탭 클릭 이벤트
+            // 탭 클릭 이벤트
             $(".tab-button").click(function () {
                 const tab = $(this).data("tab");
                 const activityContent = $("#activityContent");
                 const taskId = $("#editTaskPopup").data("task-id");
                 const userId = userIdx;
-
-
 
                 $(".tab-button").removeClass("active");
                 $(this).addClass("active");
@@ -582,7 +578,6 @@
                     apiUrl = `${API_URL}/tasks/history/task`;
                 }
 
-
                 $.ajax({
                     url: apiUrl,
                     method: "GET",
@@ -591,24 +586,25 @@
 
                         activityContent.empty();
 
-                        // 중복 데이터 필터링 (옵션)
+                        // 중복 데이터 필터링
                         const uniqueLogs = [...new Map(logs.map(log => [log.log_message || log.message, log])).values()];
 
                         uniqueLogs.forEach((log, index) => {
-
-                            const message = log.log_message || log.message || "내용 없음";
-                            const date = formatDate(log.changed_at || log.created_at || log.activity_date || new Date());
+                            const rawMessage = log.log_message || log.message || "내용 없음";
+                            const filteredMessage = filterAndFormatDate(rawMessage); // 로그 메시지에서 날짜 필터링 및 변환
+                            const date = convertToKoreanDate(log.changed_at || log.created_at || log.activity_date || new Date());
                             const logType = log.log_type || "맨션";
 
                             activityContent.append(`
                     <div class="activity-log">
-                        <p><strong>${logType}</strong>: ${message}</p>
+                        <p><strong>${logType}</strong>: ${filteredMessage}</p>
                         <p class="log-time">${date}</p>
                     </div>
                 `);
                         });
                     },
                     error: function (err) {
+                        console.error("API 요청 실패:", err);
                     }
                 });
             });
@@ -632,43 +628,38 @@
                     console.error("작업 ID가 필요합니다.");
                     return;
                 }
-            
-                console.log("loadActivityLogs 호출됨 - taskId:", taskId);
-            
+
                 $.ajax({
                     url: `${API_URL}/tasks/activity/task`,
                     method: "GET",
                     data: { taskId },
                     success: function (logs) {
-                        console.log("API 응답 성공 - 데이터:", logs);
-            
                         const activityContent = $("#activityContent");
                         activityContent.empty(); // 기존 로그 제거
-            
+
                         if (!logs || logs.length === 0) {
-                            console.log("활동 로그 없음");
                             activityContent.append(`<p class="no-logs">활동 로그가 없습니다.</p>`);
                             return;
                         }
-            
-                        // 중복 제거 및 정렬 (필요한 경우)
+
+                        // 로그 데이터 중복 제거
                         const uniqueLogs = [...new Map(logs.map(log => [log.log_message + log.activity_date, log])).values()];
-                        console.log("중복 제거된 로그:", uniqueLogs);
-            
+
                         uniqueLogs.forEach((log, index) => {
-                            // 로그 데이터 유효성 검증
                             if (!log.log_message) {
                                 console.warn(`로그 데이터 유효하지 않음 - Index: ${index}`, log);
                                 return;
                             }
-            
-                            const logType = log.log_type === "맨션" ? "mentions" : "logs";
-                            const formattedDate = formatDate(log.activity_date || log.created_at || log.changed_at);
-                            console.log(`로그 데이터 - Index: ${index}, Type: ${logType}, Date: ${formattedDate}, Message: ${log.log_message}`);
-            
+
+                            const logType = log.log_type === "맨션" ? "멘션" : "기록";
+                            const filteredMessage = filterAndFormatDate(log.log_message || log.message); // 날짜 변환
+                            const formattedDate = convertToKoreanDate(log.activity_date || log.created_at || log.changed_at);
+
+
+                            // 로그 추가
                             activityContent.append(`
                                 <div class="activity-log" data-log-type="${logType}">
-                                    <p><strong>${log.log_type || '기록'}</strong>: ${log.log_message}</p>
+                                    <p><strong>${logType}</strong>: ${filteredMessage}</p>
                                     <p class="log-time">${formattedDate}</p>
                                 </div>
                             `);
@@ -680,8 +671,48 @@
                     },
                 });
             }
-            
 
+
+
+
+            // 날짜 필터링
+            function filterAndFormatDate(logMessage) {
+            
+                // 날짜 패턴 (ISO 형식 및 GMT 형식 모두 포함)
+                const datePattern = /\b[A-Za-z]{3} [A-Za-z]{3} \d{2} \d{4} \d{2}:\d{2}:\d{2} GMT\+\d{4} \([^)]+\)|\d{4}-\d{2}-\d{2}\b/g;
+                const matches = logMessage.match(datePattern);
+            
+                if (!matches) {
+                    return logMessage;
+                }
+            
+                let formattedMessage = logMessage;
+            
+                matches.forEach(originalDate => {
+                    const date = new Date(originalDate);
+                    if (!isNaN(date.getTime())) {
+                        const formattedDate = `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
+                        formattedMessage = formattedMessage.replace(originalDate, formattedDate);
+                    } else {
+                        console.error("날짜 변환 실패:", originalDate);
+                    }
+                });
+            
+                return formattedMessage;
+            }
+
+            // 날짜 필터링
+            function convertToKoreanDate(dateString) {
+                const date = new Date(dateString);
+
+                if (isNaN(date.getTime())) {
+                    console.error("유효하지 않은 날짜:", dateString);
+                    return "유효하지 않은 날짜";
+                }
+
+                const formattedDate = `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
+                return formattedDate;
+            }
 
 
 
@@ -709,12 +740,6 @@
                     return;
                 }
 
-                console.log("멘션 생성 요청 데이터:", {
-                    taskId,
-                    mentionMessage,
-                    mentionedUsers,
-                    sentBy: userIdx,
-                });
 
                 $.ajax({
                     url: `${API_URL}/mentions/send`,
@@ -773,7 +798,6 @@
                 const match = mentionPattern.exec(inputVal.slice(0, caretPos));
                 const searchQuery = match ? match[1] : "";
 
-                console.log("현재 검색어:", searchQuery); // 디버깅 로그
 
                 if (searchQuery) {
                     // 서버에 검색 요청
@@ -856,7 +880,7 @@
 
 
 
-            
+
 
 
             // 초기 데이터 로드

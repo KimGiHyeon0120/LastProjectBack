@@ -289,8 +289,8 @@ header {
 
 #notificationBadge {
     position: absolute;
-    bottom: -5px;
-    left: 50%;
+    bottom: 0px;
+    left: 75%;
     transform: translateX(-50%);
     background-color: #FF0000;
     color: #FFFFFF;

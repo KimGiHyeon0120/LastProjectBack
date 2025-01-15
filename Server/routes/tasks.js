@@ -621,9 +621,11 @@ router.get('/:taskId', async (req, res) => {
             (SELECT pr.project_role_name 
             FROM Project_Members pm
             JOIN Project_Roles pr ON pm.project_role_id = pr.project_role_id
-            WHERE pm.project_id = t.project_id AND pm.user_idx = ?) AS userRole
+            WHERE pm.project_id = t.project_id AND pm.user_idx = ?) AS userRole,
+            COALESCE(s.sprint_name, '기타 작업') AS sprintName -- 스프린트 이름 추가
         FROM Tasks t
         LEFT JOIN Users u ON t.assigned_to = u.user_idx
+        LEFT JOIN Sprints s ON t.sprint_id = s.sprint_id -- Sprints 테이블 조인
         WHERE t.task_id = ?;
         `;
 

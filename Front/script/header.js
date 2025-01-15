@@ -1,4 +1,4 @@
-// HTML 로딩 후 초기화 함수
+
 // HTML 로딩 후 초기화 함수
 function loadHTML(url) {
     fetch(url)
@@ -141,6 +141,9 @@ function initializeNotificationHandlers() {
         console.error("알림 관련 요소를 찾을 수 없습니다.");
         return;
     }
+
+    // 알림 데이터 초기화 (페이지 로드 시 실행)
+    fetchNotifications();
 
     // 알림 아이콘 클릭 시 드롭다운 토글 및 알림 데이터 로드
     notificationIcon.addEventListener("click", () => {
