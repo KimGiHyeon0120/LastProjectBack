@@ -2,6 +2,36 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const router = express.Router();
 const axios = require('axios');
+const multer = require('multer');
+const path = require('path');
+
+// Multer 설정: 저장 경로와 파일 이름 정의
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, path.join(__dirname, '../../Front/profile')); // ../profile 폴더에 저장
+    },
+    filename: (req, file, cb) => {
+        const uniqueName = `${Date.now()}-${file.originalname}`; // 고유 파일명 설정
+        cb(null, uniqueName);
+    },
+});
+
+// Multer 인스턴스 생성
+const upload = multer({
+    storage,
+    fileFilter: (req, file, cb) => {
+        const fileTypes = /jpeg|jpg|png|gif/; // 허용할 파일 유형
+        const extName = fileTypes.test(path.extname(file.originalname).toLowerCase());
+        const mimeType = fileTypes.test(file.mimetype);
+
+        if (extName && mimeType) {
+            cb(null, true);
+        } else {
+            cb(new Error('이미지 파일만 업로드 가능합니다.'));
+        }
+    },
+});
+
 
 // DB 연결 (server.js의 connection 객체 활용)
 const mysql = require('mysql2');
@@ -228,66 +258,66 @@ router.get('/get-idx', async (req, res) => {
 
 
 
-//프로필 가져오기
-router.get('/profile-user', async (req, res) => {
-    // 사용자 ID 가져오기 (인증된 사용자를 가정)
-    const userIdx = req.query;
-    try {
-        
-        // DB에서 사용자 정보 조회
-        const [rows] = await connection.promise().query(
-            `SELECT user_name, user_email, user_profile_image 
-             FROM Users 
-             WHERE user_idx = ?`,
-            [userIdx]
-        );
 
-        if (rows.length === 0) {
+
+
+// 프로필 조회
+router.get('/profile/:userIdx', async (req, res) => {
+    const { userIdx } = req.params;
+
+    const query = 'SELECT user_name, user_profile_image FROM Users WHERE user_idx = ?';
+    connection.query(query, [userIdx], (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ message: '프로필 로드 실패' });
+        }
+
+        if (results.length === 0) {
             return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
         }
 
-        // 사용자 정보 반환
         res.status(200).json({
-            name: rows[0].user_name,
-            email: rows[0].user_email,
-            profileImage: rows[0].user_profile_image || '../profile/default-profile.png',
+            message: '프로필 로드 성공',
+            data: results[0],
         });
-    } catch (error) {
-        console.error('프로필 조회 오류:', error);
-        res.status(500).json({ message: '서버 오류가 발생했습니다.' });
-    }
+    });
 });
 
 
 
 
-// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
 
-//프로필 설정
-router.post('/profile-setting', async (req, res) => {
-    const { user_idx, user_name, user_profile_image } = req.body;
 
-    if (!userId || (!userName && !userEmail && !userProfileImage)) {
-        return res.status(400).json({ message: '수정할 필드 또는 사용자 ID가 누락되었습니다.' });
+// 프로필 설정
+router.post('/profile-setting', upload.single('user_profile_image'), async (req, res) => {
+    const { user_idx, user_name } = req.body;
+
+    // 데이터베이스에 저장될 경로 (프론트엔드에서 접근할 경로)
+    const user_profile_image = req.file ? `../profile/${req.file.filename}` : null;
+
+    console.log('Request Body:', req.body);
+    console.log('Uploaded File:', req.file);
+
+    // 검증
+    if (!user_idx || (!user_name && !user_profile_image)) {
+        return res.status(400).json({ message: '사용자 ID 또는 수정할 필드가 누락되었습니다.' });
     }
 
     try {
-        const query = `UPDATE Users SET user_name = ?, user_profile_image = ? WHERE user_idx = ?`
+        const query = `UPDATE Users SET user_name = ?, user_profile_image = ? WHERE user_idx = ?`;
         connection.query(query, [user_name, user_profile_image, user_idx], (err, result) => {
             if (err) {
                 console.error(err);
-                return res.status(500).json({success : false, message: '프로필 수정 실패'});
+                return res.status(500).json({ success: false, message: '프로필 수정 실패' });
             }
-            if (result.affectedRows === 0 ) {
+            if (result.affectedRows === 0) {
                 return res.status(404).json({ message: '해당 사용자를 찾을 수 없습니다.' });
             }
 
-            res.status(200).json({ message: '프로필이 성공적으로 수정되었습니다.' });
+            res.status(200).json({ message: '프로필이 성공적으로 수정되었습니다.', user_profile_image });
         });
-
     } catch (err) {
         console.error('프로필 수정 오류:', err);
         res.status(500).json({ message: '프로필 수정 중 오류가 발생했습니다.' });
@@ -297,9 +327,6 @@ router.post('/profile-setting', async (req, res) => {
 
 
 
-
-// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
 
