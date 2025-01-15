@@ -10,6 +10,7 @@
     <link rel="icon" sizes="48x48" href="../img/logo.png">
     <link rel="apple-touch-icon" sizes="48x48" href="../img/logo.png">
 </head>
+
 <body>
     <div class="container">
         <!-- 로고와 멘트 추가 부분 -->
@@ -47,7 +48,7 @@
             <img src="..\img\google-logo.png" alt="Google">
             Google 계정으로 로그인
         </div>
-        
+
     </div>
 
 
@@ -56,12 +57,12 @@
     <script src="../lib/jquery-3.7.1.min.js"></script>
     <script>
 
-/*───────────────────────────────────────────────────────────────────────────────────────────*/
+        /*───────────────────────────────────────────────────────────────────────────────────────────*/
         /*로그인버튼*/
         function login() {
             let userId = document.getElementById('username');
             let pwd = document.getElementById('password');
-       
+
             $.ajax({
                 url: 'http://192.168.20.37:3000/api/users/login',
                 type: 'POST',
@@ -72,8 +73,10 @@
                 }),
                 success: function (response) {
                     if (response.message === '로그인 성공') {
+                        // 특정 키 삭제
                         sessionStorage.setItem('loggedInUser', JSON.stringify(response.user));
                         sessionStorage.setItem('userIdx', response.user.user_idx); // user_idx 추가 저장
+                        localStorage.setItem('userIdx', response.user.user_idx); // user_idx 추가 저장
                         window.location.href = '../project/projectList.html';
 
                     } else {
@@ -87,8 +90,8 @@
                 error: function (xhr) {
                     // 서버에서 반환된 오류 메시지 출력
                     if (xhr.responseJSON && xhr.responseJSON.message) {
-                                      // 로그인 실패 시
-                                      pwd.value = ''; // 비밀번호 값 지우기
+                        // 로그인 실패 시
+                        pwd.value = ''; // 비밀번호 값 지우기
                         userId.focus(); // 아이디 필드에 포커스 이동
                         setInvalid(userId, xhr.responseJSON.message);
                         setInvalid(pwd, xhr.responseJSON.message);
@@ -187,7 +190,7 @@
                 .catch(error => console.error('Error:', error));
         }
     </script>
-    
+
 </body>
 
 </html>
