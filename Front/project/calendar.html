@@ -9,40 +9,37 @@
     <link rel="icon" sizes="48x48" href="../img/logo.png">
     <link rel="apple-touch-icon" sizes="48x48" href="../img/logo.png">
     <script src="../lib/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.8.0/main.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.8.0/main.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.8.0/locales-all.min.js"></script>
     <script src="../script/header.js"></script>
 </head>
 
 <body>
-    <!-- 헤더 영역 -->
     <header>
     </header>
+
     <div class="main">
-    <div class="calendar">
-        <div class="header">
-            <div id="month-year"></div>
-            <button id="prev">◀</button>
-            <button id="today">오늘</button>
-            <button id="next">▶</button>
+        <div class="calendar">
+            <!-- 캘린더 상단 헤더 -->
+            <div class="header">
+                <button id="prev">◀</button>
+                <button id="today">오늘</button>
+                <button id="next">▶</button>
+            </div>
+
+
+
+            <!-- 날짜 및 작업 표시 영역 -->
+            <div id="calendar-container"></div>
         </div>
-        <div class="weekdays">
-            <div class="weekday">일</div>
-            <div class="weekday">월</div>
-            <div class="weekday">화</div>
-            <div class="weekday">수</div>
-            <div class="weekday">목</div>
-            <div class="weekday">금</div>
-            <div class="weekday">토</div>
-        </div>
-        <div class="days" id="calendar-days"></div>
     </div>
-</div>
+
     <script>
+        const projectId = sessionStorage.getItem("projectId");
+        const userIdx = sessionStorage.getItem("userIdx");
+        const API_URL = "http://192.168.20.37:3000/api";
 
-        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-
-        const daysElement = document.getElementById("calendar-days");
-        const monthYearElement = document.getElementById("month-year");
         const prevButton = document.getElementById("prev");
         const nextButton = document.getElementById("next");
         const todayButton = document.getElementById("today");
@@ -50,91 +47,310 @@
         let currentDate = new Date();
 
 
+        // FullCalendar 초기화 함수
+        async function initializeFullCalendar() {
+            const calendarEl = document.getElementById('calendar-container');
 
-        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                height: 'auto',
+                expandRows: false,
+                slotMinTime: '08:00',
+                slotMaxTime: '20:00',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+                },
+                initialView: 'dayGridMonth',
+                initialDate: currentDate, // 현재 날짜로 초기화
+                locale: 'ko',
+                navLinks: true,
+                editable: true, // 이벤트 수정 가능
+                selectable: true, // 이벤트 생성 가능
+                nowIndicator: true,
+                eventResizableFromStart: true, // 시작일도 조정 가능
+                showNonCurrentDates: false,
+                eventAdd: function (obj) {
+                    updateEventOnServer(obj.event); // 새 이벤트 추가
+                },
+                eventChange: function (obj) {
+                    updateEventOnServer(obj.event); // 이벤트 변경
+                },
+                eventRemove: function (obj) {
+                    deleteEventOnServer(obj.event); // 이벤트 삭제
+                },
+                eventResize: function (obj) {
+                    updateEventOnServer(obj.event); // 이벤트 크기 변경(시작일/종료일 변경)
+                },
+                dayCellDidMount: function (info) {
+                    const currentMonth = currentDate.getMonth();
+                    const currentYear = currentDate.getFullYear();
+
+                    // 다음 달의 첫 주 계산
+                    const nextMonth = currentMonth + 1;
+                    const firstDayOfNextMonth = new Date(currentYear, nextMonth, 1);
+                    const firstWeekEnd = new Date(currentYear, nextMonth, 7 - firstDayOfNextMonth.getDay());
+
+                    const cellDate = new Date(info.date);
+
+                    // 다음 달이고 첫 주에 해당하면 숨기기
+                    if (
+                        cellDate.getMonth() === nextMonth &&
+                        cellDate.getTime() <= firstWeekEnd.getTime()
+                    ) {
+                        info.el.style.display = 'none'; // 셀 숨기기
+                    }
+                },
+                events: [] // 초기에는 이벤트 없음
+            });
+
+            await renderTasks(calendar, projectId); // 작업 데이터 렌더링
+            calendar.render();
+        }
 
 
-        function renderCalendar() {
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
 
-            const firstDay = new Date(year, month, 1).getDay();
-            const lastDate = new Date(year, month + 1, 0).getDate();
+        // ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-            const prevLastDate = new Date(year, month, 0).getDate(); // 이전 달의 마지막 날짜
-            const nextMonthStart = 1; // 다음 달 시작 날짜
 
-            monthYearElement.textContent = `${year}년 ${month + 1}월`;
+        // 상태 이름을 상태 ID로 변환하는 함수
+        function mapStatusToId(statusName) {
+            const statusMapping = {
+                '할 일': 1,
+                '진행 중': 2,
+                '완료': 3,
+                // 필요한 상태를 추가
+            };
 
-            daysElement.innerHTML = "";
+            // 상태 이름이 매핑되지 않으면 기본 상태(예: '할 일')로 설정
+            return statusMapping[statusName] || 1; // 기본 상태 값으로 '할 일'(ID: 1) 반환
+        }
 
-            // 이전 달의 날짜 표시
-            for (let i = firstDay - 1; i >= 0; i--) {
-                const blank = document.createElement("div");
-                blank.classList.add("day", "blank");
-                blank.textContent = prevLastDate - i;
-                daysElement.appendChild(blank);
-            }
+        // 서버에 이벤트 업데이트 요청 보내는 함수
+        async function initializeFullCalendar() {
+            const calendarEl = document.getElementById('calendar-container');
 
-            // 이번 달의 날짜 표시
-            const today = new Date();
-            for (let date = 1; date <= lastDate; date++) {
-                const dayElement = document.createElement("div");
-                dayElement.classList.add("day");
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                height: 'auto',
+                expandRows: false,
+                slotMinTime: '08:00',
+                slotMaxTime: '20:00',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+                },
+                initialView: 'dayGridMonth',
+                initialDate: currentDate,
+                locale: 'ko',
+                navLinks: true,
+                editable: true,
+                selectable: true,
+                nowIndicator: true,
+                eventResizableFromStart: true,
+                eventAdd: function (obj) {
+                    updateEventOnServer(obj.event);
+                },
+                eventChange: function (obj) {
+                    updateEventOnServer(obj.event);
+                },
+                eventRemove: function (obj) {
+                    deleteEventOnServer(obj.event);
+                },
+                eventResize: function (obj) {
+                    updateEventOnServer(obj.event);
+                },
+                eventContent: function (info) {
+                    const { extendedProps } = info.event;
 
-                // 일요일과 토요일 색상 적용
-                if (new Date(year, month, date).getDay() === 0) {
-                    dayElement.classList.add("sun"); // 일요일
-                } else if (new Date(year, month, date).getDay() === 6) {
-                    dayElement.classList.add("sat"); // 토요일
+                    const profileImage = extendedProps.assignedToImage || '../img/default-profile.png';
+                    const assignedToName = extendedProps.assignedToName || '담당자 없음';
+
+                    // 이벤트 요소 생성
+                    const titleEl = document.createElement('div');
+                    titleEl.innerText = info.event.title;
+                    titleEl.style.marginBottom = '5px'; // 제목과 다른 요소 간격 추가
+
+                    const imageEl = document.createElement('img');
+                    imageEl.src = profileImage;
+                    imageEl.alt = assignedToName;
+                    imageEl.style.width = '30px';
+                    imageEl.style.height = '30px';
+                    imageEl.style.borderRadius = '50%';
+                    imageEl.style.marginBottom = '5px';
+
+                    const nameEl = document.createElement('span');
+                    nameEl.innerText = assignedToName;
+                    nameEl.style.fontSize = '12px';
+
+                    // 컨테이너에 요소 추가
+                    const containerEl = document.createElement('div');
+                    containerEl.style.display = 'flex';
+                    containerEl.style.flexDirection = 'column'; // 세로 정렬
+                    containerEl.style.alignItems = 'left'; // 가운데 정렬
+                    containerEl.style.justifyContent = 'center'; // 세로 가운데 정렬
+
+                    containerEl.appendChild(titleEl);
+
+                    const containerE2 = document.createElement('div');
+                    containerE2.style.display = 'flex';
+                    containerE2.style.flexDirection = 'Row'; // 가로로 정렬
+                    containerE2.style.alignItems = 'center'; // 수평 가운데 정렬
+                    containerE2.style.alignItems = 'left'; // 가운데 정렬
+                    containerE2.style.textAlign = 'center'; // 텍스트 가운데 정렬
+
+                    containerE2.appendChild(imageEl);
+                    containerE2.appendChild(nameEl);
+
+                    return { domNodes: [containerEl, containerE2] };
+                },
+                events: [] // 초기에는 이벤트 없음
+            });
+
+            await renderTasks(calendar, projectId);
+            calendar.render();
+            console.log("FullCalendar Initialized");
+        }
+
+
+
+        // ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+        // 서버에 이벤트 삭제 요청 보내는 함수
+        async function updateEventOnServer(event) {
+            try {
+                const statusId = mapStatusToId(event.extendedProps.status); // 상태 이름 -> ID 변환
+        
+                // 날짜를 로컬 시간대에 맞게 처리
+                const startDate = event.start.toLocaleDateString('en-CA'); // YYYY-MM-DD 형식 반환
+                const endDate = event.end ? event.end.toLocaleDateString('en-CA') : null; // 종료일 없을 때 null 처리
+        
+                const requestData = {
+                    taskId: event.id,
+                    taskName: event.title,
+                    description: event.extendedProps.description || '',
+                    assignedTo: event.extendedProps.assignedTo || null,
+                    status: statusId || 1, // 상태가 없으면 기본값 1
+                    priority: event.extendedProps.priority || '낮음',
+                    startDate: startDate,
+                    dueDate: endDate,
+                    changedBy: userIdx // 변경자 ID
+                };
+        
+                console.log("업데이트 요청 데이터:", requestData);
+        
+                const response = await fetch(`${API_URL}/tasks/update`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+        
+                if (!response.ok) {
+                    throw new Error('이벤트 업데이트 실패');
                 }
-
-                // 숫자만 강조하는 span 태그 추가
-                const dayNumber = document.createElement("span");
-                dayNumber.textContent = date;
-
-                if (
-                    year === today.getFullYear() &&
-                    month === today.getMonth() &&
-                    date === today.getDate()
-                ) {
-                    dayElement.classList.add("today");
-                }
-
-                dayElement.appendChild(dayNumber);
-                daysElement.appendChild(dayElement);
+        
+            } catch (error) {
+                console.error('이벤트 업데이트 오류:', error);
             }
+        }
+        
 
-            // 다음 달의 날짜 표시
-            const remainingDays = 7 - ((firstDay + lastDate) % 7 || 7);
-            for (let i = 0; i < remainingDays; i++) {
-                const blank = document.createElement("div");
-                blank.classList.add("day", "blank");
-                blank.textContent = nextMonthStart + i;
-                daysElement.appendChild(blank);
+        // ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+        // 작업 렌더링 함수
+        async function renderTasks(calendar, projectId) {
+            const tasks = await fetchTasks(projectId);
+
+            const events = tasks.map(task => ({
+                id: task.taskId,
+                title: task.taskName,
+                start: task.startDate,  // 정확한 시작일
+                end: task.dueDate,      // 정확한 종료일
+                description: task.description,
+                priority: task.priority,
+                backgroundColor: getColorByPriority(task.priority),
+                borderColor: getColorByPriority(task.priority, 'border'),
+                textColor: getColorByPriority(task.priority, 'text'),
+                extendedProps: {
+                    description: task.description,
+                    assignedTo: task.assignedTo,
+                    assignedToName: task.assignedToName,
+                    assignedToImage: task.assignedToImage,
+                    status: task.statusName
+                }
+            }));
+
+            calendar.addEventSource(events);
+        }
+
+        // 우선순위에 따른 색상 반환 함수
+        function getColorByPriority(priority, type = 'background') {
+            const colors = {
+                긴급: { background: '#555555', border: '#444444', text: 'white' }, // 가장 진한 회색
+                높음: { background: '#666666', border: '#555555', text: 'white' }, // 진한 회색
+                중간: { background: '#777777', border: '#666666', text: 'white' }, // 중간 회색
+                낮음: { background: '#888888', border: '#777777', text: 'white' }, // 밝은 회색
+                기본: { background: '#999999', border: '#888888', text: 'black' }  // 가장 밝은 회색
+            };
+
+            return colors[priority]?.[type] || colors.기본[type];
+        }
+
+
+
+        // ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+        // API 호출 함수 (태스크 데이터 가져오기)
+        async function fetchTasks(projectId, sprintId = null) {
+            try {
+                const response = await fetch(`${API_URL}/tasks/list?projectId=${projectId}${sprintId ? `&sprintId=${sprintId}` : ''}`);
+                if (!response.ok) throw new Error("데이터를 가져오는데 실패했습니다.");
+                return await response.json(); // JSON 데이터 반환
+            } catch (error) {
+                console.error("API 호출 오류:", error);
+                return [];
             }
         }
 
-        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-        function changeMonth(offset) {
-            currentDate.setMonth(currentDate.getMonth() + offset);
-            renderCalendar();
+        // API 호출 함수 (팀장,담당자 데이터 가져오기)
+        async function fetchUserRole(projectId, userIdx) {
+            try {
+                const response = await fetch(`${API_URL}/project/role?projectId=${projectId}&userIdx=${userIdx}`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch user role');
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching user role:', error);
+                return null;
+            }
         }
 
-        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-        prevButton.addEventListener("click", () => changeMonth(-1));
-        nextButton.addEventListener("click", () => changeMonth(1));
-        todayButton.addEventListener("click", () => {
-            currentDate = new Date();
-            renderCalendar();
+        // ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        // 네비게이션 버튼 이벤트
+        prevButton.addEventListener("click", () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            initializeFullCalendar();
         });
 
-        renderCalendar();
+        nextButton.addEventListener("click", () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            initializeFullCalendar();
+        });
 
-        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        todayButton.addEventListener("click", () => {
+            currentDate = new Date();
+            initializeFullCalendar();
+        });
 
+        // ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        // 초기 실행
+        initializeFullCalendar();
     </script>
 </body>
 

@@ -501,7 +501,7 @@ router.get('/role', async (req, res) => {
 
 
 
-//팀원 찾기기
+//팀원 찾기
 router.get('/members', async (req, res) => {
     const { projectId } = req.query;
 
