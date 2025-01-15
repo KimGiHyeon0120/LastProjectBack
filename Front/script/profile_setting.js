@@ -1,4 +1,4 @@
-const API_URL = "http://192.168.20.37:3000/api";
+const API_URL = "http://localhost:3000/api";
 
 
 // 파일 선택창을 열기 위한 함수
@@ -32,7 +32,7 @@ function settingProfile() {
 
 
     $.ajax({
-        url: `${API_URL}/project/profile-setting`,
+        url: `${API_URL}/users/profile-setting`,
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({

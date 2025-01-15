@@ -1,5 +1,5 @@
  
-const API_URL = "http://192.168.20.37:3000/api";
+const API_URL = "http://localhost:3000/api";
 const userIdx = sessionStorage.getItem("userIdx");
 
  function goToEditProfile() {
@@ -13,7 +13,7 @@ const userIdx = sessionStorage.getItem("userIdx");
     console.log('프로필 불러오기');
     console.log(`ID: ${userIdx}`);
     $.ajax({
-        url: `${API_URL}/project/profile-user`, // 서버에서 사용자 정보를 가져오는 API
+        url: `${API_URL}/users/profile-user`, // 서버에서 사용자 정보를 가져오는 API
         method: "GET",
         data: {userIdx},
         success: function (data) {

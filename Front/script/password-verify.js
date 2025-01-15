@@ -1,4 +1,4 @@
-const API_URL = "http://192.168.20.37:3000/api";
+const API_URL = "http://localhost:3000/api";
 const userIdx = sessionStorage.getItem("userIdx");
 
 function checkingPassword() {
