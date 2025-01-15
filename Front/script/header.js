@@ -123,8 +123,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-
-
 // 알림 핸들러 초기화
 function initializeNotificationHandlers() {
     const notificationIcon = document.getElementById("notificationIcon");

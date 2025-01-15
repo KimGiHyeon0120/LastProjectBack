@@ -29,8 +29,8 @@
 
 
 
-    <!-- 작업편집 팝업 -->
-    <div class="popup" id="editTaskPopup">
+    <!-- 작업 편집 팝업 -->
+    <div class="popup" id="editTaskPopup" style="display: none;">
         <div class="popup-header">작업 편집</div>
         <form class="popup-form">
             <label>작업 이름</label>
@@ -48,8 +48,11 @@
             <label>작업 상태</label>
             <select id="editTaskStatus"></select>
 
-            <!-- 숨겨진 필드 추가 -->
-            <input type="hidden" id="editTaskAssignedTo" />
+            <label>담당자</label>
+            <select id="editTaskAssignedTo" required>
+                <option value="">담당자를 선택하세요</option>
+                <!-- JavaScript로 동적 추가 -->
+            </select>
 
             <div class="popup-buttons">
                 <button type="button" class="cancel-btn" id="cancelEditTaskBtn">취소</button>
@@ -75,6 +78,13 @@
 
             <label>마감 날짜</label>
             <input type="date" id="taskDueDate" required />
+
+            <!-- 담당자 선택 추가 -->
+            <label>담당자</label>
+            <select id="taskAssignedTo" required>
+                <option value="" selected>담당자 없음</option> <!-- 기본값 설정 -->
+                <!-- 팀원 목록은 JavaScript로 동적 추가 -->
+            </select>
 
             <div class="popup-buttons">
                 <button type="button" class="cancel-btn" id="cancelTaskBtn">취소</button>
@@ -338,25 +348,37 @@
                     if (!sprint) return;
 
                     // 작업 카드 HTML 생성
-                    const tasksHTML = (sprint.tasks || []).map(task => `
-                        <div class="task-card" 
-                            ${userRole === "팀원" ? '' : `draggable="true" ondragstart="dragTask(event)"`} 
-                            data-task-id="${task.taskId}" 
-                            data-sprint-id="${sprint.sprintId}" 
-                            data-assigned-to="${task.assignedTo}">
-                            <p class="task-name" onclick="openEditTaskPopup(${task.taskId})">
-                                <strong>${task.taskName}</strong>
-                            </p>
-                            <p>
-                                <span class="readonly-priority">${task.priority}</span>
-                            </p>
-                            <p>
-                                <select id="statusDropdown-${task.taskId}" class="status-dropdown" data-task-id="${task.taskId}" data-assigned-to="${task.assignedTo}">
-                                    <option value="">로딩 중...</option>
-                                </select>
-                            </p>
-                        </div>
-                    `).join("");
+                    const tasksHTML = (sprint && sprint.tasks ? sprint.tasks.map(task => `
+                            <div class="task-card" 
+                                ${userRole === "팀원" ? '' : `draggable="true" ondragstart="dragTask(event)"`} 
+                                data-task-id="${task.taskId}" 
+                                data-sprint-id="${sprint.sprintId}" 
+                                data-assigned-to="${task.assignedTo}">
+                                
+                                <p class="task-name" onclick="openEditTaskPopup(${task.taskId})">
+                                    <strong>${task.taskName}</strong>
+                                </p>
+                                <p>
+                                    <span class="readonly-priority">${task.priority}</span>
+                                </p>
+                                <p>
+                                    <select id="statusDropdown-${task.taskId}" class="status-dropdown" data-task-id="${task.taskId}" data-assigned-to="${task.assignedTo}">
+                                        <option value="">로딩 중...</option>
+                                    </select>
+                                </p>
+                                
+                                <!-- 담당자 드롭다운 섹션 -->
+                                <div class="assignee-section">
+                                    <div class="assignee-dropdown" onclick="toggleAssigneeDropdown(${task.taskId})" style="text-align: center;">
+                                        <img src="${task.assignedToImage || '../profile/default-profile.png'}" class="assignee-image" alt="프로필">
+                                        <span class="assignee-name">${task.assignedToName || '담당자 없음'}</span>
+                                    </div>
+                                    <div class="dropdown-options hidden" id="dropdown_${task.taskId}">
+
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('') : '');
 
                     // 스프린트 옵션 메뉴 생성
                     const optionsMenu = sprint.sprintName === "임시저장" ? "" : `
@@ -404,6 +426,98 @@
                 // 스프린트 관련 이벤트 바인딩
                 bindSprintEvents();
             }
+
+            // 팀원 목록 렌더링 함수
+            async function renderTeamMembers(taskId, projectId) {
+                try {
+
+                    // API 호출
+                    const response = await $.get(`${API_URL}/project/members`, { projectId });
+
+                    const teamMembers = response;
+
+                    // 드롭다운 요소 찾기
+                    const dropdown = document.getElementById(`dropdown_${taskId}`);
+                    if (!dropdown) {
+                        console.error(`[오류] 작업 ID ${taskId}에 대한 드롭다운을 찾을 수 없습니다.`);
+                        return;
+                    }
+
+
+                    // 팀원 목록 추가 + '담당자 없음' 옵션 추가
+                    dropdown.innerHTML = `
+                        ${teamMembers.map(member => `
+                            <div class="dropdown-item" onclick="selectAssignee(${taskId}, ${member.userId}, '${member.profileImage || '../profile/default-profile.png'}', '${member.userName}')">
+                                <img src="${member.profileImage || '../profile/default-profile.png'}" class="dropdown-image" alt="프로필">
+                                <span>${member.userName}</span>
+                            </div>
+                        `).join('')}
+                        <div class="dropdown-item" onclick="selectAssignee(${taskId}, null, '../profile/default-profile.png', '담당자 없음')">
+                            <img src="../profile/default-profile.png" class="dropdown-image" alt="프로필">
+                            <span>담당자 없음</span>
+                        </div>
+                    `;
+                } catch (err) {
+                    console.error('[오류] 팀원 목록 가져오기 중 오류 발생:', err);
+                }
+            }
+
+
+
+            // 드롭다운 열기/닫기
+            window.toggleAssigneeDropdown = async function (taskId) {
+                const currentDropdown = document.getElementById(`dropdown_${taskId}`);
+                if (!currentDropdown) {
+                    console.error(`Dropdown not found for Task ID ${taskId}`);
+                    return;
+                }
+
+                // 드롭다운 데이터가 없는 경우 팀원 목록 로드
+                if (!currentDropdown.innerHTML.trim()) {
+                    await renderTeamMembers(taskId, projectId); // 프로젝트 ID를 전달
+                }
+
+                // 모든 드롭다운 닫기
+                document.querySelectorAll('.dropdown-options').forEach(dropdown => {
+                    if (dropdown.id !== `dropdown_${taskId}`) {
+                        dropdown.classList.remove('show');
+                    }
+                });
+
+                // 현재 드롭다운 열기/닫기
+                currentDropdown.classList.toggle('show');
+            };
+
+
+            // 담당자 변경
+            window.selectAssignee = function (taskId, userId, profileImage, userName) {
+
+                // 서버 요청
+                $.ajax({
+                    url: `${API_URL}/tasks/assign`,
+                    method: "PUT",
+                    contentType: "application/json",
+                    data: JSON.stringify({ taskId, assignedTo: userId, changedBy: userIdx }), // userId가 null일 경우 "담당자 없음"
+                    success: function () {
+
+                        // 전체 스프린트를 다시 렌더링
+                        fetchSprints();
+
+                        // 드롭다운 닫기
+                        const dropdown = document.getElementById(`dropdown_${taskId}`);
+                        if (dropdown) {
+                            dropdown.classList.remove('show');
+                        }
+                    },
+                    error: function (err) {
+                        console.error(`[오류] 작업 ID ${taskId}의 담당자 변경 중 오류 발생:`, err);
+                    }
+                });
+            };
+
+
+
+
 
 
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -606,14 +720,14 @@
 
                 // 데이터 유효성 확인
                 if (!taskId || !newStatus) {
-                    
+
                     location.href = location.href; // 이전 값으로 복원
                     return;
                 }
 
                 // 권한 검증
                 if (userRole !== "팀장" && userIdx != assignedTo) {
-                    
+
                     location.href = location.href; // 이전 값으로 복원
                     return;
                 }
@@ -682,7 +796,7 @@
 
 
 
-            //작업 만들기
+            // 작업 추가 버튼 클릭 이벤트
             $("#taskCreateBtn").click(function () {
                 const taskName = $("#taskName").val();
                 const description = $("#taskDescription").val();
@@ -690,7 +804,7 @@
                 const dueDate = $("#taskDueDate").val(); // 마감 날짜
                 const sprintId = $(this).data("sprint-id");
                 const projectId = sessionStorage.getItem("projectId");
-                const userIdx = sessionStorage.getItem("userIdx");
+                const assignedTo = $("#taskAssignedTo").val(); // 선택한 담당자 ID
 
                 // 필수 필드 확인
                 if (!taskName || !startDate || !dueDate) {
@@ -714,11 +828,11 @@
                         sprintId,
                         taskName,
                         description,
-                        startDate, // 시작 날짜 추가
-                        dueDate,   // 마감 날짜
-                        assignedTo: userIdx // 현재 사용자를 작업에 할당
+                        startDate,
+                        dueDate,
+                        assignedTo: assignedTo || null, // 선택한 담당자 ID 또는 null
                     }),
-                    success: function (response) {
+                    success: function () {
                         alert("작업이 성공적으로 추가되었습니다.");
                         $("#addTaskPopup").fadeOut();
                         $(".popup-background").fadeOut();
@@ -731,8 +845,37 @@
                 });
             });
 
+            // 담당자 드롭다운 렌더링
+            async function renderAssigneeDropdown(projectId) {
+                try {
+                    // API 호출로 프로젝트 팀원 목록 가져오기
+                    const response = await $.get(`${API_URL}/project/members`, { projectId });
+                    const teamMembers = response;
 
+                    // 드롭다운 요소 찾기
+                    const dropdown = document.getElementById("taskAssignedTo");
+                    if (!dropdown) {
+                        console.error("[오류] 'taskAssignedTo' 드롭다운을 찾을 수 없습니다.");
+                        return;
+                    }
 
+                    // 드롭다운 초기화
+                    dropdown.innerHTML = `
+            <option value="" selected>담당자 없음</option> <!-- 기본값 설정 -->
+        `;
+
+                    // 팀원 목록 추가
+                    teamMembers.forEach(member => {
+                        const option = document.createElement("option");
+                        option.value = member.userId;
+                        option.textContent = member.userName;
+                        dropdown.appendChild(option);
+                    });
+
+                } catch (err) {
+                    console.error("[오류] 담당자 목록 가져오기 중 오류 발생:", err);
+                }
+            }
 
 
             // 작업 추가 팝업 닫기 버튼 클릭 이벤트
@@ -745,6 +888,8 @@
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
+
+            //편집 팝업
             $(document).ready(function () {
                 // 편집 팝업 닫기
                 $("#cancelEditTaskBtn").click(function () {
@@ -760,35 +905,38 @@
                     const startDate = $("#editTaskStartDate").val();
                     const dueDate = $("#editTaskDueDate").val();
                     const status = $("#editTaskStatus").val();
-                    const assignedTo = $("#editTaskAssignedTo").val(); // 숨겨진 필드에서 가져오기
-
+                    let assignedTo = $("#editTaskAssignedTo").val();
+                
+                    // "담당자 없음" 처리: 빈 값일 경우 null로 설정
+                    assignedTo = assignedTo === "" ? null : assignedTo;
+                
                     // **작업 ID 확인**
                     if (!taskId) {
                         alert("작업 ID가 설정되지 않았습니다.");
                         return;
                     }
-
+                
                     // 필수 필드 확인
                     if (!taskName || !startDate || !dueDate) {
                         alert("모든 필드를 입력해주세요.");
                         return;
                     }
-
+                
                     // 날짜 유효성 확인
                     if (new Date(startDate) > new Date(dueDate)) {
                         alert("시작 날짜는 마감 날짜보다 앞서야 합니다.");
                         return;
                     }
-
+                
                     // 권한 검증
-                    const isEditable = userRole === "팀장" || userIdx == assignedTo;
+                    const isEditable = userRole === "팀장" || userIdx == assignedTo || assignedTo === null;
                     console.log("isEditable:", isEditable, "userRole:", userRole, "userIdx:", userIdx, "assignedTo:", assignedTo);
-
+                
                     if (!isEditable) {
-                        alert("작업 상태를 변경할 권한이 없습니다.");
+                        alert("작업을 저장할 권한이 없습니다.");
                         return;
                     }
-
+                
                     // AJAX 요청
                     $.ajax({
                         url: `${API_URL}/tasks/update`,
@@ -801,11 +949,10 @@
                             startDate,
                             dueDate,
                             status: status || 1,
-                            changedBy: userIdx,
-                            assignedTo // 추가
+                            changedBy: userIdx, // 변경한 사용자
+                            assignedTo // null 또는 선택된 사용자 ID 전달
                         }),
                         success: function (response) {
-                            alert("작업이 성공적으로 저장되었습니다.");
                             $("#editTaskPopup").fadeOut();
                             $(".popup-background").fadeOut();
                             fetchSprints(); // 화면 새로고침
@@ -828,6 +975,7 @@
                     if (!confirm("정말로 이 작업을 삭제하시겠습니까?")) {
                         return;
                     }
+
 
                     $.ajax({
                         url: `${API_URL}/tasks/delete`,
@@ -874,9 +1022,21 @@
             $("#taskStartDate").val(today); // 시작 날짜 기본값
             $("#taskDueDate").val(today);   // 마감 날짜 기본값
 
-            // 팝업 초기화 및 열기
+            // 팝업 초기화
             $("#taskName").val("");
             $("#taskDescription").val("");
+
+            // 프로젝트 ID 가져오기
+            const projectId = sessionStorage.getItem("projectId");
+            if (!projectId) {
+                alert("프로젝트 ID를 확인할 수 없습니다.");
+                return;
+            }
+
+            // 담당자 드롭다운 렌더링
+            renderAssigneeDropdown(projectId);
+
+            // 팝업 열기
             $("#addTaskPopup").fadeIn();
             $(".popup-background").fadeIn();
         }
@@ -892,52 +1052,87 @@
                 window.location.reload(); // 작업 ID가 없으면 새로고침
                 return;
             }
-
+        
             $.ajax({
                 url: `${API_URL}/tasks/${taskId}`,
                 method: "GET",
-                success: function (task) {
-                    // 작업 ID 저장 (팝업에서 사용)
+                success: async function (task) {
                     $("#saveEditTaskBtn").data("task-id", taskId);
-
-                    // 작업 이름 및 설명 설정
+        
                     $("#editTaskName").val(task.taskName || "");
                     $("#editTaskDescription").val(task.description || "");
-
-                    // 시작 날짜 및 마감 날짜 설정
                     $("#editTaskStartDate").val(task.startDate ? task.startDate.split("T")[0] : "");
                     $("#editTaskDueDate").val(task.dueDate ? task.dueDate.split("T")[0] : "");
-
-                    // 숨겨진 필드에 assignedTo 설정
-                    $("#editTaskAssignedTo").val(task.assignedTo || "");
-
-                    // 수정 권한 확인
+        
                     const isEditable = userRole === "팀장" || userIdx == task.assignedTo;
-                    console.log("isEditable:", isEditable, "userRole:", userRole, "userIdx:", userIdx, "assignedTo:", task.assignedTo);
-
-                    if (!isEditable) {
-                        $("#editTaskName, #editTaskDescription, #editTaskStartDate, #editTaskDueDate, #editTaskStatus").prop("disabled", true);
-                        $("#saveEditTaskBtn, #deleteTaskBtn").hide();
-                    } else {
-                        $("#editTaskName, #editTaskDescription, #editTaskStartDate, #editTaskDueDate, #editTaskStatus").prop("disabled", false);
-                        $("#saveEditTaskBtn, #deleteTaskBtn").show();
-                    }
-
-                    // 작업 상태 로드
+                    $("#editTaskName, #editTaskDescription, #editTaskStartDate, #editTaskDueDate, #editTaskStatus, #editTaskAssignedTo")
+                        .prop("disabled", !isEditable);
+                    $("#saveEditTaskBtn, #deleteTaskBtn").toggle(isEditable);
+        
                     loadTaskStatus(task.statusId, isEditable);
-
-                    // 팝업 열기
+        
+                    const projectId = sessionStorage.getItem("projectId");
+                    if (projectId) {
+                        await renderEditAssigneeDropdown(projectId, task.assignedTo);
+                    } else {
+                        console.error("프로젝트 ID를 찾을 수 없습니다.");
+                    }
+        
                     $(".popup-background").fadeIn();
                     $("#editTaskPopup").fadeIn();
                 },
                 error: function (err) {
                     console.error("작업 편집 로드 오류:", err);
                     alert("작업 정보를 불러오는 중 오류가 발생했습니다. 페이지를 새로고침합니다.");
-                    window.location.reload(); // 오류 시 새로고침
+                    window.location.reload();
                 }
             });
         }
 
+
+
+
+        async function renderEditAssigneeDropdown(projectId, selectedAssigneeId) {
+            try {
+                const response = await $.get(`${API_URL}/project/members`, { projectId });
+                const teamMembers = response;
+
+                const dropdown = document.getElementById("editTaskAssignedTo");
+                if (!dropdown) {
+                    console.error("[오류] 'editTaskAssignedTo' 드롭다운을 찾을 수 없습니다.");
+                    return;
+                }
+
+                // 드롭다운 초기화
+                dropdown.innerHTML = `
+                    <option value="">담당자를 선택하세요</option>
+                `;
+
+                // 팀원 목록 추가
+                teamMembers.forEach(member => {
+                    const option = document.createElement("option");
+                    option.value = member.userId;
+                    option.textContent = member.userName;
+                    if (member.userId === selectedAssigneeId) {
+                        option.selected = true; // 기본값 설정
+                    }
+                    dropdown.appendChild(option);
+                });
+
+                // '담당자 없음' 옵션 추가
+                const noAssigneeOption = document.createElement("option");
+                noAssigneeOption.value = "";
+                noAssigneeOption.textContent = "담당자 없음";
+                if (!selectedAssigneeId) {
+                    noAssigneeOption.selected = true;
+                }
+                dropdown.appendChild(noAssigneeOption);
+
+                console.log("[성공] 담당자 드롭다운이 업데이트되었습니다.");
+            } catch (err) {
+                console.error("[오류] 담당자 목록 가져오기 중 오류 발생:", err);
+            }
+        }
 
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -972,7 +1167,35 @@
 
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
+        async function renderAssigneeDropdown(projectId) {
+            try {
+                const response = await $.get(`${API_URL}/project/members`, { projectId });
+                const teamMembers = response;
 
+                const dropdown = document.getElementById("taskAssignedTo");
+                if (!dropdown) {
+                    console.error("[오류] 'taskAssignedTo' 드롭다운을 찾을 수 없습니다.");
+                    return;
+                }
+
+                dropdown.innerHTML = `<option value="">담당자를 선택하세요</option>`;
+
+                teamMembers.forEach(member => {
+                    const option = document.createElement("option");
+                    option.value = member.userId;
+                    option.textContent = member.userName;
+                    dropdown.appendChild(option);
+                });
+
+                const noAssigneeOption = document.createElement("option");
+                noAssigneeOption.value = "";
+                noAssigneeOption.textContent = "담당자 없음";
+                dropdown.appendChild(noAssigneeOption);
+
+            } catch (err) {
+                console.error("[오류] 담당자 목록 가져오기 중 오류 발생:", err);
+            }
+        }
 
 
 

@@ -18,7 +18,17 @@ const connection = mysql.createConnection({
 
 // Task 생성
 router.post('/create', async (req, res) => {
-    const { projectId, sprintId, taskName, description, assignedTo, status = 1, priority = '중간', dueDate, startDate } = req.body;
+    const {
+        projectId,
+        sprintId,
+        taskName,
+        description,
+        assignedTo,
+        status = 1,
+        priority = '중간',
+        dueDate,
+        startDate
+    } = req.body;
 
     if (!projectId || !taskName) {
         return res.status(400).json({ message: '프로젝트 ID와 작업 이름은 필수입니다.' });
@@ -41,12 +51,28 @@ router.post('/create', async (req, res) => {
         const [result] = await connection.promise().query(
             `INSERT INTO Tasks (project_id, sprint_id, task_name, description, assigned_to, Tasks_status_id, priority, due_date, start_date)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [projectId, sprintId || null, taskName, description || null, assignedTo || null, status, priority, dueDate || null, startDate || null]
+            [
+                projectId,
+                sprintId || null,
+                taskName,
+                description || null,
+                assignedTo || null, // 담당자 추가
+                status,
+                priority,
+                dueDate || null,
+                startDate || null
+            ]
+        );
+
+        // 작업 생성 후 새로 추가된 작업 정보 반환
+        const [newTask] = await connection.promise().query(
+            `SELECT * FROM Tasks WHERE task_id = ?`,
+            [result.insertId]
         );
 
         res.status(201).json({
             message: '작업(Task)이 성공적으로 생성되었습니다.',
-            taskId: result.insertId,
+            task: newTask[0]
         });
     } catch (err) {
         console.error('작업 생성 오류:', err);
@@ -319,15 +345,15 @@ router.put('/update', async (req, res) => {
         }
 
         // 담당자 변경
-        if (assignedTo && parseInt(assignedTo) !== parseInt(oldData.assigned_to)) {
+        if (assignedTo !== undefined && assignedTo !== oldData.assigned_to) {
             fieldsToUpdate.push("assigned_to = ?");
-            updateValues.push(assignedTo);
+            updateValues.push(assignedTo === null ? null : assignedTo); // null 처리
 
             historyRecords.push({
                 changed_field: "assigned_to",
                 old_value: oldData.assigned_to || "null",
-                new_value: assignedTo,
-                log_message: `작업 담당자가 '${oldData.assigned_to}'에서 '${assignedTo}'으로 변경되었습니다.`,
+                new_value: assignedTo || "null", // null 처리
+                log_message: `작업 담당자가 '${oldData.assigned_to || "없음"}'에서 '${assignedTo || "없음"}'으로 변경되었습니다.`,
                 log_type: "담당자 변경"
             });
         }

@@ -767,3 +767,107 @@ input#taskDueDate:focus {
 #deleteTaskBtn:hover {
     background-color: #d9363e;
 }
+
+
+
+
+/* 드롭다운 옵션 스타일 */
+.dropdown-options {
+    display: none; /* 기본적으로 숨김 */
+    position: absolute;
+    top: 40px; /* 드롭다운 버튼 바로 아래 위치 */
+    left: 0;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    min-width: 150px; /* 최소 너비 설정 */
+    padding: 5px 0;
+}
+
+/* 드롭다운 옵션 표시 시 */
+.dropdown-options.show {
+    display: block;
+}
+
+/* 드롭다운 아이템 스타일 */
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background-color: #f0f0f0;
+}
+
+/* 드롭다운 아이템 내 프로필 이미지 */
+.dropdown-image {
+    width: 24px; /* 드롭다운 이미지 너비 */
+    height: 24px; /* 드롭다운 이미지 높이 */
+    border-radius: 50%; /* 원형으로 표시 */
+    object-fit: cover; /* 이미지 비율 유지 */
+    margin-right: 10px;
+}
+
+/* 드롭다운 아이템 텍스트 */
+.dropdown-item span {
+    font-size: 14px;
+    color: #333;
+}
+
+
+
+/* 드롭다운 옵션의 프로필 이미지 */
+.dropdown-image {
+    width: 24px; /* 드롭다운 이미지 너비 */
+    height: 24px; /* 드롭다운 이미지 높이 */
+    border-radius: 50%; /* 원형으로 표시 */
+    object-fit: cover; /* 이미지 비율 유지 */
+}
+
+/* 작업 카드 내 프로필 컨테이너 */
+.profile-container img {
+    width: 27px; /* 작업 카드 내 프로필 너비 */
+    height: 27px; /* 작업 카드 내 프로필 높이 */
+    border-radius: 50%; /* 원형으로 표시 */
+    object-fit: cover; /* 이미지 비율 유지 */
+}
+
+/* 담당자 섹션 */
+.assignee-section {
+    position: relative;
+    margin-top: 8px; /* 상단 간격 조정 */
+    text-align: center; /* 중앙 정렬 */
+}
+
+/* 드롭다운 버튼 */
+.assignee-dropdown {
+    display: flex;
+    flex-direction: column; /* 이미지와 이름을 세로로 배치 */
+    align-items: center;
+    cursor: pointer;
+    gap: 5px; /* 이미지와 이름 간격 */
+}
+
+/* 담당자 이미지 */
+.assignee-image {
+    width: 30px; /* 이미지 너비 */
+    height: 30px; /* 이미지 높이 */
+    border-radius: 50%; /* 원형으로 표시 */
+    object-fit: cover; /* 이미지 비율 유지 */
+}
+
+/* 담당자 이름 */
+.assignee-name {
+    font-size: 13px; /* 글씨 크기 약간 확대 */
+    color: #555; /* 색상 변경 */
+    font-weight: normal; /* 글씨 굵기 */
+    margin-top: 4px; /* 이미지와 이름 간격 조정 */
+    line-height: 1.2; /* 텍스트 줄 높이 */
+}
+
+
