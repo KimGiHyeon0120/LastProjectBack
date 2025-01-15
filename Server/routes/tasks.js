@@ -97,10 +97,9 @@ router.get('/list', async (req, res) => {
 
 
         const [tasks] = await connection.promise().query(query, params);
-
-
         // 우선순위 자동 설정
         const now = new Date();
+        
         tasks.forEach(task => {
             if (task.dueDate) {
                 const dueDate = new Date(task.dueDate);
@@ -127,6 +126,12 @@ router.get('/list', async (req, res) => {
         res.status(500).json({ message: '작업 조회 중 오류가 발생했습니다.' });
     }
 });
+
+
+
+
+
+
 
 router.get('/list2', async (req, res) => {
     const { sprintId, projectId } = req.query;

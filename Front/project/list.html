@@ -92,8 +92,6 @@
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
         const projectId = sessionStorage.getItem("projectId");
         const userIdx = sessionStorage.getItem("userIdx"); // 로그인된 사용자 ID
-        const userIdxh = localStorage.getItem("userIdx"); // 사용자 ID
-        const projectIdh = localStorage.getItem("projectId"); // 프로젝트 ID
         const API_URL = "http://192.168.20.37:3000/api";
         //192.168.20.37
 
@@ -159,6 +157,8 @@
                 }
             }
 
+
+
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
             // 작업 렌더링
@@ -167,9 +167,7 @@
                 sprintBoard.empty();
 
                 statuses.forEach(status => {
-                    // 현재 상태에 해당하는 작업 필터링
                     const tasksForStatus = tasks.filter(task => task.statusId === status.id);
-
 
                     const tasksHTML = tasksForStatus.map(task => {
                         const profileImage = task.assignedToImage && task.assignedToImage.trim()
@@ -177,15 +175,19 @@
                             : '../profile/default-profile.png';
 
                         const assignedToName = userMap[task.assignedTo] || '담당자 없음';
-                        const sprintName = task.sprintName || '기타 작업'; // 스프린트 이름 없을 경우 '기타 작업'으로 설정
-
+                        console.log(task);
                         return `
                             <div class="task" draggable="true" ondragstart="dragTask(event)" data-task-id="${task.taskId}" data-assigned-to="${assignedToName}">
-                                <div class="sprint-name">${sprintName}</div> <!-- 스프린트 이름 표시 -->
-                                <p onclick="openEditTaskPopup(${task.taskId})">${task.taskName}</p>
+<div class="work-item" onclick="openEditTaskPopup(${task.taskId})">
+    <p class="sprint-name">${task.sprintName}</p>
+    <p class="task-name">${task.taskName}</p>
+    <p class="task-dates">${task.startDate} ~ ${task.dueDate}</p>
+</div>
+
+
                                 <div class="assignee-section">
-                                    <div class="assignee-dropdown">
-                                        <img src="${profileImage}" class="assignee-image" alt="프로필" onclick="window.toggleAssigneeDropdown(${task.taskId})">
+                                    <div class="assignee-dropdown" onclick="window.toggleAssigneeDropdown(${task.taskId})">
+                                        <img src="${profileImage}" class="assignee-image" alt="프로필" >
                                         <span class="assignee-name">${assignedToName}</span>
                                     </div>
                                     <div class="dropdown-options hidden" id="dropdown_${task.taskId}">
@@ -219,6 +221,8 @@
                     sprintBoard.append(columnHTML);
                 });
             }
+
+
 
 
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -317,6 +321,7 @@
 
             // 담당자 드롭다운 열기/닫기
             window.toggleAssigneeDropdown = function (taskId) {
+                console.log(`Task ID ${taskId}의 드롭다운 열기/닫기 시도`);
 
                 // 현재 열려 있는 드롭다운 닫기
                 document.querySelectorAll('.dropdown-options').forEach(dropdown => {
@@ -353,6 +358,10 @@
 
             // 작업 담당자 할당 및 UI 업데이트
             window.selectAssignee = function (taskId, userId, profileImage, userName) {
+                console.log("selectAssignee 함수 실행");
+                console.log("User Role:", userRole);
+                console.log("Task ID:", taskId);
+                console.log("User ID:", userId);
 
                 if (!taskId) {
                     console.error("Task ID가 필요합니다.");
@@ -364,6 +373,7 @@
                     return;
                 }
 
+                console.log("팀장 확인 완료, 담당자 변경 실행");
 
                 // UI 업데이트
                 const dropdown = document.getElementById(`dropdown_${taskId}`);
@@ -383,6 +393,7 @@
                 dropdown.classList.remove('show');
                 dropdown.closest('.task')?.classList.remove('dropdown-active');
 
+                console.log(`Task ID ${taskId}의 UI가 업데이트되었습니다.`);
 
                 // 서버 요청
                 $.ajax({
@@ -391,6 +402,7 @@
                     contentType: "application/json",
                     data: JSON.stringify({ taskId, assignedTo: userId, changedBy: userIdx }),
                     success: function () {
+                        console.log(`Task ID ${taskId} 담당자가 ${userName}로 변경되었습니다.`);
                         fetchTasksAndMembers(); // 작업 목록 새로고침
                     },
                     error: function (err) {
@@ -404,6 +416,7 @@
                 const dropdownButton = e.target.closest('.assignee-dropdown');
                 if (dropdownButton) {
                     const taskId = dropdownButton.closest('.task').dataset.taskId;
+                    console.log(`Task ID ${taskId}의 드롭다운 클릭`);
                     window.toggleAssigneeDropdown(taskId);
                 }
             });
@@ -543,21 +556,18 @@
                     }
                 });
             });
-
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
             // 팝업 닫기
             $("#cancelEditTaskBtn").click(function () {
                 $("#editTaskPopup").fadeOut();
                 $(".popup-background").fadeOut();
-                location.href = location.href;
             });
 
 
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
-            // 탭 클릭 이벤트
             // 탭 클릭 이벤트
             $(".tab-button").click(function () {
                 const tab = $(this).data("tab");
@@ -583,7 +593,6 @@
                     method: "GET",
                     data: requestData,
                     success: function (logs) {
-
                         activityContent.empty();
 
                         // 중복 데이터 필터링
@@ -605,22 +614,10 @@
                     },
                     error: function (err) {
                         console.error("API 요청 실패:", err);
-                    }
+                        $("#activityContent").empty().append(`<p class="error-log">활동 로그를 가져오는 중 오류가 발생했습니다.</p>`);
+                    },
                 });
             });
-
-
-            // 날짜 포맷 함수
-            function formatDate(dateString) {
-                const options = { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-                return new Date(dateString).toLocaleDateString('ko-KR', options);
-            }
-
-            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-
-
-
 
             // 활동 로그 및 기록 불러오기
             function loadActivityLogs(taskId) {
@@ -642,27 +639,20 @@
                             return;
                         }
 
-                        // 로그 데이터 중복 제거
+                        // 중복 제거 및 정렬
                         const uniqueLogs = [...new Map(logs.map(log => [log.log_message + log.activity_date, log])).values()];
 
                         uniqueLogs.forEach((log, index) => {
-                            if (!log.log_message) {
-                                console.warn(`로그 데이터 유효하지 않음 - Index: ${index}`, log);
-                                return;
-                            }
-
-                            const logType = log.log_type === "맨션" ? "멘션" : "기록";
-                            const filteredMessage = filterAndFormatDate(log.log_message || log.message); // 날짜 변환
+                            const logType = log.log_type || "기록";
+                            const filteredMessage = filterAndFormatDate(log.log_message || log.message); // 로그 메시지에서 날짜 필터링 및 변환
                             const formattedDate = convertToKoreanDate(log.activity_date || log.created_at || log.changed_at);
 
-
-                            // 로그 추가
                             activityContent.append(`
-                                <div class="activity-log" data-log-type="${logType}">
-                                    <p><strong>${logType}</strong>: ${filteredMessage}</p>
-                                    <p class="log-time">${formattedDate}</p>
-                                </div>
-                            `);
+                    <div class="activity-log" data-log-type="${logType}">
+                        <p><strong>${logType}</strong>: ${filteredMessage}</p>
+                        <p class="log-time">${formattedDate}</p>
+                    </div>
+                `);
                         });
                     },
                     error: function (err) {
@@ -672,22 +662,17 @@
                 });
             }
 
-
-
-
             // 날짜 필터링
             function filterAndFormatDate(logMessage) {
-            
-                // 날짜 패턴 (ISO 형식 및 GMT 형식 모두 포함)
                 const datePattern = /\b[A-Za-z]{3} [A-Za-z]{3} \d{2} \d{4} \d{2}:\d{2}:\d{2} GMT\+\d{4} \([^)]+\)|\d{4}-\d{2}-\d{2}\b/g;
                 const matches = logMessage.match(datePattern);
-            
+
                 if (!matches) {
                     return logMessage;
                 }
-            
+
                 let formattedMessage = logMessage;
-            
+
                 matches.forEach(originalDate => {
                     const date = new Date(originalDate);
                     if (!isNaN(date.getTime())) {
@@ -697,11 +682,11 @@
                         console.error("날짜 변환 실패:", originalDate);
                     }
                 });
-            
+
                 return formattedMessage;
             }
 
-            // 날짜 필터링
+            // 날짜 변환
             function convertToKoreanDate(dateString) {
                 const date = new Date(dateString);
 
@@ -710,9 +695,10 @@
                     return "유효하지 않은 날짜";
                 }
 
-                const formattedDate = `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
-                return formattedDate;
+                return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
             }
+
+
 
 
 
@@ -740,6 +726,12 @@
                     return;
                 }
 
+                console.log("멘션 생성 요청 데이터:", {
+                    taskId,
+                    mentionMessage,
+                    mentionedUsers,
+                    sentBy: userIdx,
+                });
 
                 $.ajax({
                     url: `${API_URL}/mentions/send`,
@@ -798,6 +790,7 @@
                 const match = mentionPattern.exec(inputVal.slice(0, caretPos));
                 const searchQuery = match ? match[1] : "";
 
+                console.log("현재 검색어:", searchQuery); // 디버깅 로그
 
                 if (searchQuery) {
                     // 서버에 검색 요청
