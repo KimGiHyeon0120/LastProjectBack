@@ -63,7 +63,9 @@ router.post('/create', async (req, res) => {
 router.get('/list', async (req, res) => {
     const { sprintId, projectId } = req.query;
 
+
     if (!projectId) {
+        console.error('프로젝트 ID가 없습니다.');
         return res.status(400).json({ message: '프로젝트 ID는 필수입니다.' });
     }
 
@@ -79,6 +81,8 @@ router.get('/list', async (req, res) => {
             t.due_date AS dueDate, 
             t.start_date AS startDate, 
             t.assigned_to AS assignedTo, 
+            DATE_ADD(t.due_date, INTERVAL 1 DAY) AS dueDate, -- 하루 더하기
+            DATE_ADD(t.start_date, INTERVAL 1 DAY) AS startDate, -- 하루 더하기
             COALESCE(u.user_name, '담당자 없음') AS assignedToName,
             COALESCE(u.user_profile_image, '../profile/default-profile.png') AS assignedToImage
         FROM Tasks t
@@ -90,7 +94,10 @@ router.get('/list', async (req, res) => {
     `;
 
         const params = sprintId ? [projectId, sprintId] : [projectId];
+
+
         const [tasks] = await connection.promise().query(query, params);
+
 
         // 우선순위 자동 설정
         const now = new Date();
@@ -113,6 +120,7 @@ router.get('/list', async (req, res) => {
             }
         });
 
+
         res.status(200).json(tasks);
     } catch (err) {
         console.error('작업 조회 오류:', err);
@@ -120,6 +128,72 @@ router.get('/list', async (req, res) => {
     }
 });
 
+router.get('/list2', async (req, res) => {
+    const { sprintId, projectId } = req.query;
+
+
+    if (!projectId) {
+        console.error('프로젝트 ID가 없습니다.');
+        return res.status(400).json({ message: '프로젝트 ID는 필수입니다.' });
+    }
+
+    try {
+        const query = `
+SELECT 
+    sp.sprint_name AS sprintName, -- 스프린트 이름
+    t.task_id AS taskId, 
+    t.task_name AS taskName, 
+    t.description, 
+    t.Tasks_status_id AS statusId,
+    s.Tasks_status_name AS statusName, 
+    t.priority, 
+    DATE_FORMAT(DATE_ADD(t.due_date, INTERVAL 1 DAY), '%Y년 %m월 %d일') AS dueDate, -- '년 월 일' 형식
+    DATE_FORMAT(DATE_ADD(t.start_date, INTERVAL 1 DAY), '%Y년 %m월 %d일') AS startDate, -- '년 월 일' 형식
+    t.assigned_to AS assignedTo, 
+    COALESCE(u.user_name, '담당자 없음') AS assignedToName,
+    COALESCE(u.user_profile_image, '../profile/default-profile.png') AS assignedToImage
+FROM Tasks t
+LEFT JOIN Tasks_status s ON t.Tasks_status_id = s.Tasks_status_id
+LEFT JOIN Users u ON t.assigned_to = u.user_idx
+LEFT JOIN Sprints sp ON t.sprint_id = sp.sprint_id -- 스프린트 이름 연결
+WHERE t.project_id = ?
+ORDER BY t.due_date ASC; -- 스프린트 이름별 정렬
+`;
+
+        const params = sprintId ? [projectId, sprintId] : [projectId];
+
+
+        const [tasks] = await connection.promise().query(query, params);
+
+
+        // 우선순위 자동 설정
+        const now = new Date();
+        tasks.forEach(task => {
+            if (task.dueDate) {
+                const dueDate = new Date(task.dueDate);
+                const daysLeft = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24)); // 날짜 차이 계산
+
+                if (daysLeft <= 1) {
+                    task.priority = '긴급';
+                } else if (daysLeft <= 3) {
+                    task.priority = '높음';
+                } else if (daysLeft <= 5) {
+                    task.priority = '중간';
+                } else if (daysLeft <= 7) {
+                    task.priority = '낮음';
+                } else {
+                    task.priority = '낮음';
+                }
+            }
+        });
+
+
+        res.status(200).json(tasks);
+    } catch (err) {
+        console.error('작업 조회 오류:', err);
+        res.status(500).json({ message: '작업 조회 중 오류가 발생했습니다.' });
+    }
+});
 
 
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -532,23 +606,25 @@ router.get('/:taskId', async (req, res) => {
 
     try {
         const query = `
-SELECT 
-    t.task_id AS taskId,
-    t.task_name AS taskName,
-    t.description AS description,
-    t.start_date AS startDate,
-    t.due_date AS dueDate,
-    t.Tasks_status_id AS statusId,
-    t.assigned_to AS assignedTo,
-    COALESCE(u.user_name, '담당자 없음') AS assignedToName,
-    COALESCE(u.user_profile_image, '../profile/default-profile.png') AS assignedToImage,
-    (SELECT pr.project_role_name 
-     FROM Project_Members pm
-     JOIN Project_Roles pr ON pm.project_role_id = pr.project_role_id
-     WHERE pm.project_id = t.project_id AND pm.user_idx = ?) AS userRole
-FROM Tasks t
-LEFT JOIN Users u ON t.assigned_to = u.user_idx
-WHERE t.task_id = ?;
+        SELECT 
+            t.task_id AS taskId,
+            t.task_name AS taskName,
+            t.description AS description,
+            t.start_date AS startDate,
+            t.due_date AS dueDate,
+            t.Tasks_status_id AS statusId,
+            t.assigned_to AS assignedTo,
+            DATE_ADD(t.due_date, INTERVAL 1 DAY) AS dueDate, -- 하루 더하기
+            DATE_ADD(t.start_date, INTERVAL 1 DAY) AS startDate, -- 하루 더하기
+            COALESCE(u.user_name, '담당자 없음') AS assignedToName,
+            COALESCE(u.user_profile_image, '../profile/default-profile.png') AS assignedToImage,
+            (SELECT pr.project_role_name 
+            FROM Project_Members pm
+            JOIN Project_Roles pr ON pm.project_role_id = pr.project_role_id
+            WHERE pm.project_id = t.project_id AND pm.user_idx = ?) AS userRole
+        FROM Tasks t
+        LEFT JOIN Users u ON t.assigned_to = u.user_idx
+        WHERE t.task_id = ?;
         `;
 
         const [task] = await connection.promise().query(query, [userIdx, taskId]);
