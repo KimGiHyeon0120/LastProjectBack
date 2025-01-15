@@ -1,6 +1,6 @@
 /* 작업 진행 상태 보드 컨테이너 */
 body{
-    padding: 30px 40px;
+    padding: 10px 40px;
 }
 .board {
     display: flex;
@@ -13,7 +13,14 @@ body{
     position: relative;
     /* 자식 요소 절대 위치 계산을 위해 */
 }
-
+.header{
+    display: flex;
+ 
+    align-items: center;
+}
+.header h1 {
+    font-size: 24px;
+}
 .board-column {
     flex: 1;
     background-color: #f9f9f9;
@@ -43,6 +50,48 @@ body{
     color: #333;
     text-align: left;
     margin: 0;
+}
+/*인풋창*/
+.projectList-filters {
+    margin: 20px 0;
+    display: flex;
+    gap: 10px;
+    position: relative;
+    flex: 1; /* 유동적인 너비 */
+    max-width: 300px; /* 최대 너비를 제한 */
+    width: 100%; /* 전체 너비를 차지하지만 최대 300px로 제한 */
+}
+
+.projectList-filters label {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: #666;
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+.projectList-filters input {
+    width: 100%;
+    padding: 20px 10px 5px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.projectList-filters input:focus {
+    border: 2px solid rgb(35, 131, 226);
+}
+
+.projectList-filters input:focus + label,
+.projectList-filters input:not(:placeholder-shown) + label {
+    top: 10px;
+    font-size: 12px;
 }
 
 /* 상태별 스타일 - 헤더 배경색 */
