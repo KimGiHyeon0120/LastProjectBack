@@ -1,4 +1,3 @@
-
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -8,8 +7,9 @@ body {
 
 
 .projectList-container {
-    padding: 0px  40px;
-    width: calc(100% - 80px); /* 좌우 padding 40px씩 제외 */
+    padding: 0px 40px;
+    width: calc(100% - 80px);
+    /* 좌우 padding 40px씩 제외 */
 
 }
 
@@ -41,9 +41,12 @@ body {
     display: flex;
     gap: 10px;
     position: relative;
-    flex: 1; /* 유동적인 너비 */
-    max-width: 300px; /* 최대 너비를 제한 */
-    width: 100%; /* 전체 너비를 차지하지만 최대 300px로 제한 */
+    flex: 1;
+    /* 유동적인 너비 */
+    max-width: 300px;
+    /* 최대 너비를 제한 */
+    width: 100%;
+    /* 전체 너비를 차지하지만 최대 300px로 제한 */
 }
 
 .projectList-filters label {
@@ -72,8 +75,8 @@ body {
     border: 2px solid rgb(35, 131, 226);
 }
 
-.projectList-filters input:focus + label,
-.projectList-filters input:not(:placeholder-shown) + label {
+.projectList-filters input:focus+label,
+.projectList-filters input:not(:placeholder-shown)+label {
     top: 10px;
     font-size: 12px;
 }
@@ -96,73 +99,301 @@ body {
 
 .projectList-table th {
     padding: 4px 8px;
-    text-align: left; /* 기본적으로 왼쪽 정렬 */
+    text-align: left;
+    /* 기본적으로 왼쪽 정렬 */
     border-bottom: 2px solid #ddd;
 }
-.projectList-table th:nth-child(2), /* '유형' 열 */
+
+.projectList-table th:nth-child(2),
+/* '유형' 열 */
 .projectList-table td:nth-child(2) {
-    padding-right: 100px; /* '유형' 열을 좀 더 왼쪽으로 이동 */
+    padding-right: 100px;
+    /* '유형' 열을 좀 더 왼쪽으로 이동 */
 }
 
-.projectList-table th:nth-child(3), /* '유형' 열 */
+.projectList-table th:nth-child(3),
+/* '유형' 열 */
 .projectList-table td:nth-child(3) {
-    padding-right: 100px; /* '유형' 열을 좀 더 왼쪽으로 이동 */
+    padding-right: 100px;
+    /* '유형' 열을 좀 더 왼쪽으로 이동 */
 }
+
 .projectList-table td {
     padding: 4px 8px;
     height: 48px;
-    text-align: left; /* 기본적으로 왼쪽 정렬 */
+    text-align: left;
+    /* 기본적으로 왼쪽 정렬 */
     border-bottom: 1px solid #e0e0e0;
 }
 
 .settings-btn {
-    background: none; /* 배경 없애기 */
-    border: none; /* 테두리 없애기 */
+    background: none;
+    /* 배경 없애기 */
+    border: none;
+    /* 테두리 없애기 */
     width: 32px;
     height: 32px;
-    
-    padding: 0px 2px; /* 좌우 padding 설정 */
-    cursor: pointer; /* 클릭할 수 있는 버튼처럼 보이게 */
-    border-radius: 4px; /* 모서리 둥글게 */
-}   
+
+    padding: 0px 2px;
+    /* 좌우 padding 설정 */
+    cursor: pointer;
+    /* 클릭할 수 있는 버튼처럼 보이게 */
+    border-radius: 4px;
+    /* 모서리 둥글게 */
+}
 
 .settings-btn:hover {
-    background-color: #e0e0e0; /* 조금 더 진한 색으로 변경 */
+    background-color: #e0e0e0;
+    /* 조금 더 진한 색으로 변경 */
 }
 
 .settings-btn img {
-    width: 24px; /* 이미지 크기 설정 */
-    height: 24px; /* 이미지 크기 설정 */
+    width: 24px;
+    /* 이미지 크기 설정 */
+    height: 24px;
+    /* 이미지 크기 설정 */
 
 }
+
 .projectList-table tr:hover {
     background-color: #f1f1f1;
 }
+
 .projectList-table thead tr:hover {
-    background-color: inherit; /* 기존 배경색 유지 */
+    background-color: inherit;
+    /* 기존 배경색 유지 */
 }
 
 
 .projectList-table th:last-child,
 .projectList-table td:last-child {
-    text-align: right; /* 마지막 열 오른쪽 정렬 */
+    text-align: right;
+    /* 마지막 열 오른쪽 정렬 */
 }
 
 .projectList-table tbody tr:last-child {
     border-bottom: 2px solid #ddd;
 }
+
 /* 프로젝트 이름에 대한 스타일 */
 .project-name {
     cursor: pointer;
     transition: all 0.3s ease;
-    width: 100%;
-    display: inline-block; /* div의 기본 display 속성인 block을 inline-block으로 변경 */
-    padding: 5px 3px; /* 패딩을 추가하여 클릭 영역을 넓힘 */
+    width: 90%;
+    display: inline-flex;
+    /* inline-block을 inline-flex로 변경 */
+    align-items: center;
+    /* 수직 중앙 정렬 */
+    padding: 5px 3px;
+    /* 패딩을 추가하여 클릭 영역을 넓힘 */
 }
 
 /* 호버 효과: 텍스트 굵게, 파란색, 배경 없음 */
 .project-name:hover {
     font-weight: bold;
-    color: rgb(35, 131, 226); /* hover 시 색상 */;
-    border: 2px solid rgb(35, 131, 226); /* 파란색 테두리 */
+    color: rgb(35, 131, 226);
+    /* hover 시 색상 */
+    ;
+    border: 2px solid rgb(35, 131, 226);
+    /* 파란색 테두리 */
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* 팝업 전체 컨테이너 */
+.popup-project-settings-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    width: 400px;
+    z-index: 1000;
+}
+
+/* 팝업 내용 */
+.popup-project-settings-content {
+    padding: 20px;
+    position: relative;
+}
+
+/* 닫기 버튼 */
+.popup-project-settings-close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: #333;
+}
+
+.popup-project-settings-close-btn:hover {
+    color: #ff0000;
+}
+
+/* 팝업 제목 */
+.popup-project-settings-title {
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+/* 라벨 */
+.popup-project-settings-label {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+/* 입력 필드 */
+.popup-project-settings-input {
+    width: calc(100% - 20px);
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+/* 팀원 관리 제목 */
+.popup-project-settings-subtitle {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+/* 팀원 관리 리스트 */
+.popup-project-settings-members-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-top: 1px solid #ccc;
+    /* 리스트 전체 상단 경계선 */
+}
+
+.popup-project-settings-member-item {
+    padding: 10px;
+    font-size: 14px;
+    border-bottom: 1px solid #ccc;
+    /* 각 항목 구분 경계선 */
+    background-color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* 본인 강조 스타일 */
+.popup-project-settings-member-item.current-user {
+    background-color: #e6f7ff;
+    /* 연한 파란색 배경 */
+    font-weight: bold;
+    /* 굵은 글씨 */
+    border-color: #91d5ff;
+    /* 테두리 색 */
+    color: #0056b3;
+    /* 본인 강조 글자 색 */
+}
+
+
+
+
+
+
+
+/* 저장 버튼 */
+.popup-project-settings-save-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.popup-project-settings-save-btn {
+    padding: 10px 20px;
+    background-color: #f0f7ff; /* 흰색에 살짝 파란색 섞인 배경 */
+    color: #007bff; /* 파란색 텍스트 */
+    border: none; /* 테두리 제거 */
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.popup-project-settings-save-btn:hover {
+    background-color: #e2efff; /* 호버 시 약간 더 진한 파란색 배경 */
+    color: #0056b3; /* 호버 시 더 진한 파란색 텍스트 */
+}
+
+/* 팀원 관리 버튼 컨테이너 */
+.popup-project-settings-member-item button {
+    margin-left: 10px;
+    padding: 5px 10px;
+    font-size: 12px;
+    border: none; /* 테두리 제거 */
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #ffffff; /* 기본 연한 회색 배경 */
+    color: #333; /* 텍스트 색상 */
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* 팀장 권한 부여 버튼 */
+.grant-leader-btn {
+    background-color: #e6f4e9; /* 연한 초록색 배경 */
+    color: #28a745; /* 초록색 텍스트 */
+}
+
+.grant-leader-btn:hover {
+    background-color: #d4eddc; /* 더 진한 연한 초록색 배경 */
+    color: #218838; /* 진한 초록색 텍스트 */
+}
+
+/* 삭제 버튼 */
+.remove-member-btn {
+    background-color: #f8d7da; /* 연한 빨간색 배경 */
+    color: #dc3545; /* 빨간색 텍스트 */
+}
+
+.remove-member-btn:hover {
+    background-color: #f5c6cb; /* 더 진한 연한 빨간색 배경 */
+    color: #c82333; /* 진한 빨간색 텍스트 */
 }

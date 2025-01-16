@@ -34,120 +34,120 @@
 
 
 
-    <!-- 작업 편집 팝업 -->
-    <div class="popup" id="editTaskPopup" style="display: none;">
-        <div class="popup-header">작업 편집</div>
-        <form class="popup-form">
-            <label>작업 이름</label>
-            <input type="text" id="editTaskName" placeholder="작업 이름을 입력하세요" required />
+        <!-- 작업 편집 팝업 -->
+        <div class="popup" id="editTaskPopup" style="display: none;">
+            <div class="popup-header">작업 편집</div>
+            <form class="popup-form">
+                <label>작업 이름</label>
+                <input type="text" id="editTaskName" placeholder="작업 이름을 입력하세요" required />
 
-            <label>작업 설명</label>
-            <textarea id="editTaskDescription" placeholder="작업 설명을 입력하세요"></textarea>
+                <label>작업 설명</label>
+                <textarea id="editTaskDescription" placeholder="작업 설명을 입력하세요"></textarea>
 
-            <label>시작 날짜</label>
-            <input type="date" id="editTaskStartDate" />
+                <label>시작 날짜</label>
+                <input type="date" id="editTaskStartDate" />
 
-            <label>마감 날짜</label>
-            <input type="date" id="editTaskDueDate" />
+                <label>마감 날짜</label>
+                <input type="date" id="editTaskDueDate" />
 
-            <label>작업 상태</label>
-            <select id="editTaskStatus"></select>
+                <label>작업 상태</label>
+                <select id="editTaskStatus"></select>
 
-            <label>담당자</label>
-            <select id="editTaskAssignedTo" required>
-                <option value="">담당자를 선택하세요</option>
-                <!-- JavaScript로 동적 추가 -->
-            </select>
+                <label>담당자</label>
+                <select id="editTaskAssignedTo" required>
+                    <option value="">담당자를 선택하세요</option>
+                    <!-- JavaScript로 동적 추가 -->
+                </select>
 
-            <div class="popup-buttons">
-                <button type="button" class="cancel-btn" id="cancelEditTaskBtn">취소</button>
-                <button type="button" class="save-btn" id="saveEditTaskBtn">저장</button>
-                <button type="button" class="delete-btn" id="deleteTaskBtn">삭제</button>
-            </div>
-        </form>
+                <div class="popup-buttons">
+                    <button type="button" class="cancel-btn" id="cancelEditTaskBtn">취소</button>
+                    <button type="button" class="save-btn" id="saveEditTaskBtn">저장</button>
+                    <button type="button" class="delete-btn" id="deleteTaskBtn">삭제</button>
+                </div>
+            </form>
+        </div>
+
+
+        <!-- 작업 추가 팝업 -->
+        <div class="popup" id="addTaskPopup">
+            <div class="popup-header">작업 추가</div>
+            <form class="popup-form">
+                <label>작업 이름</label>
+                <input type="text" id="taskName" placeholder="작업 이름을 입력하세요" required />
+
+                <label>작업 설명</label>
+                <textarea id="taskDescription" placeholder="작업 설명을 입력하세요"></textarea>
+
+                <label>시작 날짜</label>
+                <input type="date" id="taskStartDate" required />
+
+                <label>마감 날짜</label>
+                <input type="date" id="taskDueDate" required />
+
+                <!-- 담당자 선택 추가 -->
+                <label>담당자</label>
+                <select id="taskAssignedTo" required>
+                    <option value="" selected>담당자 없음</option> <!-- 기본값 설정 -->
+                    <!-- 팀원 목록은 JavaScript로 동적 추가 -->
+                </select>
+
+                <div class="popup-buttons">
+                    <button type="button" class="cancel-btn" id="cancelTaskBtn">취소</button>
+                    <button type="button" class="create-btn" id="taskCreateBtn" data-sprint-id="">추가</button>
+                </div>
+            </form>
+        </div>
+
+
+
+
+
+        <!-- 팝업 배경 -->
+        <div class="popup-background"></div>
+
+        <!-- 스프린트 생성 팝업 -->
+        <div class="popup" id="sprintPopup">
+            <div class="popup-header">스프린트 생성</div>
+            <form class="popup-form">
+                <label>스프린트 이름</label>
+                <input type="text" id="sprintName" placeholder="스프린트 이름을 입력하세요" required>
+
+                <label>시작 날짜</label>
+                <input type="date" id="startDate" required>
+
+                <label>종료 날짜</label>
+                <input type="date" id="endDate" required>
+
+                <div class="popup-buttons">
+                    <button type="button" class="cancel-btn" id="cancelBtn">취소</button>
+                    <button type="button" class="create-btn" id="createBtn">생성</button>
+                </div>
+            </form>
+        </div>
+
+
+        <!-- 스프린트 편집 팝업 -->
+        <div class="popup" id="editSprintPopup">
+            <div class="popup-header">스프린트 편집</div>
+            <form class="popup-form">
+                <label>스프린트 이름</label>
+                <input type="text" id="editSprintName" required>
+
+                <label>시작 날짜</label>
+                <input type="date" id="editStartDate" required>
+
+                <label>종료 날짜</label>
+                <input type="date" id="editEndDate" required>
+
+                <div class="popup-buttons">
+                    <button type="button" class="cancel-btn" id="editCancelBtn">취소</button>
+                    <button type="button" class="create-btn" id="editSaveBtn">저장</button>
+                </div>
+            </form>
+        </div>
+
+
     </div>
-
-
-    <!-- 작업 추가 팝업 -->
-    <div class="popup" id="addTaskPopup">
-        <div class="popup-header">작업 추가</div>
-        <form class="popup-form">
-            <label>작업 이름</label>
-            <input type="text" id="taskName" placeholder="작업 이름을 입력하세요" required />
-
-            <label>작업 설명</label>
-            <textarea id="taskDescription" placeholder="작업 설명을 입력하세요"></textarea>
-
-            <label>시작 날짜</label>
-            <input type="date" id="taskStartDate" required />
-
-            <label>마감 날짜</label>
-            <input type="date" id="taskDueDate" required />
-
-            <!-- 담당자 선택 추가 -->
-            <label>담당자</label>
-            <select id="taskAssignedTo" required>
-                <option value="" selected>담당자 없음</option> <!-- 기본값 설정 -->
-                <!-- 팀원 목록은 JavaScript로 동적 추가 -->
-            </select>
-
-            <div class="popup-buttons">
-                <button type="button" class="cancel-btn" id="cancelTaskBtn">취소</button>
-                <button type="button" class="create-btn" id="taskCreateBtn" data-sprint-id="">추가</button>
-            </div>
-        </form>
-    </div>
-
-
-
-
-
-    <!-- 팝업 배경 -->
-    <div class="popup-background"></div>
-
-    <!-- 스프린트 생성 팝업 -->
-    <div class="popup" id="sprintPopup">
-        <div class="popup-header">스프린트 생성</div>
-        <form class="popup-form">
-            <label>스프린트 이름</label>
-            <input type="text" id="sprintName" placeholder="스프린트 이름을 입력하세요" required>
-
-            <label>시작 날짜</label>
-            <input type="date" id="startDate" required>
-
-            <label>종료 날짜</label>
-            <input type="date" id="endDate" required>
-
-            <div class="popup-buttons">
-                <button type="button" class="cancel-btn" id="cancelBtn">취소</button>
-                <button type="button" class="create-btn" id="createBtn">생성</button>
-            </div>
-        </form>
-    </div>
-
-
-    <!-- 스프린트 편집 팝업 -->
-    <div class="popup" id="editSprintPopup">
-        <div class="popup-header">스프린트 편집</div>
-        <form class="popup-form">
-            <label>스프린트 이름</label>
-            <input type="text" id="editSprintName" required>
-
-            <label>시작 날짜</label>
-            <input type="date" id="editStartDate" required>
-
-            <label>종료 날짜</label>
-            <input type="date" id="editEndDate" required>
-
-            <div class="popup-buttons">
-                <button type="button" class="cancel-btn" id="editCancelBtn">취소</button>
-                <button type="button" class="create-btn" id="editSaveBtn">저장</button>
-            </div>
-        </form>
-    </div>
-
-
-</div>
 
 
 
@@ -353,7 +353,9 @@
                     if (!sprint) return;
 
                     // 작업 카드 HTML 생성
-                    const tasksHTML = (sprint && sprint.tasks ? sprint.tasks.map(task => `
+                    const tasksHTML = (sprint && sprint.tasks ? sprint.tasks.map(task => {
+                        console.log("Rendering task:", task); // 콘솔: 현재 렌더링 중인 작업
+                        return `
                             <div class="task-card" 
                                 ${userRole === "팀원" ? '' : `draggable="true" ondragstart="dragTask(event)"`} 
                                 data-task-id="${task.taskId}" 
@@ -363,16 +365,15 @@
                                 <p class="task-name" onclick="openEditTaskPopup(${task.taskId})">
                                     <strong>${task.taskName}</strong>
                                 </p>
-                  <p>
-    <span class="readonly-priority priority-${task.priority}">
-        ${task.priority}
-    </span>
-</p> 
+                                <p>
+                                    <span class="readonly-priority priority-${task.priority}">
+                                        ${task.priority}
+                                    </span>
+                                </p> 
                                 <p>
                                     <select id="statusDropdown-${task.taskId}" class="task-status-dropdown" data-task-id="${task.taskId}" data-assigned-to="${task.assignedTo}">
                                         <option value="">로딩 중...</option>
                                     </select>
-                                    
                                 </p>
                                 
                                 <!-- 담당자 드롭다운 섹션 -->
@@ -382,11 +383,14 @@
                                         <span class="assignee-name">${task.assignedToName || '담당자 없음'}</span>
                                     </div>
                                     <div class="dropdown-options hidden" id="dropdown_${task.taskId}">
-
                                     </div>
                                 </div>
                             </div>
-                        `).join('') : '');
+                        `;
+                    }).join('') : (() => {
+                        console.log("No sprint or tasks available:", { sprint }); // 콘솔: 스프린트 또는 작업이 없는 경우
+                        return '';
+                    })());
 
                     // 스프린트 옵션 메뉴 생성
                     const optionsMenu = sprint.sprintName === "임시저장" ? "" : `
@@ -422,7 +426,7 @@
                                     </button>
                                 
                                   </div>`
-                                
+
                             : ""}
                     </div>`;
                     sprintBoard.append(sprintHTML);
@@ -778,17 +782,17 @@
 
 
             // 작업 상태 드롭다운 로드 함수
-function loadStatusDropdown(task) {
-    $.ajax({
-        url: `${API_URL}/tasks/status-list`, // 상태 목록 API 호출
-        method: "GET",
-        success: function (statuses) {
-            // 상태 목록 데이터를 옵션으로 변환
-            const statusOptions = statuses.map(status => {
-                // 상태명에서 띄어쓰기를 제거하고 하이픈으로 변환
-                const statusClass = `status-${status.name.replace(/\s+/g, '')}`;
-                
-                return `
+            function loadStatusDropdown(task) {
+                $.ajax({
+                    url: `${API_URL}/tasks/status-list`, // 상태 목록 API 호출
+                    method: "GET",
+                    success: function (statuses) {
+                        // 상태 목록 데이터를 옵션으로 변환
+                        const statusOptions = statuses.map(status => {
+                            // 상태명에서 띄어쓰기를 제거하고 하이픈으로 변환
+                            const statusClass = `status-${status.name.replace(/\s+/g, '')}`;
+
+                            return `
                     <option 
                         value="${status.id}" 
                         ${task.statusId === status.id ? 'selected' : ''} 
@@ -797,24 +801,24 @@ function loadStatusDropdown(task) {
                         ${status.name} 
                     </option>
                 `;
-            }).join("");
+                        }).join("");
 
-            // 드롭다운 업데이트
-            const dropdown = $(`#statusDropdown-${task.taskId}`);
-            dropdown.html(statusOptions);
-            
-            // 상태에 맞는 디자인 클래스를 <select>에 적용
-            const selectedStatus = statuses.find(status => status.id === task.statusId);
-            if (selectedStatus) {
-                const selectedClass = `status-${selectedStatus.name.replace(/\s+/g, '')}`;
-                dropdown.addClass(selectedClass); // <select>에 상태 클래스 추가
+                        // 드롭다운 업데이트
+                        const dropdown = $(`#statusDropdown-${task.taskId}`);
+                        dropdown.html(statusOptions);
+
+                        // 상태에 맞는 디자인 클래스를 <select>에 적용
+                        const selectedStatus = statuses.find(status => status.id === task.statusId);
+                        if (selectedStatus) {
+                            const selectedClass = `status-${selectedStatus.name.replace(/\s+/g, '')}`;
+                            dropdown.addClass(selectedClass); // <select>에 상태 클래스 추가
+                        }
+                    },
+                    error: function (err) {
+                        console.error(err);
+                    }
+                });
             }
-        },
-        error: function (err) {
-            console.error(err);
-        }
-    });
-}
 
 
 
@@ -935,37 +939,37 @@ function loadStatusDropdown(task) {
                     const dueDate = $("#editTaskDueDate").val();
                     const status = $("#editTaskStatus").val();
                     let assignedTo = $("#editTaskAssignedTo").val();
-                
+
                     // "담당자 없음" 처리: 빈 값일 경우 null로 설정
                     assignedTo = assignedTo === "" ? null : assignedTo;
-                
+
                     // **작업 ID 확인**
                     if (!taskId) {
                         alert("작업 ID가 설정되지 않았습니다.");
                         return;
                     }
-                
+
                     // 필수 필드 확인
                     if (!taskName || !startDate || !dueDate) {
                         alert("모든 필드를 입력해주세요.");
                         return;
                     }
-                
+
                     // 날짜 유효성 확인
                     if (new Date(startDate) > new Date(dueDate)) {
                         alert("시작 날짜는 마감 날짜보다 앞서야 합니다.");
                         return;
                     }
-                
+
                     // 권한 검증
                     const isEditable = userRole === "팀장" || userIdx == assignedTo || assignedTo === null;
                     console.log("isEditable:", isEditable, "userRole:", userRole, "userIdx:", userIdx, "assignedTo:", assignedTo);
-                
+
                     if (!isEditable) {
                         alert("작업을 저장할 권한이 없습니다.");
                         return;
                     }
-                
+
                     // AJAX 요청
                     $.ajax({
                         url: `${API_URL}/tasks/update`,
@@ -1081,32 +1085,32 @@ function loadStatusDropdown(task) {
                 window.location.reload(); // 작업 ID가 없으면 새로고침
                 return;
             }
-        
+
             $.ajax({
                 url: `${API_URL}/tasks/${taskId}`,
                 method: "GET",
                 success: async function (task) {
                     $("#saveEditTaskBtn").data("task-id", taskId);
-        
+
                     $("#editTaskName").val(task.taskName || "");
                     $("#editTaskDescription").val(task.description || "");
                     $("#editTaskStartDate").val(task.startDate ? task.startDate.split("T")[0] : "");
                     $("#editTaskDueDate").val(task.dueDate ? task.dueDate.split("T")[0] : "");
-        
+
                     const isEditable = userRole === "팀장" || userIdx == task.assignedTo;
                     $("#editTaskName, #editTaskDescription, #editTaskStartDate, #editTaskDueDate, #editTaskStatus, #editTaskAssignedTo")
                         .prop("disabled", !isEditable);
                     $("#saveEditTaskBtn, #deleteTaskBtn").toggle(isEditable);
-        
+
                     loadTaskStatus(task.statusId, isEditable);
-        
+
                     const projectId = sessionStorage.getItem("projectId");
                     if (projectId) {
                         await renderEditAssigneeDropdown(projectId, task.assignedTo);
                     } else {
                         console.error("프로젝트 ID를 찾을 수 없습니다.");
                     }
-        
+
                     $(".popup-background").fadeIn();
                     $("#editTaskPopup").fadeIn();
                 },

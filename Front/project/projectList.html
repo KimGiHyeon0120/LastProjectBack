@@ -9,6 +9,7 @@
     <link rel="apple-touch-icon" sizes="48x48" href="../img/android-icon-48x48.png">
     <link rel="stylesheet" href="../css/projectList.css">
     <script src="../script/header.js"></script>
+    <link rel="stylesheet" href="../css/projectList.css">
     <link rel="stylesheet" href="../../Front/profile/">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
@@ -19,6 +20,8 @@
 
     </header>
     <div class="main">
+
+
         <!-- 메인 콘텐츠 -->
         <main class="projectList-container">
             <div class="projectList-header">
@@ -49,9 +52,47 @@
             </table>
         </main>
     </div>
+
+
+
+
+
+    <!-- 프로젝트 설정 팝업 -->
+    <div id="popup-project-settings" class="popup-project-settings-container" style="display: none;">
+        <div class="popup-project-settings-content">
+            <button id="button-close-popup" class="popup-project-settings-close-btn">✕</button>
+
+            <h2 class="popup-project-settings-title">프로젝트 설정</h2>
+
+            <!-- 프로젝트 이름 -->
+            <label for="input-project-name" class="popup-project-settings-subtitle">프로젝트 이름</label>
+            <input type="text" id="input-project-name" class="popup-project-settings-input">
+
+            <!-- 팀원 관리 -->
+            <h3 class="popup-project-settings-subtitle">팀원 관리</h3>
+            <ul id="list-team-members" class="popup-project-settings-members-list">
+                <!-- 팀원 목록 -->
+            </ul>
+
+            <!-- 저장 버튼 -->
+            <div class="popup-project-settings-save-container">
+                <button id="button-save-settings" class="popup-project-settings-save-btn">저장</button>
+            </div>
+        </div>
+    </div>
+
+
+
     <script>
+        const userIdx = sessionStorage.getItem("userIdx"); // 로그인된 사용자 ID
+        const userIdxh = localStorage.getItem("userIdx"); // 사용자 ID
+        const API_URL = "http://192.168.20.37:3000/api";
+        //192.168.20.37
+
         $(document).ready(function () {
-            const API_URL = "http://192.168.20.37:3000/api/project/list-by-user";
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
 
             const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
             if (!loggedInUser || !loggedInUser.user_id) {
@@ -60,12 +101,18 @@
                 return;
             }
 
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
             const userId = loggedInUser.user_id;
 
             function fetchUserIdx() {
                 return new Promise((resolve, reject) => {
                     $.ajax({
-                        url: `http://192.168.20.37:3000/api/users/get-idx?userId=${userId}`,
+                        url: `${API_URL}/users/get-idx?userId=${userId}`,
+
 
                         method: "GET",
                         success: function (data) {
@@ -78,9 +125,14 @@
                 });
             }
 
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
             function fetchProjects(userIdx) {
                 $.ajax({
-                    url: `${API_URL}?userId=${userIdx}`,
+                    url: `${API_URL}/project/list-by-user?userId=${userIdx}`,
                     method: "GET",
                     success: function (data) {
                         renderProjects(data.ownedProjects, data.participatingProjects);
@@ -91,68 +143,114 @@
                 });
             }
 
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
             function renderProjects(ownedProjects, participatingProjects) {
                 const projectList = $("#projectList");
                 projectList.empty();
 
-                ownedProjects.forEach((project) => {
-                    projectList.append(`
-                    <tr class="project-row" data-project-id="${project.project_id}">
-                       <td><div class="project-name">${project.project_name}</div></td>
-                        <td>${project.is_team_project || '역할 없음'}</td>
-                        <td>${project.leader_name || '리더 없음'}</td>
-                        <td class="text-right">
-                            <button class="settings-btn">
-                                <img src="../img/Settings-icon.png" alt="Settings">
-                            </button>
-                        </td>
-                    </tr>
-                `);
-                });
-
-
+            
+                // 참여 중인 프로젝트 렌더링
                 participatingProjects.forEach((project) => {
                     projectList.append(`
-                    <tr class="project-row" data-project-id="${project.project_id}">
-                        <td class="project-name">${project.project_name}</td>
-                        <td>${project.is_team_project || '역할 없음'}</td>
-                        <td>${project.leader_name || '리더 없음'}</td>
-                        <td class="text-right">
-                            <button class="settings-btn">
-                                <img src="../img/Settings-icon.png" alt="Settings">
-                            </button>
-                        </td>
-                    </tr>
-                `);
+                        <tr class="project-row" data-project-id="${project.project_id}">
+                            <td>${project.is_team_project ? "팀 프로젝트" : "참여 프로젝트"}</td>
+                            <td><div class="project-name">${project.project_name}</div></td>
+                            <td>${project.role_name || "역할 없음"}</td>
+                            <td class="text-right">
+                                <button class="settings-btn">
+                                    <img src="../img/Settings-icon.png" alt="Settings">
+                                </button>
+                            </td>
+                        </tr>
+                    `);
                 });
-
-
-                // 프로젝트 이름을 클릭했을 때 이동하도록 설정
-                $(".project-name").on("click", function (e) {
-                    e.stopPropagation(); // 클릭 이벤트가 부모 <tr>로 전파되지 않도록 막기
-                    const projectId = $(this).closest("tr").data("project-id"); // 프로젝트 ID 가져오기
-                    sessionStorage.setItem('projectId', projectId); // 프로젝트 ID를 세션 스토리지에 저장
-                    localStorage.setItem('projectId', projectId); // 프로젝트 ID를 세션 스토리지에 저장
-                    window.location.href = `../project/board_main.html?projectId=${projectId}`; // 해당 프로젝트 페이지로 이동
-
-                    // 클릭 시 테두리 스타일 적용
-                    $(".project-name").removeClass("clicked"); // 다른 프로젝트에서 테두리 제거
-                    $(this).addClass("clicked"); // 클릭한 프로젝트에 테두리 추가
+            
+                // 프로젝트 이름 클릭 이벤트
+                $(".project-name").off("click").on("click", function (e) {
+                    e.stopPropagation();
+                    const projectId = $(this).closest("tr").data("project-id");
+                    sessionStorage.setItem("projectId", projectId);
+                    localStorage.setItem("projectId", projectId);
+                    window.location.href = `../project/board_main.html?projectId=${projectId}`;
+            
+                    $(".project-name").removeClass("clicked");
+                    $(this).addClass("clicked");
                 });
-
             }
+            
+            
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
 
             function filterProjects() {
-                const searchQuery = $("#projectSearchBar").val().toLowerCase();
+                const searchQuery = $("#search").val().toLowerCase(); // 검색창 값 가져오기
                 $(".project-row").each(function () {
-                    const projectName = $(this).data("project-name");
+                    const projectName = $(this).find(".project-name").text().toLowerCase(); // 프로젝트 이름 가져오기
                     if (projectName.includes(searchQuery)) {
-                        $(this).show();
+                        $(this).show(); // 검색어와 일치하면 표시
                     } else {
-                        $(this).hide();
+                        $(this).hide(); // 검색어와 일치하지 않으면 숨김
                     }
                 });
             }
+
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+            $(".projectList-create-btn").on("click", function () {
+                const projectName = prompt("새 프로젝트 이름을 입력하세요:"); // 프로젝트 이름 입력받기
+                if (!projectName) {
+                    alert("프로젝트 이름을 입력해야 합니다.");
+                    return; // 입력이 없으면 종료
+                }
+
+                const isTeamProject = confirm("팀 프로젝트로 설정하시겠습니까?") ? 1 : 0; // 팀 프로젝트 여부 설정
+                const userIdx = sessionStorage.getItem("userIdx"); // 사용자 ID 가져오기
+
+                if (!userIdx) {
+                    alert("유효하지 않은 사용자 ID입니다. 다시 로그인해주세요.");
+                    return; // 사용자 ID가 없으면 종료
+                }
+
+                // AJAX 요청: 프로젝트 생성
+                $.ajax({
+                    url: `${API_URL}/project/create`,
+                    method: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        projectName: projectName, // 입력된 프로젝트 이름
+                        userIdx: parseInt(userIdx, 10), // 정수로 변환된 사용자 ID
+                        isTeamProject: isTeamProject, // 팀 프로젝트 여부
+                    }),
+                    success: function (response) {
+                        alert("프로젝트가 성공적으로 생성되었습니다!");
+                        location.reload(); // 성공 시 페이지 새로고침
+                    },
+                    error: function (err) {
+                        console.error("프로젝트 생성 실패:", err);
+                        alert("프로젝트 생성 중 오류가 발생했습니다.");
+                    },
+                });
+            });
+
+
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
 
             fetchUserIdx()
                 .then(fetchProjects)
@@ -161,8 +259,223 @@
                 });
 
             // 검색창 이벤트 리스너 추가
-            $("#projectSearchBar").on("input", filterProjects);
+            $("#search").on("input", filterProjects);
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+            // 팝업 열기
+            function showPopup() {
+                $("#popup-project-settings").fadeIn();
+            }
+
+            // 팝업 닫기
+            function hidePopup() {
+                $("#popup-project-settings").fadeOut();
+            }
+
+            // 닫기 버튼 이벤트
+            $(document).on("click", "#button-close-popup", function () {
+                hidePopup();
+            });
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+            // 설정 버튼 클릭 이벤트
+            $(document).on("click", ".settings-btn", function () {
+                const projectId = $(this).closest("tr").data("project-id");
+
+                // 서버에서 프로젝트 정보 가져오기
+                $.ajax({
+                    url: `${API_URL}/project/details?projectId=${projectId}&userIdx=${userIdx}`,
+                    method: "GET",
+                    success: function (project) {
+                        console.log("프로젝트 데이터:", project); // 디버깅: 서버에서 받은 프로젝트 데이터 출력
+
+                        const isCurrentUserLeader = project.current_user_is_leader; // 팀장 여부 확인
+                        const leaderInfo = project.leader_info; // 팀장 정보 가져오기
+
+                        // 프로젝트 이름 설정
+                        $("#input-project-name")
+                            .val(project.project_name || "")
+                            .prop("readonly", !isCurrentUserLeader) // 팀원이면 읽기 전용으로 설정
+                            .toggleClass("readonly", !isCurrentUserLeader); // 스타일 클래스 추가
+
+                        $("#button-save-settings").toggle(isCurrentUserLeader); // 팀장이 아닌 경우 숨김
+
+                        // 팀원 목록 생성
+                        const teamMembersList = project.team_members.map(member => {
+                            const isCurrentUser = parseInt(userIdx, 10) === parseInt(member.user_idx, 10);
+
+                            // 팀장인 경우 버튼 추가
+                            const additionalControls = isCurrentUserLeader && member.role !== "팀장"
+                                ? `
+                        <button class="grant-leader-btn" data-user-idx="${member.user_idx}">팀장 권한 부여</button>
+                        <button class="remove-member-btn" data-user-idx="${member.user_idx}">삭제</button>
+                    `
+                                : "";
+
+                            return `
+                    <li class="popup-project-settings-member-item 
+                        ${isCurrentUser ? "current-user" : ""}
+                        ${member.role === "팀장" ? "leader" : ""}" 
+                        data-user-idx="${member.user_idx}">
+                        ${member.name} ${additionalControls}
+                    </li>
+                `;
+                        }).join("");
+
+                        $("#list-team-members").html(teamMembersList);
+
+                        // 팝업 표시
+                        $("#popup-project-settings").data("project-id", projectId);
+                        showPopup();
+                    },
+                    error: function (err) {
+                        console.error("프로젝트 정보를 불러오지 못했습니다:", err);
+                        alert("프로젝트 정보를 불러오는 데 실패했습니다.");
+                    },
+                });
+            });
+
+
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+            // 저장 버튼 클릭 이벤트
+            $(document).on("click", "#button-save-settings", function () {
+                const projectId = $("#popup-project-settings").data("project-id");
+                const updatedProjectName = $("#input-project-name").val();
+
+                // 서버로 업데이트 요청
+                $.ajax({
+                    url: `${API_URL}/project/update?projectId=${projectId}`,
+                    method: "PUT",
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        projectName: updatedProjectName,
+                    }),
+                    success: function () {
+                        alert("프로젝트가 성공적으로 업데이트되었습니다.");
+                        hidePopup();
+                        location.reload();
+                    },
+                    error: function (err) {
+                        console.error("프로젝트 업데이트 실패:", err);
+                        alert("프로젝트 업데이트에 실패했습니다.");
+                    },
+                });
+            });
+
+
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+            // 팀원 삭제 버튼 클릭 이벤트
+            $(document).on("click", ".remove-member-btn", function () {
+                const projectId = $("#popup-project-settings").data("project-id"); // 현재 프로젝트 ID
+                const memberId = $(this).data("user-idx"); // 삭제하려는 팀원의 ID
+
+                if (confirm("이 팀원을 삭제하시겠습니까?")) {
+                    $.ajax({
+                        url: `${API_URL}/project/delete-member`,
+                        method: "DELETE",
+                        contentType: "application/json",
+                        data: JSON.stringify({
+                            projectId,
+                            requesterId: userIdx, // 현재 사용자 ID
+                            memberId,
+                        }),
+                        success: function () {
+                            location.reload(); // 삭제 후 새로고침
+                        },
+                        error: function (err) {
+                            console.error("팀원 삭제 실패:", err.responseJSON.message || err);
+                            alert(err.responseJSON.message || "팀원 삭제에 실패했습니다.");
+                        },
+                    });
+                }
+            });
+
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+            // 팀장 권한 부여 버튼 클릭 이벤트
+            $(document).on("click", ".grant-leader-btn", function () {
+                const newLeaderIdx = $(this).data("user-idx"); // 팀장 권한을 받을 사용자 ID
+                const projectId = $("#popup-project-settings").data("project-id"); // 현재 프로젝트 ID
+
+                if (confirm("이 사용자에게 팀장 권한을 부여하시겠습니까?")) {
+                    // 서버로 팀장 변경 요청
+                    $.ajax({
+                        url: `${API_URL}/project/transfer-leader`,
+                        method: "PUT",
+                        contentType: "application/json",
+                        data: JSON.stringify({
+                            projectId,
+                            requesterId: userIdx, // 현재 사용자 ID
+                            newLeaderIdx,
+                        }),
+                        success: function () {
+                            location.reload();
+                        },
+                        error: function (err) {
+                            console.error("팀장 권한 변경 실패:", err);
+                            alert("팀장 권한 변경에 실패했습니다.");
+                        },
+                    });
+                }
+            });
+
+
+
+
+
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+            // 프로젝트 삭제 버튼 클릭 이벤트
+            $(document).on("click", ".delete-project-btn", function () {
+                const projectId = $(this).data("project-id"); // 삭제하려는 프로젝트 ID
+
+                if (confirm("이 프로젝트를 삭제하시겠습니까?")) {
+                    $.ajax({
+                        url: `${API_URL}/project/delete?projectId=${projectId}`,
+                        method: "DELETE",
+                        success: function () {
+                            alert("프로젝트가 성공적으로 삭제되었습니다.");
+                            location.reload(); // 삭제 후 새로고침
+                        },
+                        error: function (err) {
+                            console.error("프로젝트 삭제 실패:", err);
+                            alert(err.responseJSON.message || "프로젝트 삭제에 실패했습니다.");
+                        },
+                    });
+                }
+            });
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
         });
+
+
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
 
     </script>
 

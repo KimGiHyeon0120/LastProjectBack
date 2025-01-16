@@ -224,13 +224,6 @@
                     const startDate = formatDate(adjustDate(parseDate(startDateRaw)));
                     const dueDate = formatDate(adjustDate(parseDate(dueDateRaw)));
 
-                    // 디버깅 로그
-                    console.log("=== 날짜 정보 ===");
-                    console.log("원래 Start Date:", startDateOriginal);
-                    console.log("조정된 Start Date:", startDate);
-                    console.log("원래 Due Date:", dueDateOriginal);
-                    console.log("조정된 Due Date:", dueDate);
-                    console.log("=================");
 
 
 
@@ -982,40 +975,41 @@
         document.addEventListener('DOMContentLoaded', function () {
             const sprintDropdownButton = document.getElementById('sprintDropdownButton');
             const sprintDropdownContent = document.getElementById('sprintDropdownContent');
-
+            const searchInput = document.getElementById('search');
+            let teamMembers = [];
+            let filteredTasks = [];
+            let allTasks = [];
+            let statuses = [];
+        
             if (!sprintDropdownButton || !sprintDropdownContent) {
                 console.error('스프린트 드롭다운 요소를 찾을 수 없습니다.');
                 return;
             }
-
+        
             // 드롭다운 열기/닫기
             sprintDropdownButton.addEventListener('click', function (e) {
                 e.stopPropagation(); // 이벤트 버블링 방지
                 sprintDropdownContent.classList.toggle('show');
             });
-
+        
             // 외부 클릭 시 드롭다운 닫기
             document.addEventListener('click', function (event) {
                 if (!sprintDropdownButton.contains(event.target) && !sprintDropdownContent.contains(event.target)) {
                     sprintDropdownContent.classList.remove('show');
                 }
             });
-
+        
             // 스프린트 필터 로드
             async function loadSprintFilters(projectId) {
                 try {
-                    // 서버에서 스프린트 목록 가져오기
                     const response = await fetch(`${API_URL}/sprint/list?projectId=${projectId}`);
                     const sprints = await response.json();
-
-                    const sprintDropdownContent = document.getElementById('sprintDropdownContent');
                     sprintDropdownContent.innerHTML = ''; // 기존 콘텐츠 초기화
-
+        
                     sprints.forEach(sprint => {
-                        // 각 스프린트 항목을 div로 생성
                         const sprintDiv = document.createElement('div');
                         sprintDiv.className = 'sprint-item'; // 개별 스프린트 클래스
-
+        
                         sprintDiv.innerHTML = `
                             <input type="checkbox" class="sprint-checkbox" value="${sprint.sprintId}">
                             <span class="sprint-name">${sprint.sprintName}</span>
@@ -1026,71 +1020,73 @@
                     console.error('스프린트 필터 로드 오류:', err);
                 }
             }
-
+        
             // 상태 목록을 불러오는 함수
             async function loadStatuses() {
                 try {
                     const response = await fetch(`${API_URL}/tasks/status-list`);
-                    const statuses = await response.json();
-                    return statuses;  // 상태 목록 반환
+                    statuses = await response.json();
                 } catch (err) {
                     console.error('상태 목록을 불러오는 중 오류가 발생했습니다:', err);
                 }
             }
-
-
-
-
+        
+            // 작업 및 팀원 로드
+            async function fetchTasksAndMembers() {
+                try {
+                    const taskResponse = await fetch(`${API_URL}/tasks/list2?projectId=${projectId}`);
+                    allTasks = await taskResponse.json();
+        
+                    const membersResponse = await fetch(`${API_URL}/project/members?projectId=${projectId}`);
+                    teamMembers = await membersResponse.json();
+        
+                    await loadStatuses(); // 상태 목록 로드
+                    filteredTasks = allTasks; // 초기에는 모든 작업 표시
+                    renderTasks(statuses, filteredTasks, teamMembers);
+                } catch (err) {
+                    console.error("Error fetching tasks and members:", err);
+                }
+            }
+        
             // 필터링 적용
             async function applyFilters() {
                 const checkedSprints = Array.from(document.querySelectorAll('.sprint-checkbox:checked')).map(cb => cb.value);
-
-                const params = new URLSearchParams({
-                    projectId,
-                });
-
-                // 체크된 스프린트가 있으면 추가
+                const params = new URLSearchParams({ projectId });
+        
                 if (checkedSprints.length > 0) {
                     params.append('sprints', checkedSprints.join(','));
                 }
-
-                console.log(API_URL + '/tasks/tasks/filter?' + params.toString());  // 필터링된 URL을 콘솔에 출력
-
+        
                 try {
                     const response = await fetch(`${API_URL}/tasks/tasks/filter?${params.toString()}`);
-                    if (!response.ok) {
-                        throw new Error(`필터링 실패: ${response.statusText}`);
-                    }
-                    const filteredTasks = await response.json();
-
-                    // 상태 목록을 불러온 후 renderTasks로 전달
-                    const statuses = await loadStatuses(); // 상태 목록을 불러옴
-                    renderTasks(statuses, filteredTasks, teamMembers); // 필터링된 작업을 렌더링
+                    filteredTasks = await response.json();
+                    renderTasks(statuses, filteredTasks, teamMembers);
                 } catch (err) {
                     console.error('필터링 오류:', err);
                 }
             }
-
-
-
-
-
-
-            fetchTasksAndMembers();
-
-
-
-            // 체크박스 변경 이벤트 연결
+        
+            // 검색 필터링
+            searchInput.addEventListener('input', function () {
+                const query = searchInput.value.toLowerCase().trim();
+                const searchedTasks = filteredTasks.filter(task =>
+                    (task.taskName || task.task_name).toLowerCase().includes(query) ||
+                    (task.description || '').toLowerCase().includes(query) ||
+                    (task.assignedToName || '담당자 없음').toLowerCase().includes(query)
+                );
+                renderTasks(statuses, searchedTasks, teamMembers);
+            });
+        
+            // 필터 이벤트 연결
             sprintDropdownContent.addEventListener('change', applyFilters);
-
-            // 초기화
+        
+            // 초기 작업 로드
             const projectId = sessionStorage.getItem('projectId');
             if (projectId) {
                 loadSprintFilters(projectId);
+                fetchTasksAndMembers();
             }
         });
-
-
     </script>
 </body>
 
