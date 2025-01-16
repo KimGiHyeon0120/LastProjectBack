@@ -77,13 +77,18 @@ router.get('/list-by-user', async (req, res) => {
         // 소유한 프로젝트 조회
         const [ownedProjects] = await connection.promise().query(
             `SELECT 
-                p.project_id, 
-                p.project_name, 
-                p.created_at,
-                r.project_role_name AS role_name
-             FROM Projects p
-             LEFT JOIN Project_Roles r ON r.project_role_id = 1
-             WHERE p.user_idx = ?`,
+    p.project_id, 
+    p.project_name, 
+    p.created_at,
+    p.is_team_project,
+    r.project_role_name AS role_name,
+    u.user_name AS leader_name, -- 팀장의 사용자 이름
+    u.user_profile_image AS leader_profile_image -- 팀장의 프로필 이미지
+FROM Projects p
+LEFT JOIN Project_Roles r ON r.project_role_id = 1  -- '팀장' 역할을 찾는 조인
+LEFT JOIN Project_Members pm ON pm.project_id = p.project_id AND pm.project_role_id = r.project_role_id
+LEFT JOIN Users u ON u.user_idx = pm.user_idx  -- 팀장의 유저 정보 가져오기
+WHERE p.user_idx = ?;`,
             [userId]
         );
 
@@ -496,7 +501,7 @@ router.get('/role', async (req, res) => {
 
 
 
-//팀원 찾기기
+//팀원 찾기
 router.get('/members', async (req, res) => {
     const { projectId } = req.query;
 
