@@ -86,7 +86,8 @@
     <script>
         const userIdx = sessionStorage.getItem("userIdx"); // 로그인된 사용자 ID
         const userIdxh = localStorage.getItem("userIdx"); // 사용자 ID
-        const API_URL = "http://localhost:3000/api";
+        const API_URL = "http://192.168.20.37:3000/api";
+        //192.168.20.37
 
         $(document).ready(function () {
 
@@ -153,31 +154,13 @@
                 const projectList = $("#projectList");
                 projectList.empty();
 
-                console.log("소유한 프로젝트:", ownedProjects);
-                console.log("참여 중인 프로젝트:", participatingProjects);
-
-                // 소유한 프로젝트 렌더링
-                ownedProjects.forEach((project) => {
-                    projectList.append(`
-                        <tr class="project-row" data-project-id="${project.project_id}">
-                            <td><div class="project-name">${project.project_name}</div></td>
-                            <td>${project.is_team_project ? "팀 프로젝트" : "개인 프로젝트"}</td>
-                            <td>소유자</td>
-                            <td class="text-right">
-                                <button class="settings-btn">
-                                    <img src="../img/Settings-icon.png" alt="Settings">
-                                </button>
-                            </td>
-                        </tr>
-                    `);
-                });
-
+            
                 // 참여 중인 프로젝트 렌더링
                 participatingProjects.forEach((project) => {
                     projectList.append(`
                         <tr class="project-row" data-project-id="${project.project_id}">
-                            <td class="project-name">${project.project_name}</td>
-                            <td>${project.role_name === "팀장" ? "팀 프로젝트" : "참여 프로젝트"}</td>
+                            <td>${project.is_team_project ? "팀 프로젝트" : "참여 프로젝트"}</td>
+                            <td><div class="project-name">${project.project_name}</div></td>
                             <td>${project.role_name || "역할 없음"}</td>
                             <td class="text-right">
                                 <button class="settings-btn">
@@ -187,7 +170,7 @@
                         </tr>
                     `);
                 });
-
+            
                 // 프로젝트 이름 클릭 이벤트
                 $(".project-name").off("click").on("click", function (e) {
                     e.stopPropagation();
@@ -195,11 +178,13 @@
                     sessionStorage.setItem("projectId", projectId);
                     localStorage.setItem("projectId", projectId);
                     window.location.href = `../project/board_main.html?projectId=${projectId}`;
-
+            
                     $(".project-name").removeClass("clicked");
                     $(this).addClass("clicked");
                 });
             }
+            
+            
 
 
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────

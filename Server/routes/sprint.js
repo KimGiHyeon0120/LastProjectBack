@@ -200,18 +200,19 @@ router.get('/list-with-tasks', async (req, res) => {
         for (const sprint of sprints) {
             const [tasks] = await connection.promise().query(
                 `SELECT 
-                    t.task_id AS taskId, 
-                    t.task_name AS taskName, 
-                    t.description, 
-                    t.Tasks_status_id AS statusId, 
-                    t.priority, 
-                    t.due_date AS dueDate, 
-                    t.start_date AS startDate, 
-                    t.assigned_to AS assignedTo, 
-                    COALESCE(u.user_name, '담당자 없음') AS assignedToName -- 담당자 이름 추가
-                 FROM Tasks t
-                 LEFT JOIN Users u ON t.assigned_to = u.user_idx -- Users 테이블과 연결
-                 WHERE t.sprint_id = ?`,
+    t.task_id AS taskId, 
+    t.task_name AS taskName, 
+    t.description, 
+    t.Tasks_status_id AS statusId, 
+    t.priority, 
+    t.due_date AS dueDate, 
+    t.start_date AS startDate, 
+    t.assigned_to AS assignedTo, 
+    COALESCE(u.user_name, '담당자 없음') AS assignedToName, -- 담당자 이름 추가
+    COALESCE(u.user_profile_image, '../profile/default-profile.png') AS assignedToImage -- 담당자 이미지 추가
+FROM Tasks t
+LEFT JOIN Users u ON t.assigned_to = u.user_idx -- Users 테이블과 연결
+WHERE t.sprint_id = ?;`,
                 [sprint.sprintId]
             );
 
