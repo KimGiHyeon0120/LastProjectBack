@@ -17,12 +17,16 @@ const connection = mysql.createConnection({
 
 
 
-// 프로젝트 생성
 router.post('/create', async (req, res) => {
     const { projectName, userIdx, isTeamProject } = req.body;
 
+    // 데이터 검증
     if (!projectName || !userIdx || isTeamProject === undefined) {
         return res.status(400).json({ message: '필수 필드를 모두 입력해주세요.' });
+    }
+
+    if (isNaN(parseInt(userIdx, 10))) {
+        return res.status(400).json({ message: '유효하지 않은 사용자 ID입니다.' });
     }
 
     try {
@@ -32,7 +36,7 @@ router.post('/create', async (req, res) => {
         // 프로젝트 생성
         const [projectResult] = await connection.promise().query(
             `INSERT INTO Projects (project_name, user_idx, is_team_project) VALUES (?, ?, ?)`,
-            [projectName, userIdx, isTeamProject]
+            [projectName, parseInt(userIdx, 10), isTeamProject]
         );
 
         const projectId = projectResult.insertId;
@@ -41,7 +45,7 @@ router.post('/create', async (req, res) => {
         if (isTeamProject) {
             await connection.promise().query(
                 `INSERT INTO Project_Members (project_id, user_idx, project_role_id) VALUES (?, ?, ?)`,
-                [projectId, userIdx, 1]
+                [projectId, parseInt(userIdx, 10), 1]
             );
         }
 
@@ -70,41 +74,58 @@ router.get('/list-by-user', async (req, res) => {
     const { userId } = req.query;
 
     if (!userId) {
+        console.error("사용자 ID가 제공되지 않았습니다."); // 디버깅: 사용자 ID 없음
         return res.status(400).json({ message: '사용자 ID는 필수입니다.' });
     }
 
     try {
+        console.log("사용자 ID:", userId); // 디버깅: 요청받은 사용자 ID
+
         // 소유한 프로젝트 조회
+        console.log("소유한 프로젝트 조회 시작");
         const [ownedProjects] = await connection.promise().query(
             `SELECT 
-    p.project_id, 
-    p.project_name, 
-    p.created_at,
-    p.is_team_project,
-    r.project_role_name AS role_name,
-    u.user_name AS leader_name, -- 팀장의 사용자 이름
-    u.user_profile_image AS leader_profile_image -- 팀장의 프로필 이미지
-FROM Projects p
-LEFT JOIN Project_Roles r ON r.project_role_id = 1  -- '팀장' 역할을 찾는 조인
-LEFT JOIN Project_Members pm ON pm.project_id = p.project_id AND pm.project_role_id = r.project_role_id
-LEFT JOIN Users u ON u.user_idx = pm.user_idx  -- 팀장의 유저 정보 가져오기
-WHERE p.user_idx = ?;`,
-            [userId]
+                p.project_id,
+                p.project_name,
+                p.created_at,
+                p.is_team_project,
+                pr.project_role_name AS role_name, -- 역할 이름
+                (SELECT u.user_name 
+                 FROM Project_Members pm 
+                 JOIN Users u ON pm.user_idx = u.user_idx
+                 WHERE pm.project_role_id = 1 AND pm.project_id = p.project_id
+                 LIMIT 1) AS leader_name -- 팀장의 이름 가져오기
+             FROM Projects p
+             LEFT JOIN Project_Members pm ON p.project_id = pm.project_id AND pm.user_idx = ?
+             LEFT JOIN Project_Roles pr ON pm.project_role_id = pr.project_role_id
+             WHERE p.user_idx = ?`,
+            [userId, userId]
         );
 
         // 참여한 프로젝트 조회
+        console.log("참여 중인 프로젝트 조회 시작");
         const [participatingProjects] = await connection.promise().query(
-            `SELECT DISTINCT 
-                p.project_id, 
-                p.project_name, 
+            `SELECT 
+                p.project_id,
+                p.project_name,
                 p.created_at,
-                r.project_role_name AS role_name
+                p.is_team_project,
+                pr.project_role_name AS role_name, -- 역할 이름
+                (SELECT u.user_name 
+                 FROM Project_Members pm 
+                 JOIN Users u ON pm.user_idx = u.user_idx
+                 WHERE pm.project_role_id = 1 AND pm.project_id = p.project_id
+                 LIMIT 1) AS leader_name -- 팀장의 이름 가져오기
              FROM Projects p
              INNER JOIN Project_Members pm ON p.project_id = pm.project_id
-             LEFT JOIN Project_Roles r ON pm.project_role_id = r.project_role_id
-             WHERE pm.user_idx = ? AND p.user_idx != ?`,
-            [userId, userId]
+             LEFT JOIN Project_Roles pr ON pm.project_role_id = pr.project_role_id
+             WHERE pm.user_idx = ?`,
+            [userId]
         );
+
+        // 데이터 반환
+        console.log("소유한 프로젝트 결과:", ownedProjects);
+        console.log("참여 중인 프로젝트 결과:", participatingProjects);
 
         res.status(200).json({
             ownedProjects,
@@ -112,10 +133,12 @@ WHERE p.user_idx = ?;`,
             message: '프로젝트 목록 조회 성공',
         });
     } catch (err) {
-        console.error('사용자별 프로젝트 목록 조회 오류:', err);
-        res.status(500).json({ message: '사용자별 프로젝트 목록 조회 중 오류가 발생했습니다.' });
+        console.error('프로젝트 목록 조회 오류:', err);
+        res.status(500).json({ message: '프로젝트 목록 조회 중 오류가 발생했습니다.' });
     }
 });
+
+
 
 
 
@@ -162,6 +185,17 @@ router.put('/update', async (req, res) => {
     }
 
     try {
+        // 팀원이 있는 경우 개인 프로젝트로 변경 불가
+        if (!isTeamProject) {
+            const [members] = await connection.promise().query(
+                `SELECT COUNT(*) AS memberCount FROM Project_Members WHERE project_id = ?`,
+                [projectId]
+            );
+            if (members[0].memberCount > 1) {
+                return res.status(400).json({ message: '팀원이 있는 경우 개인 프로젝트로 변경할 수 없습니다.' });
+            }
+        }
+
         // 트랜잭션 시작
         await connection.promise().query('START TRANSACTION');
 
@@ -178,26 +212,6 @@ router.put('/update', async (req, res) => {
 
         // 개인 프로젝트로 전환 시 팀원 데이터 삭제
         if (!isTeamProject) {
-            // 팀장의 ID 가져오기
-            const [leader] = await connection.promise().query(
-                `SELECT user_idx FROM Project_Members WHERE project_id = ? AND project_role_id = 1`,
-                [projectId]
-            );
-
-            if (leader.length === 0) {
-                await connection.promise().query('ROLLBACK');
-                return res.status(404).json({ message: '팀장을 찾을 수 없습니다.' });
-            }
-
-            const leaderId = leader[0].user_idx;
-
-            // 팀원들의 작업을 팀장에게 할당
-            await connection.promise().query(
-                `UPDATE Tasks SET assigned_to = ? WHERE project_id = ? AND assigned_to IS NOT NULL`,
-                [leaderId, projectId]
-            );
-
-            // 팀원 데이터 삭제
             await connection.promise().query(
                 `DELETE FROM Project_Members WHERE project_id = ? AND project_role_id != 1`,
                 [projectId]
@@ -217,6 +231,7 @@ router.put('/update', async (req, res) => {
 
 
 
+
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -230,6 +245,15 @@ router.delete('/delete', async (req, res) => {
     }
 
     try {
+        // 팀원이 있는 경우 삭제 제한
+        const [members] = await connection.promise().query(
+            `SELECT COUNT(*) AS memberCount FROM Project_Members WHERE project_id = ?`,
+            [projectId]
+        );
+        if (members[0].memberCount > 1) {
+            return res.status(400).json({ message: '팀원이 있는 경우 프로젝트를 삭제할 수 없습니다.' });
+        }
+
         // 트랜잭션 시작
         await connection.promise().query('START TRANSACTION');
 
@@ -259,6 +283,8 @@ router.delete('/delete', async (req, res) => {
         res.status(500).json({ message: '프로젝트 삭제 중 오류가 발생했습니다.' });
     }
 });
+
+
 
 
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -325,25 +351,13 @@ router.post('/add-member', async (req, res) => {
 
 // 팀장 넘겨주기
 router.put('/transfer-leader', async (req, res) => {
-    const { projectId, requesterEmail, newLeaderEmail } = req.body;
+    const { projectId, requesterId, newLeaderIdx } = req.body;
 
-    if (!projectId || !requesterEmail || !newLeaderEmail) {
+    if (!projectId || !requesterId || !newLeaderIdx) {
         return res.status(400).json({ message: '필수 필드를 모두 입력해주세요.' });
     }
 
     try {
-        // 요청자(현재 사용자)의 ID 확인
-        const [requester] = await connection.promise().query(
-            `SELECT user_idx FROM Users WHERE user_email = ?`,
-            [requesterEmail]
-        );
-
-        if (requester.length === 0) {
-            return res.status(404).json({ message: '존재하지 않는 요청자 이메일입니다.' });
-        }
-
-        const requesterId = requester[0].user_idx;
-
         // 요청자가 팀장인지 확인
         const [requesterRole] = await connection.promise().query(
             `SELECT project_role_id FROM Project_Members WHERE project_id = ? AND user_idx = ?`,
@@ -354,22 +368,10 @@ router.put('/transfer-leader', async (req, res) => {
             return res.status(403).json({ message: '팀장이 아니므로 권한이 없습니다.' });
         }
 
-        // 새 팀장의 사용자 ID 확인
-        const [newLeader] = await connection.promise().query(
-            `SELECT user_idx FROM Users WHERE user_email = ?`,
-            [newLeaderEmail]
-        );
-
-        if (newLeader.length === 0) {
-            return res.status(404).json({ message: '존재하지 않는 새 팀장 이메일입니다.' });
-        }
-
-        const newLeaderId = newLeader[0].user_idx;
-
         // 새 팀장이 해당 프로젝트에 속해 있는지 확인
         const [newLeaderMembership] = await connection.promise().query(
             `SELECT id FROM Project_Members WHERE project_id = ? AND user_idx = ?`,
-            [projectId, newLeaderId]
+            [projectId, newLeaderIdx]
         );
 
         if (newLeaderMembership.length === 0) {
@@ -388,7 +390,7 @@ router.put('/transfer-leader', async (req, res) => {
         // 새 팀장을 팀장으로 변경
         await connection.promise().query(
             `UPDATE Project_Members SET project_role_id = 1 WHERE project_id = ? AND user_idx = ?`,
-            [projectId, newLeaderId]
+            [projectId, newLeaderIdx]
         );
 
         // 트랜잭션 커밋
@@ -406,34 +408,46 @@ router.put('/transfer-leader', async (req, res) => {
 });
 
 
+
+
+
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 // 팀원 삭제
 router.delete('/delete-member', async (req, res) => {
-    const { projectId, requesterEmail, memberEmail } = req.body;
+    const { projectId, requesterId, memberId } = req.body;
 
-    if (!projectId || !requesterEmail || !memberEmail) {
+    if (!projectId || !requesterId || !memberId) {
         return res.status(400).json({ message: '필수 필드를 모두 입력해주세요.' });
     }
 
     try {
-        // 요청자 ID 확인 및 권한 체크는 기존 코드 재사용
-        // ...
-
-        // 삭제할 팀원의 ID 확인
-        const [member] = await connection.promise().query(
-            `SELECT user_idx FROM Users WHERE user_email = ?`,
-            [memberEmail]
+        // 요청자가 팀장인지 확인
+        const [requesterRole] = await connection.promise().query(
+            `SELECT project_role_id FROM Project_Members WHERE project_id = ? AND user_idx = ?`,
+            [projectId, requesterId]
         );
-        const memberId = member[0].user_idx;
+
+        if (requesterRole.length === 0 || requesterRole[0].project_role_id !== 1) {
+            return res.status(403).json({ message: '팀장이 아니므로 권한이 없습니다.' });
+        }
 
         // 팀장의 ID 가져오기
         const [leader] = await connection.promise().query(
             `SELECT user_idx FROM Project_Members WHERE project_id = ? AND project_role_id = 1`,
             [projectId]
         );
+
+        if (leader.length === 0) {
+            return res.status(404).json({ message: '팀장을 찾을 수 없습니다.' });
+        }
+
         const leaderId = leader[0].user_idx;
+
+        if (leaderId === memberId) {
+            return res.status(400).json({ message: '팀장은 스스로를 삭제할 수 없습니다.' });
+        }
 
         // 삭제할 팀원의 작업을 팀장에게 할당
         await connection.promise().query(
@@ -442,10 +456,14 @@ router.delete('/delete-member', async (req, res) => {
         );
 
         // 팀원 삭제
-        await connection.promise().query(
+        const [deleteResult] = await connection.promise().query(
             `DELETE FROM Project_Members WHERE project_id = ? AND user_idx = ?`,
             [projectId, memberId]
         );
+
+        if (deleteResult.affectedRows === 0) {
+            return res.status(404).json({ message: '삭제할 팀원을 찾을 수 없습니다.' });
+        }
 
         res.status(200).json({ message: '프로젝트 팀원이 성공적으로 삭제되었습니다.' });
     } catch (err) {
@@ -453,7 +471,6 @@ router.delete('/delete-member', async (req, res) => {
         res.status(500).json({ message: '팀원 삭제 중 오류가 발생했습니다.' });
     }
 });
-
 
 
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -566,6 +583,72 @@ router.get('/members/search', async (req, res) => {
 
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+// 상세보기
+router.get('/details', async (req, res) => {
+    const { projectId, userIdx } = req.query;
+
+    if (!projectId || !userIdx) {
+        return res.status(400).json({ message: 'projectId와 userIdx가 필요합니다.' });
+    }
+
+    try {
+        // 프로젝트 정보 가져오기
+        const [project] = await connection.promise().query(
+            `SELECT project_id, project_name, is_team_project FROM Projects WHERE project_id = ?`,
+            [projectId]
+        );
+
+        if (project.length === 0) {
+            return res.status(404).json({ message: '프로젝트를 찾을 수 없습니다.' });
+        }
+
+        // 팀원 정보 가져오기
+        const [teamMembers] = await connection.promise().query(
+            `SELECT pm.user_idx, u.user_name AS name, 
+                    CASE pm.project_role_id 
+                        WHEN 1 THEN '팀장' 
+                        ELSE '팀원' 
+                    END AS role
+             FROM Project_Members pm
+             JOIN Users u ON pm.user_idx = u.user_idx
+             WHERE pm.project_id = ?`,
+            [projectId]
+        );
+
+        // 현재 사용자의 역할 가져오기
+        const [currentUserRole] = await connection.promise().query(
+            `SELECT project_role_id FROM Project_Members WHERE project_id = ? AND user_idx = ?`,
+            [projectId, userIdx]
+        );
+
+        // 팀장 정보 가져오기
+        const [leaderInfo] = await connection.promise().query(
+            `SELECT pm.user_idx, u.user_name AS leader_name
+             FROM Project_Members pm
+             JOIN Users u ON pm.user_idx = u.user_idx
+             WHERE pm.project_id = ? AND pm.project_role_id = 1`,
+            [projectId]
+        );
+
+        const response = {
+            project_id: project[0].project_id,
+            project_name: project[0].project_name,
+            is_team_project: project[0].is_team_project,
+            team_members: teamMembers,
+            current_user_role: currentUserRole.length > 0 ? currentUserRole[0].project_role_id : null,
+            current_user_is_leader: currentUserRole.length > 0 && currentUserRole[0].project_role_id === 1,
+            leader_info: leaderInfo.length > 0 ? leaderInfo[0] : null, // 팀장 정보 추가
+        };
+
+        res.status(200).json(response);
+    } catch (err) {
+        console.error('프로젝트 정보 조회 오류:', err);
+        res.status(500).json({ message: '프로젝트 정보를 불러오는 중 오류가 발생했습니다.' });
+    }
+});
 
 
 
