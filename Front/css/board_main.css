@@ -5,7 +5,7 @@ body {
 .sprint {
     
     background-color: #f9f9f9;
-    border-radius: 8px;
+    border-radius: 4px;
     padding: 15px;
     width: 100%;
     margin-top: 20px;
@@ -127,7 +127,7 @@ body {
     width: 400px;
     background-color: #fff;
     border: 1px solid #ddd;
-    border-radius: 8px;
+    border-radius: 4px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     z-index: 1000;
     padding: 20px;
@@ -226,7 +226,7 @@ body {
     top: 100%;
     background-color: #fff;
     border: 1px solid #ddd;
-    border-radius: 6px;
+    border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     z-index: 100;
     width: 120px;
@@ -257,56 +257,8 @@ body {
 
 
 
-/* 우선순위 및 상태 드롭다운 스타일 */
-/* 드롭다운 기본 스타일 */
-.priority-dropdown,
-.status-dropdown {
-    -webkit-appearance: none;
-    /* Chrome, Safari, Edge 등 웹킷 기반 브라우저 */
-    -moz-appearance: none;
-    /* Firefox */
-    appearance: none;
-    /* 최신 브라우저 */
-    width: 40%;
-    /* 드롭다운이 셀을 꽉 채우도록 */
-    height: 35px;
-    /* 드롭다운 높이를 약간 늘려 가독성 향상 */
-    font-size: 14px;
-    /* 텍스트 크기 조정 */
-    padding: 6px 10px;
-    /* 안쪽 여백 */
-    border: 1px solid #ddd;
-    /* 테두리 색상 */
-    border-radius: 6px;
-    /* 둥근 테두리 */
-    background-color: #fff;
-    /* 배경색 */
 
-    /* 그림자 효과 */
-    text-align: center;
-    /* 드롭다운 내부 텍스트 가운데 정렬 */
-    color: #333;
-    /* 텍스트 색상 */
-    transition: box-shadow 0.3s ease, border-color 0.3s ease;
-    /* 포커스 시 효과 */
-}
 
-/* 드롭다운 선택 시 스타일 */
-.priority-dropdown:focus,
-.status-dropdown:focus {
-
-    outline: none;
-
-}
-
-/* 드롭다운 호버 효과 */
-.priority-dropdown:hover,
-.status-dropdown:hover {
-    background-color: #f7faff;
-    /* 호버 시 배경색 */
-    cursor: pointer;
-    /* 포인터 커서로 변경 */
-}
 
 
 /* 작업 카드 */
@@ -370,6 +322,50 @@ body {
     white-space: nowrap;
 }
 
+/* 공통 스타일 */
+.readonly-priority {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* 낮음 */
+.priority-낮음 {
+    background-color: #d4f4dd; /* 연한 초록 */
+    color: #2c662d; /* 진한 초록 */
+}
+
+/* 중간 */
+.priority-중간 {
+    background-color: #fff5cc; /* 연한 노랑 */
+    color: #806600; /* 진한 노랑 */
+}
+
+/* 높음 */
+.priority-높음 {
+    background-color: #ffe6e6; /* 연한 빨강 */
+    color: #cc0000; /* 진한 빨강 */
+}
+
+/* 긴급 */
+.priority-긴급 {
+    background-color: #ffcccc; /* 매우 연한 빨강 */
+    color: #800000; /* 어두운 빨강 */
+    animation: blink 1s infinite; /* 깜박임 효과 */
+}
+
+/* 긴급용 애니메이션 */
+@keyframes blink {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
 
 
 
@@ -427,7 +423,7 @@ textarea#taskDescription {
     /* 안쪽 여백 */
     border: 1px solid #ccc;
     /* 연한 테두리 */
-    border-radius: 6px;
+    border-radius: 4px;
     /* 둥근 모서리 */
     font-size: 14px;
     /* 글씨 크기 */
@@ -463,7 +459,7 @@ input#taskName {
     /* 안쪽 여백 */
     border: 1px solid #ccc;
     /* 테두리 색 */
-    border-radius: 6px;
+    border-radius: 4px;
     /* 둥근 모서리 */
     font-size: 14px;
     /* 글씨 크기 */
@@ -496,7 +492,7 @@ input#taskDueDate {
     /* 안쪽 여백 */
     border: 1px solid #ccc;
     /* 테두리 색 */
-    border-radius: 6px;
+    border-radius: 4px;
     /* 둥근 모서리 */
     font-size: 14px;
     /* 글씨 크기 */
@@ -570,7 +566,7 @@ input#taskDueDate:focus {
     width: 400px;
     background-color: #fff;
     border: 1px solid #ddd;
-    border-radius: 8px;
+    border-radius: 4px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     z-index: 1000;
     padding: 20px;
@@ -592,7 +588,7 @@ input#taskDueDate:focus {
     padding: 10px;
     font-size: 14px;
     border: 1px solid #ccc;
-    border-radius: 6px;
+    border-radius: 4px;
     background-color: #f9f9f9;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
@@ -611,7 +607,7 @@ input#taskDueDate:focus {
     padding: 10px;
     font-size: 14px;
     border: 1px solid #ccc;
-    border-radius: 6px;
+    border-radius: 4px;
     background-color: #f9f9f9;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     resize: none;
@@ -631,7 +627,7 @@ input#taskDueDate:focus {
     padding: 10px;
     font-size: 14px;
     border: 1px solid #ccc;
-    border-radius: 6px;
+    border-radius: 4px;
     background-color: #f9f9f9;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
@@ -650,7 +646,7 @@ input#taskDueDate:focus {
     padding: 10px;
     font-size: 14px;
     border: 1px solid #ccc;
-    border-radius: 6px;
+    border-radius: 4px;
     background-color: #f9f9f9;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
@@ -670,7 +666,7 @@ input#taskDueDate:focus {
     padding: 10px;
     font-size: 14px;
     border: 1px solid #ccc;
-    border-radius: 6px;
+    border-radius: 4px;
     background-color: #f9f9f9;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
@@ -697,7 +693,7 @@ input#taskDueDate:focus {
     border: none;
     padding: 10px 15px;
     font-size: 14px;
-    border-radius: 6px;
+    border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
@@ -713,7 +709,7 @@ input#taskDueDate:focus {
     border: none;
     padding: 10px 15px;
     font-size: 14px;
-    border-radius: 6px;
+    border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
@@ -729,7 +725,7 @@ input#taskDueDate:focus {
     border: none;
     padding: 10px 15px;
     font-size: 14px;
-    border-radius: 6px;
+    border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
@@ -739,6 +735,44 @@ input#taskDueDate:focus {
 }
 
 
+/* 기본 드롭다운 스타일 */
+.task-status-dropdown {
+    appearance: none ;
+    border: none ;
+    background: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"%3E%3Cpath fill="gray" d="M10 12l-6-6h12z"%3E%3C/path%3E%3C/svg%3E') no-repeat right 0.5em center ;
+    background-size: 1em ;
+    padding-right: 2em ;
+    padding: 6px 8px;
+    border-radius: 4px ;
+    font-weight: bold ;
+    font-size: 12px ;
+    width: auto ;
+}
+
+
+.task-status-option option {
+    font-size: 14px; /* 옵션 글씨 크기 */
+    padding: 10px; /* 옵션 간격 */
+}
+/* 상태별 스타일 */
+.status-할일 {
+    background-color: #f0f9ff; /* 파란색 톤 */
+    color: #007bff;
+    
+}
+
+.status-진행중 {
+    background-color: #fff9e6; /* 노란색 톤 */
+    color: #ffc107;
+}
+
+.status-완료 {
+    background-color: #e6ffe6; /* 초록색 톤 */
+    color: #28a745;
+}
+
+
+
 
 
 /* 드롭다운 옵션 스타일 */
@@ -746,7 +780,7 @@ input#taskDueDate:focus {
     display: none; /* 기본적으로 숨김 */
     position: absolute;
     top: 40px; /* 드롭다운 버튼 바로 아래 위치 */
-    left: -100px;
+    left: -113px;
     background-color: #fff;
     border: 1px solid #ddd;
     border-radius: 4px;
