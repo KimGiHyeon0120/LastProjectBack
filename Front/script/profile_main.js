@@ -1,11 +1,5 @@
- 
-<<<<<<< HEAD
 const API_URL = "http://localhost:3000/api";
 const userIdx = sessionStorage.getItem("userIdx");
-=======
-const API_URL = "http://192.168.20.37:3000/api";
-const userId = sessionStorage.getItem("userIdx");
->>>>>>> parent of 5c908d7 (서버가 안 돼요)
 
  function goToEditProfile() {
     // profile-edit.html로 이동

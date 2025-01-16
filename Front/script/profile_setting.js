@@ -24,7 +24,6 @@ function updateProfilePreview() {
         reader.readAsDataURL(fileInput.files[0]); // 선택된 파일을 읽음
     }
 }
-<<<<<<< HEAD
 
 function settingProfile() {
     const fileInput = document.getElementById('profile-image-input');
@@ -55,5 +54,3 @@ function settingProfile() {
         }
     })
 }
-=======
->>>>>>> parent of 5c908d7 (서버가 안 돼요)

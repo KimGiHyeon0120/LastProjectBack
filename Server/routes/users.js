@@ -222,15 +222,15 @@ router.get('/get-idx', async (req, res) => {
 //프로필 가져오기
 router.get('/profile-user', async (req, res) => {
     // 사용자 ID 가져오기 (인증된 사용자를 가정)
-    const userId = req.query;
+    const userIdx = req.query;
     try {
         
         // DB에서 사용자 정보 조회
         const [rows] = await connection.promise().query(
             `SELECT user_name, user_email, user_profile_image 
              FROM Users 
-             WHERE user_id = ?`,
-            [userId]
+             WHERE user_idx = ?`,
+            [userIdx]
         );
 
         if (rows.length === 0) {
@@ -252,29 +252,26 @@ router.get('/profile-user', async (req, res) => {
 
 //프로필 설정
 router.post('/profile-setting', async (req, res) => {
-    const { userId, userName, userProfileImage } = req.body;
+    const { user_idx, user_name, user_profile_image } = req.body;
 
     if (!userId || (!userName && !userEmail && !userProfileImage)) {
         return res.status(400).json({ message: '수정할 필드 또는 사용자 ID가 누락되었습니다.' });
     }
 
     try {
-        const [updated] = await User.update(
-            {
-                user_name: userName,
-                user_profile_image: userProfileImage,
-            },
-            {
-                where: { user_id: userId },
-                individualHooks: true,
+        const query = `UPDATE Users SET user_name = ?, user_profile_image = ? WHERE user_idx = ?`
+        connection.query(query, [user_name, user_profile_image, user_idx], (err, result) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).json({success : false, message: '프로필 수정 실패'});
             }
-        );
+            if (result.affectedRows === 0 ) {
+                return res.status(404).json({ message: '해당 사용자를 찾을 수 없습니다.' });
+            }
 
-        if (updated === 0) {
-            return res.status(404).json({ message: '해당 사용자를 찾을 수 없습니다.' });
-        }
+            res.status(200).json({ message: '프로필이 성공적으로 수정되었습니다.' });
+        });
 
-        res.status(200).json({ message: '프로필이 성공적으로 수정되었습니다.' });
     } catch (err) {
         console.error('프로필 수정 오류:', err);
         res.status(500).json({ message: '프로필 수정 중 오류가 발생했습니다.' });
@@ -282,19 +279,35 @@ router.post('/profile-setting', async (req, res) => {
 });
 
 
+// 비밀번호 조회
+router.post('/users/password-verify', async (req, res) => {
+    const {user_idx, user_password }= req.body;
 
+    if (!user_password) {
+        return res.status(400).json({ message: '비밀번호가 입력되지 않았습니다.'});
+    }
 
+    const query = `SELECT user_password FROM Users WHERE user_idx = ?`;
+    connection.query(query, [user_idx], async (err, result) => {
+        if(err) {
+            console.error(err);
+            return res.status(500).json({message : '검색 실패'});
+        }
+        if(result.length === 0 ) {
+            return res.status(401).json({message : '비밀번호가 잘못 되었습니다.'});
+        }
 
+        const { userPassword : hashedPassword } = result[0];
 
+        const isMatch = await bcrypt.compare(user_password, hashedPassword);
+        if (!isMatch) {
+            return res.status(401).json({ message: '비밀번호가 잘못되었습니다.' });
+        }
 
-
-
-
-
-
-
-
-
+        // 비밀번호가 일치하는 경우
+        res.status(200).json({ message: '비밀번호 확인 완료.'});
+    });
+})
 
 
 
