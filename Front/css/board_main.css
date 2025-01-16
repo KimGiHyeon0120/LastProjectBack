@@ -1,51 +1,36 @@
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f5f7;
+    padding: 10px 40px;
 }
-
-.main {
-    padding: 15px;
-    margin-top: 80px;
-}
-
-.btn-area {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    justify-content: left;
-    margin-left: 200px;
-    margin-right: 200px;
-}
-
-.sprint-board {
-    margin-top: 15px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    justify-content: center;
-}
-
 /* 스프린트 카드 스타일 */
 .sprint {
-    border: 1px solid #ddd;
-    background-color: #fff;
+    
+    background-color: #f9f9f9;
     border-radius: 8px;
     padding: 15px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    width: 700px;
-    max-width: 90%;
+    width: 100%;
+    margin-top: 20px;
     margin-bottom: 20px;
+    max-width: calc(33.333% - 15px); /* 한 줄에 3개 */
+    flex: 1 1 calc(30% - 15px);
     /* 스프린트 간 간격 추가 */
+
     transition: transform 0.2s ease;
 }
+.sprint-board {
+    display: flex; /* inline-flex에서 변경 */
+    flex-wrap: wrap;
+    gap: 15px;
+}
 
-.sprint:hover {
-    transform: translateY(-2px);
-    cursor: pointer;
-    border: 1px solid black;
-    /* 살짝 떠오르는 효과 */
+
+.projectList-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.projectList-header h1 {
+    font-size: 24px;
 }
 
 .sprint-header {
@@ -91,6 +76,7 @@ body {
 
 /* 스프린트 컨텐츠 */
 .sprint-content {
+    
     padding: 10px;
     /* 연한 배경 추가 */
     border-radius: 4px;
@@ -127,28 +113,12 @@ body {
     color: #888;
 }
 
-#addSprintBtn {
-    margin-top: 15px;
-    display: inline-block;
-    background-color: #40a9ff;
-    color: #fff;
-    border: none;
-    padding: 8px 12px;
-    font-size: 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    text-align: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.3s ease;
-}
 
-#addSprintBtn:hover {
-    background-color: #1890ff;
-}
 
 
 /* 팝업 스타일 */
 .popup {
+    
     display: none;
     position: fixed;
     top: 50%;
@@ -167,7 +137,7 @@ body {
     font-size: 18px;
     font-weight: bold;
     margin-bottom: 15px;
-    text-align: center;
+    text-align: left;
 }
 
 .popup-form {
@@ -185,13 +155,15 @@ body {
 
 .popup-buttons {
     display: flex;
-    justify-content: space-between;
+    justify-content: right;
+    
     margin-top: 15px;
 }
 
 .popup-buttons button {
     padding: 8px 12px;
     border: none;
+    margin: 5px;
     border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
@@ -245,8 +217,9 @@ body {
     color: #888;
 }
 
-/* 드롭다운 메뉴 스타일 */
+/* 할일 진행중 ?  메뉴 스타일 */
 .options-menu {
+       border: 1px solid #ddd;
     display: none;
     position: absolute;
     right: 10px;
@@ -308,7 +281,7 @@ body {
     /* 둥근 테두리 */
     background-color: #fff;
     /* 배경색 */
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+
     /* 그림자 효과 */
     text-align: center;
     /* 드롭다운 내부 텍스트 가운데 정렬 */
@@ -321,14 +294,9 @@ body {
 /* 드롭다운 선택 시 스타일 */
 .priority-dropdown:focus,
 .status-dropdown:focus {
-    border-color: #40a9ff;
-    /* 선택 시 테두리 색상 변경 */
+
     outline: none;
-    /* 기본 outline 제거 */
-    box-shadow: 0 0 6px rgba(64, 169, 255, 0.5);
-    /* 선택 시 그림자 효과 */
-    background-color: #f0f9ff;
-    /* 포커스 시 배경색 변경 */
+
 }
 
 /* 드롭다운 호버 효과 */
@@ -343,13 +311,13 @@ body {
 
 /* 작업 카드 */
 .task-card {
+    border: 1px solid #ddd;
     display: flex;
     align-items: center;
     justify-content: space-between;
     /* 각 요소 간의 간격 균등 분배 */
     padding: 8px 10px;
-    background-color: #f9f9f9;
-    border: 1px solid #b3d9ff;
+    background-color: white;
     /* 연한 하늘색 테두리 */
     border-radius: 4px;
     /* 테두리에 약간의 곡선 추가 */
@@ -363,6 +331,7 @@ body {
 
 /* 작업 이름 텍스트 스타일 */
 .task-card p {
+    
     flex: 1;
     /* 가능한 공간을 차지하도록 */
     margin: 0;
@@ -378,8 +347,8 @@ body {
 
 
 .task-card:hover {
-    background-color: #e6f7ff;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background-color: #f5f5f5;
+    
 }
 
 
@@ -423,26 +392,26 @@ body {
 
 
 /* + 추가 버튼 */
-.add-task-btn-wrapper {
-    text-align: center;
-    margin-top: 10px;
-}
-
 .add-task-btn {
-    background-color: #40a9ff;
-    color: #fff;
+    display: flex;
+    align-items: center;
+    height: 60px;
+    width: 100%;
     border: none;
-    padding: 10px 20px;
-    font-size: 14px;
-    border-radius: 6px;
+    /* 각 요소 간의 간격 균등 분배 */
+    padding: 0px 20px;
+    background-color: #f9f9f9;
+    /* 연한 하늘색 테두리 */
+    border-radius: 4px;
+    /* 테두리에 약간의 곡선 추가 */
     cursor: pointer;
+    font-size: 14px;
     transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .add-task-btn:hover {
-    background-color: #1890ff;
-    transform: scale(1.05);
-    /* 살짝 확대 */
+    background-color: #e5e5e5;
+
 }
 
 
@@ -454,7 +423,7 @@ textarea#taskDescription {
     /* 부모 요소의 전체 폭을 사용 */
     height: 120px;
     /* 높이를 늘려 가독성 향상 */
-    padding: 10px;
+    padding: 10px 0px 0px  10px;
     /* 안쪽 여백 */
     border: 1px solid #ccc;
     /* 연한 테두리 */
@@ -468,18 +437,19 @@ textarea#taskDescription {
     /* 크기 조절 불가능 */
     background-color: #f9f9f9;
     /* 배경색 */
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
     /* 약간의 그림자 */
-    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+
     /* 포커스 시 효과 */
 }
 
 textarea#taskDescription:focus {
     outline: none;
     /* 기본 포커스 테두리 제거 */
-    border-color: #40a9ff;
+
+    border: 2px solid  #40a9ff;
     /* 포커스 시 테두리 색 변경 */
-    box-shadow: 0 0 6px rgba(64, 169, 255, 0.5);
+
     /* 포커스 시 그림자 효과 */
 }
 
@@ -776,14 +746,14 @@ input#taskDueDate:focus {
     display: none; /* 기본적으로 숨김 */
     position: absolute;
     top: 40px; /* 드롭다운 버튼 바로 아래 위치 */
-    left: 0;
+    left: -100px;
     background-color: #fff;
     border: 1px solid #ddd;
-    border-radius: 8px;
+    border-radius: 4px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
+    z-index: 998;
     min-width: 150px; /* 최소 너비 설정 */
-    padding: 5px 0;
+    padding: 4px;
 }
 
 /* 드롭다운 옵션 표시 시 */
@@ -794,6 +764,7 @@ input#taskDueDate:focus {
 /* 드롭다운 아이템 스타일 */
 .dropdown-item {
     display: flex;
+    border-radius: 4px;
     align-items: center;
     padding: 8px 10px;
     cursor: pointer;
@@ -846,28 +817,39 @@ input#taskDueDate:focus {
 
 /* 드롭다운 버튼 */
 .assignee-dropdown {
-    display: flex;
-    flex-direction: column; /* 이미지와 이름을 세로로 배치 */
-    align-items: center;
-    cursor: pointer;
-    gap: 5px; /* 이미지와 이름 간격 */
+    position: relative; /* 자식 요소를 기준으로 포지션 설정 */
+    display: inline-block;
 }
 
 /* 담당자 이미지 */
 .assignee-image {
     width: 30px; /* 이미지 너비 */
     height: 30px; /* 이미지 높이 */
+    padding: 3px;
     border-radius: 50%; /* 원형으로 표시 */
     object-fit: cover; /* 이미지 비율 유지 */
 }
-
-/* 담당자 이름 */
+/* 담당자 이미지 */
+.assignee-image:hover{
+    background-color: #e5e5e5;
+    
+}
 .assignee-name {
-    font-size: 13px; /* 글씨 크기 약간 확대 */
-    color: #555; /* 색상 변경 */
-    font-weight: normal; /* 글씨 굵기 */
-    margin-top: 4px; /* 이미지와 이름 간격 조정 */
-    line-height: 1.2; /* 텍스트 줄 높이 */
+    display: none; /* 기본적으로 숨김 */
+    position: absolute;
+    bottom: -20px; /* 이미지 바로 아래에 위치 */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333; /* 배경색 */
+    color: #fff; /* 글자색 */
+    padding: 5px 10px; /* 여백 */
+    border-radius: 4px; /* 모서리 둥글게 */
+    font-size: 12px;
+    white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* 살짝 그림자 */
 }
 
-
+.assignee-image:hover + .assignee-name {
+    display: block; /* 호버 시 표시 */
+}

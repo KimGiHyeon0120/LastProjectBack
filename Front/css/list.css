@@ -74,10 +74,10 @@ body{
 }
 
 .projectList-filters input {
-    width: 100%;
+    width: 500px;
     padding: 20px 10px 5px;
     font-size: 16px;
-    border: 1px solid #ddd;
+    border: 1px solid #bbb;
     border-radius: 4px;
     box-sizing: border-box;
     outline: none;
@@ -130,7 +130,7 @@ body{
     padding: 10px;
     margin-bottom: 10px;
 
-    cursor: grab;
+    cursor: pointer;
     transition: background-color 0.2s ease, transform 0.2s ease;
 }
 

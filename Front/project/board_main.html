@@ -16,16 +16,21 @@
 
 <body>
     <!-- 헤더 영역 -->
-    <header>
-        <script>loadHTML("./header.html")</script>
-    </header>
+    <header> </header>
 
     <div class="main">
-        <div class="btn-area">
-            <button id="addSprintBtn">스프린트 만들기</button>
+        <div class="projectList-header">
+            <h1>프로젝트</h1>
+            <div class="btn-area">
+                <button id="addSprintBtn">스프린트 만들기</button>
+            </div>
         </div>
-        <div id="sprintBoard" class="sprint-board"></div>
-    </div>
+
+
+        <div id="sprintBoard" class="sprint-board">
+
+        </div>
+
 
 
 
@@ -142,7 +147,7 @@
     </div>
 
 
-
+</div>
 
 
 
@@ -369,8 +374,8 @@
                                 
                                 <!-- 담당자 드롭다운 섹션 -->
                                 <div class="assignee-section">
-                                    <div class="assignee-dropdown" onclick="toggleAssigneeDropdown(${task.taskId})" style="text-align: center;">
-                                        <img src="${task.assignedToImage || '../profile/default-profile.png'}" class="assignee-image" alt="프로필">
+                                    <div class="assignee-dropdown" style="text-align: center;">
+                                        <img src="${task.assignedToImage || '../profile/default-profile.png'}" class="assignee-image" alt="프로필" onclick="toggleAssigneeDropdown(${task.taskId})" >
                                         <span class="assignee-name">${task.assignedToName || '담당자 없음'}</span>
                                     </div>
                                     <div class="dropdown-options hidden" id="dropdown_${task.taskId}">
@@ -405,14 +410,16 @@
                             ondragover="allowDrop(event, ${sprint.sprintId})" 
                             ondrop="dropTask(event, ${sprint.sprintId})">
                             ${tasksHTML || "<p></p>"}
-                        </div>
+                      
                         ${sprint.sprintName !== "임시저장" && userRole !== "팀원" // 팀원이 아닌 경우만 추가 버튼을 렌더링
-                            ? `<div class="add-task-btn-wrapper">
+                            ? `
                                     <button class="add-task-btn" 
                                             onclick="openAddTaskPopup(${sprint.sprintId}, '${sprint.endDate || ""}', '${sprint.sprintName}')">
                                         + 추가
                                     </button>
-                                </div>`
+                                
+                                  </div>`
+                                
                             : ""}
                     </div>`;
                     sprintBoard.append(sprintHTML);
