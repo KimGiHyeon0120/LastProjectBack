@@ -286,10 +286,6 @@ router.get('/profile/:userIdx', async (req, res) => {
 
 
 
-
-
-
-
 // 프로필 설정
 router.post('/profile-setting', upload.single('user_profile_image'), async (req, res) => {
     const { user_idx, user_name } = req.body;
@@ -329,12 +325,8 @@ router.post('/profile-setting', upload.single('user_profile_image'), async (req,
 
 
 
-
-
-
-
 // 비밀번호 조회
-router.post('/users/password-verify', async (req, res) => {
+router.post('/password-verify', async (req, res) => {
     const {user_idx, user_password }= req.body;
 
     if (!user_password) {

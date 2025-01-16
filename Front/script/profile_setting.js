@@ -67,7 +67,7 @@ function settingProfile() {
 
     if (!userIdx) {
         alert("로그인 정보가 유효하지 않습니다. 다시 로그인해주세요.");
-        window.location.href = "../users/login.html";
+        window.location.href = "../Login/login.html";
         return;
     }
 
@@ -103,7 +103,7 @@ function settingProfile() {
                     document.getElementById('profile-preview-img').src = response.user_profile_image;
                 }
 
-                window.location.href = '../users/profile-main.html';
+                window.location.href = '../project/profile-main.html';
             } else {
                 alert('프로필 수정에 실패했습니다.');
                 userName.value = '';
