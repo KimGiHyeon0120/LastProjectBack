@@ -147,12 +147,6 @@
                 <label>스프린트 이름</label>
                 <input type="text" id="editSprintName" required>
 
-                <label>시작 날짜</label>
-                <input type="date" id="editStartDate" required>
-
-                <label>종료 날짜</label>
-                <input type="date" id="editEndDate" required>
-
                 <div class="popup-buttons">
                     <button type="button" class="cancel-btn" id="editCancelBtn">취소</button>
                     <button type="button" class="create-btn" id="editSaveBtn">저장</button>
@@ -222,38 +216,43 @@
 
 
 
-                const tasksHTML = sprint.tasks.map(task => `
-                <div class="task-card" 
-                    ${userRole === "팀원" ? '' : `draggable="true" ondragstart="dragTask(event)"`} 
-                    data-task-id="${task.taskId}" 
-                    data-sprint-id="${sprint.sprintId}" 
-                    data-status-id="${task.statusId}" 
-                    data-assigned-to="${task.assignedTo}">
-                    
-                    <p class="task-name" onclick="openEditTaskPopup(${task.taskId})">
-                        <strong>${task.taskName}</strong>
-                    </p>
-                    <p>
-                        <span class="readonly-priority priority-${task.priority}">
-                            ${task.priority}
-                        </span>
-                    </p> 
-                    <p>
-                        <select id="statusDropdown-${task.taskId}" class="task-status-dropdown" data-task-id="${task.taskId}" data-assigned-to="${task.assignedTo}">
-                            <option value="">로딩 중...</option>
-                        </select>
-                    </p>
-                    <!-- 담당자 드롭다운 섹션 -->
-                                <div class="assignee-section">
-                                    <div class="assignee-dropdown" style="text-align: center;">
-                                        <img src="${task.assignedToImage || '../profile/default-profile.png'}" class="assignee-image" alt="프로필" onclick="toggleAssigneeDropdown(${task.taskId})" >
-                                        <span class="assignee-name">${task.assignedToName || '담당자 없음'}</span>
-                                    </div>
-                                    <div class="dropdown-options hidden" id="dropdown_${task.taskId}">
-                                    </div>
+                const tasksHTML = sprint.tasks.map(task => {
+                    // 상태가 '완료'인지 확인
+                    const isCompleted = task.statusName === "완료"; // 상태 이름이 '완료'인 경우
+                    return `
+                        <div class="task-card" 
+                            ${userRole === "팀원" ? '' : `draggable="true" ondragstart="dragTask(event)"`} 
+                            data-task-id="${task.taskId}" 
+                            data-sprint-id="${sprint.sprintId}" 
+                            data-status-id="${task.statusId}" 
+                            data-assigned-to="${task.assignedTo}">
+                            
+                            <p class="task-name" onclick="openEditTaskPopup(${task.taskId})">
+                                <strong>${task.taskName}</strong>
+                            </p>
+                            ${!isCompleted ? `
+                            <p>
+                                <span class="readonly-priority priority-${task.priority}">
+                                    ${task.priority}
+                                </span>
+                            </p>
+                            ` : ""}
+                            <p>
+                                <select id="statusDropdown-${task.taskId}" class="task-status-dropdown" data-task-id="${task.taskId}" data-assigned-to="${task.assignedTo}">
+                                    <option value="">로딩 중...</option>
+                                </select>
+                            </p>
+                            <!-- 담당자 드롭다운 섹션 -->
+                            <div class="assignee-section">
+                                <div class="assignee-dropdown" style="text-align: center;">
+                                    <img src="${task.assignedToImage || '../profile/default-profile.png'}" class="assignee-image" alt="프로필" onclick="toggleAssigneeDropdown(${task.taskId})" >
+                                    <span class="assignee-name">${task.assignedToName || '담당자 없음'}</span>
                                 </div>
-                </div>
-            `).join('');
+                                <div class="dropdown-options hidden" id="dropdown_${task.taskId}"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
 
                 // 스프린트 옵션 메뉴 생성
                 const optionsMenu = sprint.sprintName === "임시저장" ? "" : `
@@ -349,8 +348,6 @@
                 success: function (data) {
                     // 팝업에 기존 데이터 채우기
                     $("#editSprintName").val(data.sprintName);
-                    $("#editStartDate").val(data.startDate.split("T")[0]); // YYYY-MM-DD 형식
-                    $("#editEndDate").val(data.endDate.split("T")[0]);     // YYYY-MM-DD 형식
 
                     // 저장 버튼에 스프린트 ID 저장
                     $("#editSaveBtn").data("sprint-id", sprintId);
@@ -474,6 +471,10 @@
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
+
+
+
+        // ────────────────────여기안됨───────────────────────────────────────────────────────────────────
         // 작업 상태 드롭다운 로드 함수
         function loadStatusDropdown(task) {
             $.ajax({
@@ -980,6 +981,11 @@
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
+
+
+
+
+            // 여기 안됨 -------------------------------------------------------------------------------------------
             // 작업 상태 변경 이벤트 처리
             $(document).on("change", ".status-dropdown", function () {
                 const taskId = $(this).closest(".task-card").data("task-id");
