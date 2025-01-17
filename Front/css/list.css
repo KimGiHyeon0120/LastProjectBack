@@ -260,13 +260,14 @@ body{
     z-index: 1000;
     /* 배경보다 위에 위치 */
     padding: 20px;
+      
 }
 
 /* 팝업 헤더 */
 .popup-header {
     font-size: 18px;
     font-weight: bold;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
     text-align: left;
     color: #333;
 }
@@ -276,6 +277,7 @@ body{
     display: flex;
     flex-direction: column;
     gap: 10px;
+  
 }
 
 /* 입력 필드 스타일 */
@@ -296,7 +298,25 @@ body{
     outline: none;
     border: 2px solid #40a9ff;
 }
+.date-field {
+    flex: 1;
+    /* 양쪽 필드 크기를 동일하게 설정 */
+}
 
+.date-field label {
+    display: block;
+    margin-bottom: 5px;
+    /* 레이블과 필드 간격 */
+
+}
+
+.date-field input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
 /* 텍스트 영역 스타일 */
 .popup-form textarea {
     resize: none;
@@ -443,25 +463,7 @@ body{
     /* 아래 여백 */
 }
 
-.date-field {
-    flex: 1;
-    /* 양쪽 필드 크기를 동일하게 설정 */
-}
 
-.date-field label {
-    display: block;
-    margin-bottom: 5px;
-    /* 레이블과 필드 간격 */
-    font-weight: bold;
-}
-
-.date-field input {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-sizing: border-box;
-}
 
 #notificationDropdown {
     position: absolute;
