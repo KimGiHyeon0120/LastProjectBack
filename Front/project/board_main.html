@@ -193,22 +193,15 @@
                 return;
             }
         
-            // "임시저장" 스프린트와 기타 스프린트 분리
-            const unassignedSprint = sprints.find(sprint => sprint.sprintName === "임시저장");
-            const otherSprints = sprints.filter(sprint => sprint.sprintName !== "임시저장");
-        
             // 선택된 스프린트 필터링
             const checkedSprintIds = Array.from(document.querySelectorAll('.sprint-checkbox:checked')).map(cb => cb.value);
         
             // 선택된 스프린트만 포함
-            const filteredSprints = otherSprints.filter(sprint =>
+            const filteredSprints = sprints.filter(sprint =>
                 checkedSprintIds.length === 0 || checkedSprintIds.includes(String(sprint.sprintId))
             );
         
-            // 렌더링할 스프린트 목록
-            const sprintsToRender = [...filteredSprints, unassignedSprint].filter(Boolean);
-        
-            sprintsToRender.forEach(sprint => {
+            filteredSprints.forEach(sprint => {
                 if (!sprint) return;
         
                 const taskCounts = sprint.tasks.reduce((counts, task) => {
@@ -225,6 +218,7 @@
                         ${userRole === "팀원" ? '' : `draggable="true" ondragstart="dragTask(event)"`} 
                         data-task-id="${task.taskId}" 
                         data-sprint-id="${sprint.sprintId}" 
+                        data-status-id="${task.statusId}" 
                         data-assigned-to="${task.assignedTo}">
                         
                         <p class="task-name" onclick="openEditTaskPopup(${task.taskId})">
@@ -243,17 +237,6 @@
                     </div>
                 `).join('');
         
-                // 스프린트 옵션 메뉴 생성
-                const optionsMenu = sprint.sprintName === "임시저장" ? "" : `
-                    <button class="options-btn">...</button>
-                    <div class="options-menu">
-                        ${userRole === "팀장" ? `
-                            <button class="edit-sprint-btn" data-sprint-id="${sprint.sprintId}">편집</button>
-                            <button class="delete-sprint-btn" data-sprint-id="${sprint.sprintId}">삭제</button>
-                        ` : ''}
-                    </div>
-                `;
-        
                 // 스프린트 HTML 생성
                 const sprintHTML = `
                     <div class="sprint" data-sprint-id="${sprint.sprintId}">
@@ -262,16 +245,12 @@
                             <p class="sprint-task-counts">
                                 할 일: ${taskCounts.todo}, 진행 중: ${taskCounts.inProgress}, 완료: ${taskCounts.completed}
                             </p>
-                            ${optionsMenu}
                         </div>
                         <div class="sprint-content" 
                             ondragover="allowDrop(event, ${sprint.sprintId})" 
                             ondrop="dropTask(event, ${sprint.sprintId})">
                             ${tasksHTML || "<p>작업이 없습니다.</p>"}
                         </div>
-                        ${sprint.sprintName !== "임시저장" && userRole !== "팀원"
-                            ? `<button class="add-task-btn" onclick="openAddTaskPopup(${sprint.sprintId}, '${sprint.endDate || ""}', '${sprint.sprintName}')">+ 추가</button>` 
-                            : ''}
                     </div>
                 `;
         
@@ -284,8 +263,6 @@
             // 스프린트 관련 이벤트 바인딩
             bindSprintEvents();
         }
-        
-
 
 
 
@@ -327,28 +304,28 @@
         // 필터링 적용
         async function applyFilters() {
             const checkedSprints = Array.from(document.querySelectorAll('.sprint-checkbox:checked')).map(cb => cb.value);
-        
+
             // 필터링 조건 추가
             const params = new URLSearchParams({ projectId });
             if (checkedSprints.length > 0) {
                 params.append('sprints', checkedSprints.join(','));
             }
-        
+
             try {
                 // API 호출
                 const response = await fetch(`${API_URL}/sprint/list-with-tasks?${params.toString()}`);
                 const sprints = await response.json();
-        
+
                 // 필터링된 작업이 없을 경우 처리
                 if (sprints.length === 0) {
                     const sprintBoard = document.getElementById('sprintBoard');
                     sprintBoard.innerHTML = `<p class="no-tasks-message">선택된 스프린트에 작업이 없습니다.</p>`;
                     return;
                 }
-        
+
                 // 필터링된 작업 렌더링
                 renderSprints(sprints);
-        
+
                 // 스프린트 드롭다운 버튼 텍스트 업데이트
                 updateSprintDropdownButton();
             } catch (err) {
@@ -449,9 +426,64 @@
             }
         }
 
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
+        // 검색 필터링 함수
+        function filterTasksBySearch(query) {
+            const sprints = document.querySelectorAll(".sprint");
 
+            sprints.forEach(sprint => {
+                const taskCards = sprint.querySelectorAll(".task-card");
+                let sprintHasVisibleTasks = false;
+                let taskCounts = { todo: 0, inProgress: 0, completed: 0 }; // 상태별 작업 수 초기화
+
+                taskCards.forEach(taskCard => {
+                    // task-name과 assignee-name 요소를 안전하게 가져옴
+                    const taskNameElement = taskCard.querySelector(".task-name");
+                    const assigneeNameElement = taskCard.querySelector(".assignee-name");
+
+                    // taskName 및 taskAssignee의 기본값 설정
+                    const taskName = taskNameElement ? taskNameElement.textContent.toLowerCase() : "";
+                    const taskAssignee = assigneeNameElement ? assigneeNameElement.textContent.toLowerCase() : "";
+
+                    // 작업 상태 ID 가져오기
+                    const statusId = parseInt(taskCard.dataset.statusId, 10);
+
+                    // 검색어 필터링 조건
+                    if (taskName.includes(query) || taskAssignee.includes(query)) {
+                        taskCard.style.display = ""; // 보이기
+                        sprintHasVisibleTasks = true;
+
+                        // 필터된 작업의 상태 카운트 증가
+                        if (statusId === 1) taskCounts.todo++;
+                        else if (statusId === 2) taskCounts.inProgress++;
+                        else if (statusId === 3) taskCounts.completed++;
+                    } else {
+                        taskCard.style.display = "none"; // 숨기기
+                    }
+                });
+
+                // 상태 카운트 업데이트
+                const sprintTaskCounts = sprint.querySelector(".sprint-task-counts");
+                if (sprintTaskCounts) {
+                    sprintTaskCounts.textContent = `할 일: ${taskCounts.todo}, 진행 중: ${taskCounts.inProgress}, 완료: ${taskCounts.completed}`;
+                }
+
+                // 스프린트 전체 숨김/표시 처리
+                if (sprintHasVisibleTasks) {
+                    sprint.style.display = ""; // 보이기
+                } else {
+                    sprint.style.display = "none"; // 숨기기
+                }
+            });
+        }
+
+        // 검색 이벤트 핸들러
+        document.getElementById("search").addEventListener("input", function () {
+            const query = this.value.toLowerCase().trim();
+            filterTasksBySearch(query);
+        });
 
 
 
