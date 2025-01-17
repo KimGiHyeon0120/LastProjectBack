@@ -23,7 +23,7 @@
         </div>
         <div class="projectList-filters">
             <input type="text" id="search" placeholder="">
-            <label for="search">프로젝트 검색</label>
+            <label for="search">작업 검색</label>
 
             <!-- 스프린트 필터 -->
             <div class="dropdown-container" style="position: relative;">
@@ -1052,18 +1052,60 @@
                 }
             }
 
+
+
+            // 선택된 스프린트 필터링 및 버튼 텍스트 업데이트
+            function updateSprintDropdownButton() {
+                const checkedSprints = Array.from(document.querySelectorAll('.sprint-checkbox:checked')).map(cb =>
+                    cb.parentElement.textContent.trim()
+                );
+
+                const sprintDropdownButton = document.getElementById('sprintDropdownButton');
+                if (checkedSprints.length > 0) {
+                    sprintDropdownButton.textContent = checkedSprints.join(', ');
+                } else {
+                    sprintDropdownButton.textContent = '전체'; // 기본 텍스트
+                }
+            }
+
+
+
+
             // 필터링 적용
             async function applyFilters() {
                 const checkedSprints = Array.from(document.querySelectorAll('.sprint-checkbox:checked')).map(cb => cb.value);
-                const params = new URLSearchParams({ projectId });
 
+                // 선택된 스프린트 이름 업데이트
+                const sprintDropdownButton = document.getElementById('sprintDropdownButton');
+                const selectedSprintNames = Array.from(document.querySelectorAll('.sprint-checkbox:checked')).map(cb =>
+                    cb.parentElement.textContent.trim()
+                );
+
+                if (selectedSprintNames.length > 0) {
+                    sprintDropdownButton.textContent = selectedSprintNames.join(', ');
+                } else {
+                    sprintDropdownButton.textContent = '전체'; // 기본 텍스트
+                }
+
+                // 필터링 조건 추가
+                const params = new URLSearchParams({ projectId });
                 if (checkedSprints.length > 0) {
                     params.append('sprints', checkedSprints.join(','));
                 }
 
                 try {
+                    // API 호출
                     const response = await fetch(`${API_URL}/tasks/tasks/filter?${params.toString()}`);
                     filteredTasks = await response.json();
+
+                    // 필터링된 작업이 없을 경우 처리
+                    if (filteredTasks.length === 0) {
+                        const sprintBoard = document.getElementById('sprintBoard');
+                        sprintBoard.innerHTML = `<p class="no-tasks-message">선택된 스프린트에 작업이 없습니다.</p>`;
+                        return;
+                    }
+
+                    // 필터링된 작업 렌더링
                     renderTasks(statuses, filteredTasks, teamMembers);
                 } catch (err) {
                     console.error('필터링 오류:', err);
