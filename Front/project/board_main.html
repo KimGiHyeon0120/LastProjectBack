@@ -324,6 +324,47 @@
 
 
 
+        // 삭제 요청
+        function deleteSprint(sprintId) {
+            $.ajax({
+                url: `${API_URL}/sprint/delete`,
+                method: "DELETE",
+                contentType: "application/json",
+                data: JSON.stringify({ sprintId, projectId }),
+                success: function (response) {
+                    fetchSprints(); // 스프린트 목록 새로고침
+                },
+                error: function (err) {
+                }
+            });
+        }
+
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+        // 편집 팝업 열기
+        function openEditPopup(sprintId) {
+            $.ajax({
+                url: `${API_URL}/sprint/${sprintId}`,
+                method: "GET",
+                success: function (data) {
+                    // 팝업에 기존 데이터 채우기
+                    $("#editSprintName").val(data.sprintName);
+                    $("#editStartDate").val(data.startDate.split("T")[0]); // YYYY-MM-DD 형식
+                    $("#editEndDate").val(data.endDate.split("T")[0]);     // YYYY-MM-DD 형식
+
+                    // 저장 버튼에 스프린트 ID 저장
+                    $("#editSaveBtn").data("sprint-id", sprintId);
+
+                    // 팝업 열기
+                    $(".popup-background").fadeIn();
+                    $("#editSprintPopup").fadeIn();
+                },
+                error: function (err) {
+                    console.error(err);
+                }
+            });
+        }
+
 
 
 
@@ -845,47 +886,6 @@
 
 
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-            // 삭제 요청
-            function deleteSprint(sprintId) {
-                $.ajax({
-                    url: `${API_URL}/sprint/delete`,
-                    method: "DELETE",
-                    contentType: "application/json",
-                    data: JSON.stringify({ sprintId, projectId }),
-                    success: function (response) {
-                        fetchSprints(); // 스프린트 목록 새로고침
-                    },
-                    error: function (err) {
-                    }
-                });
-            }
-
-            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-            // 편집 팝업 열기
-            function openEditPopup(sprintId) {
-                $.ajax({
-                    url: `${API_URL}/sprint/${sprintId}`,
-                    method: "GET",
-                    success: function (data) {
-                        // 팝업에 기존 데이터 채우기
-                        $("#editSprintName").val(data.sprintName);
-                        $("#editStartDate").val(data.startDate.split("T")[0]); // YYYY-MM-DD 형식
-                        $("#editEndDate").val(data.endDate.split("T")[0]);     // YYYY-MM-DD 형식
-
-                        // 저장 버튼에 스프린트 ID 저장
-                        $("#editSaveBtn").data("sprint-id", sprintId);
-
-                        // 팝업 열기
-                        $(".popup-background").fadeIn();
-                        $("#editSprintPopup").fadeIn();
-                    },
-                    error: function (err) {
-                        console.error(err);
-                    }
-                });
-            }
 
 
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────

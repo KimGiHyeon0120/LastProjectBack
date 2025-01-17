@@ -28,12 +28,65 @@
                 </div>
 
                 <!-- 프로필 아이콘 -->
-                <a href="../Login/logout.html" class="profile">
-                    <img src="../img/id-icon.png" alt="프로필 아이콘">
-                </a>
+                <div class="header-profile-container">
+                    <div class="profile">
+                        <img src="../img/id-icon.png" alt="프로필 아이콘" id="profile-icon" onclick="togglePopup()">
+                    </div>
+                    <div id="header-profile-popup" class="header-profile-popup" style="display: none;">
+                        <ul>
+                            <li><span class="profile-edit-link" onclick="openProfilePopup()">프로필 수정</span></li>
+                            <li><a href="../Login/logout.html">로그아웃</a></li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
     </header>
+
+
+    <div id="profile-popup-container" class="profile-popup hidden">
+        <div class="profile-popup-content">
+            <button class="profile-popup-close-button" onclick="closeProfilePopup()">X</button>
+    
+            <!-- 프로필 이미지와 이름 수정 -->
+            <div id="profile-popup-profile-section" class="hidden">
+                <h1>프로필 수정</h1>
+                <form class="profile-popup-edit-form">
+                    <div class="profile-popup-form-group">
+                        <div class="profile-popup-profile-preview">
+                            <img src="../profile/default-profile.png" alt="프로필 이미지 미리보기" id="profile-popup-profile-preview-img" onclick="changeProfileImage()"/>
+                        </div>
+                        <input type="file" id="profile-popup-profile-image-input" accept="image/*" style="display: none;" />
+                    </div>
+                    <div class="profile-popup-form-group">
+                        <label for="profile-popup-user-name">이름</label>
+                        <input type="text" id="profile-popup-user-name" name="user_name" placeholder="이름을 입력하세요" />
+                    </div>
+                </form>
+            </div>
+        <div>
+            <!-- 비밀번호 확인 섹션 -->
+            <div id="profile-popup-password-section" class="hidden">
+                <h1>비밀번호 확인</h1>
+                <form id="profile-popup-password-verify-form">
+                    <div class="profile-popup-form-group">
+                        <input type="password" id="password-input" placeholder="비밀번호를 입력하세요" required />
+                        <label for="password-input">비밀번호를 입력하세요</label>
+                    </div>
+                    <div class="profile-popup-form-actions">
+                        <button type="button" class="profile-popup-login-btn" onclick="checkingPassword()">확인</button>
+                    </div>
+                </form>
+            </div>
+            <br>
+        </div>
+            <!-- 저장 버튼 -->
+            <div class="profile-popup-form-actions">
+                <button type="button" class="profile-popup-save-button" id="profile-popup-save-button"
+                    onclick="saveProfilePopup()" disabled>저장</button>
+            </div>
+        </div>
+    </div>
 
 
     <div id="mySidebar">
@@ -43,6 +96,5 @@
         <a href="board_main.html"><img src="../img/board-icon.png" alt="보드 아이콘" class="icon"><span>보드</span></a>
 
     </div>
-
 
 </body>
