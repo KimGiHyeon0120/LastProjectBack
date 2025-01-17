@@ -10,6 +10,7 @@
     <script src="../lib/jquery-3.7.1.min.js"></script>
     <script src="../script/header.js"></script>
     <link rel="stylesheet" href="../css/board_main.css">
+    <link rel="stylesheet" href="../css/form-control.css">
 </head>
 
 
@@ -22,7 +23,7 @@
         <div class="projectList-header">
             <h1>프로젝트</h1>
             <div class="btn-area">
-                <button id="addSprintBtn">스프린트 만들기</button>
+                <button id="addSprintBtn" class="projectList-create-btn">스프린트 만들기</button>
             </div>
         </div>
 
@@ -256,7 +257,7 @@
 
                 // 스프린트 옵션 메뉴 생성
                 const optionsMenu = sprint.sprintName === "임시저장" ? "" : `
-                        <button class="options-btn">...</button>
+                        <button class="options-btn"> <img src="../img/Settings-icon.png" alt="Options" class="settings-icon"></button>
                         <div class="options-menu">
                             ${userRole === "팀장" ? `
                                 <button class="edit-sprint-btn" data-sprint-id="${sprint.sprintId}">편집</button>
@@ -270,9 +271,27 @@
                     <div class="sprint" data-sprint-id="${sprint.sprintId}">
                         <div class="sprint-header">
                             <h3>${sprint.sprintName}</h3>
-                            <p class="sprint-task-counts">
-                                할 일: ${taskCounts.todo}, 진행 중: ${taskCounts.inProgress}, 완료: ${taskCounts.completed}
-                            </p>
+                  <div class="board-column" data-status="할 일">
+    <div class="status-header">
+        <span class="status-icon">●</span> <!-- 예시 아이콘 (●) -->
+        <p class="status-name">${taskCounts.todo} </p>
+    </div>
+</div>
+
+<div class="board-column" data-status="진행 중">
+    <div class="status-header">
+        <span class="status-icon">●</span> <!-- 예시 아이콘 (●) -->
+        <p class="status-name">${taskCounts.inProgress}</p>
+    </div>
+</div>
+
+<div class="board-column" data-status="완료">
+    <div class="status-header">
+        <span class="status-icon">●</span> <!-- 예시 아이콘 (●) -->
+        <p class="status-name">${taskCounts.completed} </p>
+    </div>
+</div>
+
                             ${optionsMenu}
                         </div>
                         <div class="sprint-content" 
