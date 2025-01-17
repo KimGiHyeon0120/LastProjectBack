@@ -24,15 +24,16 @@
         <div class="projectList-filters">
             <input type="text" id="search" placeholder="">
             <label for="search">프로젝트 검색</label>
-
-            <!-- 스프린트 필터 -->
-            <div class="dropdown-container" style="position: relative;">
+              <!-- 스프린트 필터 -->
+              <div class="dropdown-container" style="position: relative;">
                 <button id="sprintDropdownButton" class="sprint-dropdown-button">전체</button>
                 <div id="sprintDropdownContent" class="sprint-dropdown-content">
                     <!-- 스프린트 항목이 여기에 동적으로 추가됩니다 -->
                 </div>
             </div>
+          
         </div>
+        
         <div class="content">
             <!-- 작업 진행 상태 보드 -->
             <div class="board" id="sprintBoard">
@@ -270,7 +271,7 @@
                         <div class="status-header">
                             <span class="status-icon">●</span>
                             <h3 class="status-name">
-                                ${status.name} <span class="task-count">(${tasksForStatus.length})</span>
+                                ${status.name}&nbsp;&nbsp;<span class="task-count">${tasksForStatus.length}</span> 
                             </h3>
                         </div>
                         <div class="tasks ${tasksForStatus.length === 0 ? "empty" : ""}" ondragover="allowDrop(event)" ondrop="dropTask(event, '${status.id}')">
