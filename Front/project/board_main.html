@@ -27,6 +27,19 @@
         </div>
 
 
+        <div class="projectList-filters">
+            <input type="text" id="search" placeholder="">
+            <label for="search">작업 검색</label>
+
+            <!-- 스프린트 필터 -->
+            <div class="dropdown-container" style="position: relative;">
+                <button id="sprintDropdownButton" class="sprint-dropdown-button">전체</button>
+                <div id="sprintDropdownContent" class="sprint-dropdown-content">
+                    <!-- 스프린트 항목이 여기에 동적으로 추가됩니다 -->
+                </div>
+            </div>
+        </div>
+
         <div id="sprintBoard" class="sprint-board">
 
         </div>
@@ -162,8 +175,329 @@
 
         let userRole = null; // 초기값
 
+
+
+
+
+
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+        // 스프린트 렌더링 함수
+        function renderSprints(sprints) {
+            const sprintBoard = $("#sprintBoard");
+            sprintBoard.empty();
+        
+            if (!sprints || sprints.length === 0) {
+                sprintBoard.append("<p>스프린트 데이터가 없습니다.</p>");
+                return;
+            }
+        
+            // 선택된 스프린트 필터링
+            const checkedSprintIds = Array.from(document.querySelectorAll('.sprint-checkbox:checked')).map(cb => cb.value);
+        
+            // 선택된 스프린트만 포함
+            const filteredSprints = sprints.filter(sprint =>
+                checkedSprintIds.length === 0 || checkedSprintIds.includes(String(sprint.sprintId))
+            );
+        
+            filteredSprints.forEach(sprint => {
+                if (!sprint) return;
+        
+                const taskCounts = sprint.tasks.reduce((counts, task) => {
+                    counts.total += 1;
+                    if (task.statusId === 1) counts.todo += 1;       // 할 일 작업
+                    if (task.statusId === 2) counts.inProgress += 1; // 진행 중 작업
+                    if (task.statusId === 3) counts.completed += 1;  // 완료된 작업
+                    return counts;
+                }, { total: 0, todo: 0, inProgress: 0, completed: 0 });
+        
+                // 작업 카드 HTML 생성
+                const tasksHTML = sprint.tasks.map(task => `
+                    <div class="task-card" 
+                        ${userRole === "팀원" ? '' : `draggable="true" ondragstart="dragTask(event)"`} 
+                        data-task-id="${task.taskId}" 
+                        data-sprint-id="${sprint.sprintId}" 
+                        data-status-id="${task.statusId}" 
+                        data-assigned-to="${task.assignedTo}">
+                        
+                        <p class="task-name" onclick="openEditTaskPopup(${task.taskId})">
+                            <strong>${task.taskName}</strong>
+                        </p>
+                        <p>
+                            <span class="readonly-priority priority-${task.priority}">
+                                ${task.priority}
+                            </span>
+                        </p> 
+                        <p>
+                            <select id="statusDropdown-${task.taskId}" class="task-status-dropdown" data-task-id="${task.taskId}" data-assigned-to="${task.assignedTo}">
+                                <option value="">로딩 중...</option>
+                            </select>
+                        </p>
+                    </div>
+                `).join('');
+        
+                // 스프린트 HTML 생성
+                const sprintHTML = `
+                    <div class="sprint" data-sprint-id="${sprint.sprintId}">
+                        <div class="sprint-header">
+                            <h3>${sprint.sprintName}</h3>
+                            <p class="sprint-task-counts">
+                                할 일: ${taskCounts.todo}, 진행 중: ${taskCounts.inProgress}, 완료: ${taskCounts.completed}
+                            </p>
+                        </div>
+                        <div class="sprint-content" 
+                            ondragover="allowDrop(event, ${sprint.sprintId})" 
+                            ondrop="dropTask(event, ${sprint.sprintId})">
+                            ${tasksHTML || "<p>작업이 없습니다.</p>"}
+                        </div>
+                    </div>
+                `;
+        
+                sprintBoard.append(sprintHTML);
+        
+                // 각 작업의 상태 드롭다운 로드
+                (sprint.tasks || []).forEach(task => loadStatusDropdown(task));
+            });
+        
+            // 스프린트 관련 이벤트 바인딩
+            bindSprintEvents();
+        }
+
+
+
+
+
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+        // 스프린트 및 태스크 불러오기
+        function fetchSprints() {
+            // 선택된 스프린트 체크박스 가져오기
+            const checkedSprints = Array.from(document.querySelectorAll('.sprint-checkbox:checked')).map(cb => cb.value);
+
+            // 쿼리 파라미터 설정
+            const params = new URLSearchParams({ projectId });
+            if (checkedSprints.length > 0) {
+                params.append('sprints', checkedSprints.join(',')); // 선택된 스프린트 ID들을 추가
+            }
+
+            // AJAX 요청
+            $.ajax({
+                url: `${API_URL}/sprint/list-with-tasks?${params.toString()}`, // 필터링된 스프린트를 요청
+                method: "GET",
+                success: function (sprints) {
+                    renderSprints(sprints); // 필터링된 스프린트를 렌더링
+                    updateSprintDropdownButton(); // 스프린트 드롭다운 버튼 텍스트 업데이트
+                },
+                error: function (err) {
+                    console.error("스프린트 조회 오류:", err);
+                }
+            });
+        }
+
+
+
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+        // 필터링 적용
+        async function applyFilters() {
+            const checkedSprints = Array.from(document.querySelectorAll('.sprint-checkbox:checked')).map(cb => cb.value);
+
+            // 필터링 조건 추가
+            const params = new URLSearchParams({ projectId });
+            if (checkedSprints.length > 0) {
+                params.append('sprints', checkedSprints.join(','));
+            }
+
+            try {
+                // API 호출
+                const response = await fetch(`${API_URL}/sprint/list-with-tasks?${params.toString()}`);
+                const sprints = await response.json();
+
+                // 필터링된 작업이 없을 경우 처리
+                if (sprints.length === 0) {
+                    const sprintBoard = document.getElementById('sprintBoard');
+                    sprintBoard.innerHTML = `<p class="no-tasks-message">선택된 스프린트에 작업이 없습니다.</p>`;
+                    return;
+                }
+
+                // 필터링된 작업 렌더링
+                renderSprints(sprints);
+
+                // 스프린트 드롭다운 버튼 텍스트 업데이트
+                updateSprintDropdownButton();
+            } catch (err) {
+                console.error('필터링 오류:', err);
+            }
+        }
+
+
+
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+        function bindSprintEvents() {
+            // 옵션 버튼
+            $(".options-btn").off("click").on("click", function (e) {
+                if (userRole === "팀원") return; // 팀원은 옵션 버튼 사용 불가
+                e.stopPropagation(); // 다른 클릭 이벤트 방지
+                const menu = $(this).siblings(".options-menu");
+                $(".options-menu").not(menu).hide(); // 다른 메뉴 닫기
+                menu.toggle(); // 현재 메뉴 열기/닫기
+            });
+
+            $(document).off("click").on("click", function () {
+                $(".options-menu").hide();
+            });
+
+            // 삭제 버튼
+            $(".delete-sprint-btn").off("click").on("click", function () {
+                if (userRole === "팀원") return; // 팀원은 삭제 버튼 사용 불가
+                const sprintId = $(this).data("sprint-id");
+                if (confirm("스프린트를 삭제하시겠습니까? 관련 작업은 '임시저장'으로 이동됩니다.")) {
+                    deleteSprint(sprintId);
+                }
+            });
+
+            // 편집 버튼
+            $(".edit-sprint-btn").off("click").on("click", function () {
+                if (userRole === "팀원") return; // 팀원은 편집 버튼 사용 불가
+                const sprintId = $(this).data("sprint-id");
+                openEditPopup(sprintId);
+            });
+        }
+
+
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+        // 작업 상태 드롭다운 로드 함수
+        function loadStatusDropdown(task) {
+            $.ajax({
+                url: `${API_URL}/tasks/status-list`, // 상태 목록 API 호출
+                method: "GET",
+                success: function (statuses) {
+                    // 상태 목록 데이터를 옵션으로 변환
+                    const statusOptions = statuses.map(status => {
+                        // 상태명에서 띄어쓰기를 제거하고 하이픈으로 변환
+                        const statusClass = `status-${status.name.replace(/\s+/g, '')}`;
+
+                        return `
+        <option 
+            value="${status.id}" 
+            ${task.statusId === status.id ? 'selected' : ''} 
+            data-status="${status.name}"
+            class="${statusClass}">
+            ${status.name} 
+        </option>
+    `;
+                    }).join("");
+
+                    // 드롭다운 업데이트
+                    const dropdown = $(`#statusDropdown-${task.taskId}`);
+                    dropdown.html(statusOptions);
+
+                    // 상태에 맞는 디자인 클래스를 <select>에 적용
+                    const selectedStatus = statuses.find(status => status.id === task.statusId);
+                    if (selectedStatus) {
+                        const selectedClass = `status-${selectedStatus.name.replace(/\s+/g, '')}`;
+                        dropdown.addClass(selectedClass); // <select>에 상태 클래스 추가
+                    }
+                },
+                error: function (err) {
+                    console.error(err);
+                }
+            });
+        }
+
+
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+        function updateSprintDropdownButton() {
+            const checkedSprints = Array.from(document.querySelectorAll('.sprint-checkbox:checked'))
+                .map(cb => cb.nextElementSibling.textContent.trim()); // 스프린트 이름 추출
+            const sprintDropdownButton = document.getElementById('sprintDropdownButton');
+            if (checkedSprints.length > 0) {
+                sprintDropdownButton.textContent = checkedSprints.join(', ');
+            } else {
+                sprintDropdownButton.textContent = '전체';
+            }
+        }
+
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+        // 검색 필터링 함수
+        function filterTasksBySearch(query) {
+            const sprints = document.querySelectorAll(".sprint");
+
+            sprints.forEach(sprint => {
+                const taskCards = sprint.querySelectorAll(".task-card");
+                let sprintHasVisibleTasks = false;
+                let taskCounts = { todo: 0, inProgress: 0, completed: 0 }; // 상태별 작업 수 초기화
+
+                taskCards.forEach(taskCard => {
+                    // task-name과 assignee-name 요소를 안전하게 가져옴
+                    const taskNameElement = taskCard.querySelector(".task-name");
+                    const assigneeNameElement = taskCard.querySelector(".assignee-name");
+
+                    // taskName 및 taskAssignee의 기본값 설정
+                    const taskName = taskNameElement ? taskNameElement.textContent.toLowerCase() : "";
+                    const taskAssignee = assigneeNameElement ? assigneeNameElement.textContent.toLowerCase() : "";
+
+                    // 작업 상태 ID 가져오기
+                    const statusId = parseInt(taskCard.dataset.statusId, 10);
+
+                    // 검색어 필터링 조건
+                    if (taskName.includes(query) || taskAssignee.includes(query)) {
+                        taskCard.style.display = ""; // 보이기
+                        sprintHasVisibleTasks = true;
+
+                        // 필터된 작업의 상태 카운트 증가
+                        if (statusId === 1) taskCounts.todo++;
+                        else if (statusId === 2) taskCounts.inProgress++;
+                        else if (statusId === 3) taskCounts.completed++;
+                    } else {
+                        taskCard.style.display = "none"; // 숨기기
+                    }
+                });
+
+                // 상태 카운트 업데이트
+                const sprintTaskCounts = sprint.querySelector(".sprint-task-counts");
+                if (sprintTaskCounts) {
+                    sprintTaskCounts.textContent = `할 일: ${taskCounts.todo}, 진행 중: ${taskCounts.inProgress}, 완료: ${taskCounts.completed}`;
+                }
+
+                // 스프린트 전체 숨김/표시 처리
+                if (sprintHasVisibleTasks) {
+                    sprint.style.display = ""; // 보이기
+                } else {
+                    sprint.style.display = "none"; // 숨기기
+                }
+            });
+        }
+
+        // 검색 이벤트 핸들러
+        document.getElementById("search").addEventListener("input", function () {
+            const query = this.value.toLowerCase().trim();
+            filterTasksBySearch(query);
+        });
+
+
+
+
+
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
         $(document).ready(function () {
 
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
             // projectId와 userIdx 유효성 검증
             if (!projectId || !userIdx) {
@@ -189,6 +523,10 @@
                     console.error("역할 정보 로드 오류:", err);
                 }
             });
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
 
             // 역할에 따른 UI 업데이트
             function updateUIBasedOnRole() {
@@ -274,20 +612,7 @@
 
 
 
-            // 스프린트 및 태스크 불러오기
-            function fetchSprints() {
-                $.ajax({
-                    url: `${API_URL}/sprint/list-with-tasks`,
-                    method: "GET",
-                    data: { projectId },
-                    success: function (sprints) {
-                        renderSprints(sprints);
-                    },
-                    error: function (err) {
-                        console.error("스프린트 조회 오류:", err);
-                    }
-                });
-            }
+
 
 
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -334,129 +659,6 @@
 
 
 
-            // 스프린트 렌더링 함수
-            function renderSprints(sprints) {
-                const sprintBoard = $("#sprintBoard");
-                sprintBoard.empty();
-
-                if (!sprints || sprints.length === 0) {
-                    sprintBoard.append("<p>스프린트 데이터가 없습니다.</p>");
-                    return;
-                }
-
-                // "임시저장" 스프린트와 기타 스프린트 분리
-                const unassignedSprint = sprints.find(sprint => sprint.sprintName === "임시저장");
-                const otherSprints = sprints.filter(sprint => sprint.sprintName !== "임시저장");
-
-                // 스프린트를 렌더링
-                [...otherSprints, unassignedSprint].forEach(sprint => {
-                    if (!sprint) return;
-
-
-                    const taskCounts = sprint.tasks.reduce((counts, task) => {
-                        counts.total += 1;
-                        if (task.statusId === 1) counts.todo += 1;       // 할 일 작업
-                        if (task.statusId === 2) counts.inProgress += 1; // 진행 중 작업
-                        if (task.statusId === 3) counts.completed += 1;  // 완료된 작업
-                        return counts;
-                    }, { total: 0, todo: 0, inProgress: 0, completed: 0 });
-                    
-                    // 콘솔 출력
-                    console.log(`스프린트 이름: ${sprint.sprintName}`);
-                    console.log(`  총 작업 수: ${taskCounts.total}`);
-                    console.log(`  할 일 작업: ${taskCounts.todo}`);
-                    console.log(`  진행 중 작업: ${taskCounts.inProgress}`);
-                    console.log(`  완료 작업: ${taskCounts.completed}`);
-                    
-
-                    // 작업 카드 HTML 생성
-                    const tasksHTML = (sprint && sprint.tasks ? sprint.tasks.map(task => {
-                        console.log("Rendering task:", task); // 콘솔: 현재 렌더링 중인 작업
-                        return `
-                            <div class="task-card" 
-                                ${userRole === "팀원" ? '' : `draggable="true" ondragstart="dragTask(event)"`} 
-                                data-task-id="${task.taskId}" 
-                                data-sprint-id="${sprint.sprintId}" 
-                                data-assigned-to="${task.assignedTo}">
-                                
-                                <p class="task-name" onclick="openEditTaskPopup(${task.taskId})">
-                                    <strong>${task.taskName}</strong>
-                                </p>
-                                <p>
-                                    <span class="readonly-priority priority-${task.priority}">
-                                        ${task.priority}
-                                    </span>
-                                </p> 
-                                <p>
-                                    <select id="statusDropdown-${task.taskId}" class="task-status-dropdown" data-task-id="${task.taskId}" data-assigned-to="${task.assignedTo}">
-                                        <option value="">로딩 중...</option>
-                                    </select>
-                                </p>
-                                
-                                <!-- 담당자 드롭다운 섹션 -->
-                                <div class="assignee-section">
-                                    <div class="assignee-dropdown" style="text-align: center;">
-                                        <img src="${task.assignedToImage || '../profile/default-profile.png'}" class="assignee-image" alt="프로필" onclick="toggleAssigneeDropdown(${task.taskId})" >
-                                        <span class="assignee-name">${task.assignedToName || '담당자 없음'}</span>
-                                    </div>
-                                    <div class="dropdown-options hidden" id="dropdown_${task.taskId}">
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    }).join('') : (() => {
-                        console.log("No sprint or tasks available:", { sprint }); // 콘솔: 스프린트 또는 작업이 없는 경우
-                        return '';
-                    })());
-
-                    // 스프린트 옵션 메뉴 생성
-                    const optionsMenu = sprint.sprintName === "임시저장" ? "" : `
-                        <button class="options-btn">...</button>
-                        <div class="options-menu">
-                            ${userRole === "팀장" ? `
-                                <button class="edit-sprint-btn" data-sprint-id="${sprint.sprintId}">편집</button>
-                                <button class="delete-sprint-btn" data-sprint-id="${sprint.sprintId}">삭제</button>
-                            ` : ''}
-                        </div>
-                    `;
-
-                    // 스프린트 HTML 생성
-                    const sprintHTML = `
-                    <div class="sprint" data-sprint-id="${sprint.sprintId}">
-                        <div class="sprint-header">
-                            <h3>${sprint.sprintName}</h3>
-                            <p class="sprint-task-counts">
-                                할 일: ${taskCounts.todo}, 진행 중: ${taskCounts.inProgress}, 완료: ${taskCounts.completed}
-                            </p>
-                            ${optionsMenu}
-                        </div>
-                        <div class="sprint-content" 
-                            ondragover="allowDrop(event, ${sprint.sprintId})" 
-                            ondrop="dropTask(event, ${sprint.sprintId})">
-                            ${tasksHTML || "<p></p>"}
-                      
-                        ${sprint.sprintName !== "임시저장" && userRole !== "팀원" // 팀원이 아닌 경우만 추가 버튼을 렌더링
-                            ? `
-                                    <button class="add-task-btn" 
-                                            onclick="openAddTaskPopup(${sprint.sprintId}, '${sprint.endDate || ""}', '${sprint.sprintName}')">
-                                        + 추가
-                                    </button>
-                                
-                                  </div>`
-
-                            : ""}
-                    </div>`;
-                    sprintBoard.append(sprintHTML);
-
-                    // 각 작업의 상태 드롭다운 로드
-                    (sprint.tasks || []).forEach(task => {
-                        loadStatusDropdown(task);
-                    });
-                });
-
-                // 스프린트 관련 이벤트 바인딩
-                bindSprintEvents();
-            }
 
 
             // 팀원 목록 렌더링 함수
@@ -495,6 +697,9 @@
             }
 
 
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
 
             // 드롭다운 열기/닫기
             window.toggleAssigneeDropdown = async function (taskId) {
@@ -519,6 +724,9 @@
                 // 현재 드롭다운 열기/닫기
                 currentDropdown.classList.toggle('show');
             };
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
             // 담당자 변경
@@ -573,36 +781,7 @@
 
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-            function bindSprintEvents() {
-                // 옵션 버튼
-                $(".options-btn").off("click").on("click", function (e) {
-                    if (userRole === "팀원") return; // 팀원은 옵션 버튼 사용 불가
-                    e.stopPropagation(); // 다른 클릭 이벤트 방지
-                    const menu = $(this).siblings(".options-menu");
-                    $(".options-menu").not(menu).hide(); // 다른 메뉴 닫기
-                    menu.toggle(); // 현재 메뉴 열기/닫기
-                });
 
-                $(document).off("click").on("click", function () {
-                    $(".options-menu").hide();
-                });
-
-                // 삭제 버튼
-                $(".delete-sprint-btn").off("click").on("click", function () {
-                    if (userRole === "팀원") return; // 팀원은 삭제 버튼 사용 불가
-                    const sprintId = $(this).data("sprint-id");
-                    if (confirm("스프린트를 삭제하시겠습니까? 관련 작업은 '임시저장'으로 이동됩니다.")) {
-                        deleteSprint(sprintId);
-                    }
-                });
-
-                // 편집 버튼
-                $(".edit-sprint-btn").off("click").on("click", function () {
-                    if (userRole === "팀원") return; // 팀원은 편집 버튼 사용 불가
-                    const sprintId = $(this).data("sprint-id");
-                    openEditPopup(sprintId);
-                });
-            }
 
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -799,44 +978,6 @@
 
 
 
-            // 작업 상태 드롭다운 로드 함수
-            function loadStatusDropdown(task) {
-                $.ajax({
-                    url: `${API_URL}/tasks/status-list`, // 상태 목록 API 호출
-                    method: "GET",
-                    success: function (statuses) {
-                        // 상태 목록 데이터를 옵션으로 변환
-                        const statusOptions = statuses.map(status => {
-                            // 상태명에서 띄어쓰기를 제거하고 하이픈으로 변환
-                            const statusClass = `status-${status.name.replace(/\s+/g, '')}`;
-
-                            return `
-                    <option 
-                        value="${status.id}" 
-                        ${task.statusId === status.id ? 'selected' : ''} 
-                        data-status="${status.name}"
-                        class="${statusClass}">
-                        ${status.name} 
-                    </option>
-                `;
-                        }).join("");
-
-                        // 드롭다운 업데이트
-                        const dropdown = $(`#statusDropdown-${task.taskId}`);
-                        dropdown.html(statusOptions);
-
-                        // 상태에 맞는 디자인 클래스를 <select>에 적용
-                        const selectedStatus = statuses.find(status => status.id === task.statusId);
-                        if (selectedStatus) {
-                            const selectedClass = `status-${selectedStatus.name.replace(/\s+/g, '')}`;
-                            dropdown.addClass(selectedClass); // <select>에 상태 클래스 추가
-                        }
-                    },
-                    error: function (err) {
-                        console.error(err);
-                    }
-                });
-            }
 
 
 
@@ -1051,6 +1192,8 @@
             // 초기 데이터 로드
             fetchSprints();
         });
+
+
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
@@ -1320,6 +1463,97 @@
 
 
 
+
+
+
+
+
+
+
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const sprintDropdownButton = document.getElementById('sprintDropdownButton');
+            const sprintDropdownContent = document.getElementById('sprintDropdownContent');
+            const searchInput = document.getElementById('search');
+            let teamMembers = [];
+            let filteredTasks = [];
+            let allTasks = [];
+            let statuses = [];
+
+            if (!sprintDropdownButton || !sprintDropdownContent) {
+                console.error('스프린트 드롭다운 요소를 찾을 수 없습니다.');
+                return;
+            }
+
+            // 드롭다운 열기/닫기
+            sprintDropdownButton.addEventListener('click', function (e) {
+                e.stopPropagation(); // 이벤트 버블링 방지
+                sprintDropdownContent.classList.toggle('show');
+            });
+
+            // 외부 클릭 시 드롭다운 닫기
+            document.addEventListener('click', function (event) {
+                if (!sprintDropdownButton.contains(event.target) && !sprintDropdownContent.contains(event.target)) {
+                    sprintDropdownContent.classList.remove('show');
+                }
+            });
+
+            // 스프린트 필터 로드
+            async function loadSprintFilters(projectId) {
+                try {
+                    const response = await fetch(`${API_URL}/sprint/list?projectId=${projectId}`);
+                    const sprints = await response.json();
+                    sprintDropdownContent.innerHTML = ''; // 기존 콘텐츠 초기화
+
+                    sprints.forEach(sprint => {
+                        const sprintDiv = document.createElement('div');
+                        sprintDiv.className = 'sprint-item'; // 개별 스프린트 클래스
+
+                        sprintDiv.innerHTML = `
+                            <input type="checkbox" class="sprint-checkbox" value="${sprint.sprintId}">
+                            <span class="sprint-name">${sprint.sprintName}</span>
+                        `;
+                        sprintDropdownContent.appendChild(sprintDiv);
+                    });
+
+                    // 필터링 이벤트 연결
+                    sprintDropdownContent.addEventListener('change', applyFilters);
+                } catch (err) {
+                    console.error('스프린트 필터 로드 오류:', err);
+                }
+            }
+
+
+
+            // 작업 및 팀원 로드
+            async function fetchTasksAndMembers() {
+                try {
+                    const taskResponse = await fetch(`${API_URL}/tasks/list2?projectId=${projectId}`);
+                    allTasks = await taskResponse.json();
+
+                    const membersResponse = await fetch(`${API_URL}/project/members?projectId=${projectId}`);
+                    teamMembers = await membersResponse.json();
+
+                    await loadStatuses(); // 상태 목록 로드
+                    filteredTasks = allTasks; // 초기에는 모든 작업 표시
+                    renderTasks(statuses, filteredTasks, teamMembers);
+                } catch (err) {
+                    console.error("Error fetching tasks and members:", err);
+                }
+            }
+
+            // 초기 데이터 로드
+            const projectId = sessionStorage.getItem('projectId');
+            if (projectId) {
+                loadSprintFilters(projectId);
+                applyFilters(); // 초기 필터링 적용
+            }
+        });
+
+
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
     </script>
 

@@ -13,14 +13,7 @@ body{
     position: relative;
     /* 자식 요소 절대 위치 계산을 위해 */
 }
-.header{
-    display: flex;
- 
-    align-items: center;
-}
-.header h1 {
-    font-size: 24px;
-}
+
 .board-column {
     flex: 1;
     background-color: #f9f9f9;
@@ -50,48 +43,6 @@ body{
     color: #333;
     text-align: left;
     margin: 0;
-}
-/*인풋창*/
-.projectList-filters {
-    margin: 20px 0;
-    display: flex;
-    gap: 10px;
-    position: relative;
-    flex: 1; /* 유동적인 너비 */
-    max-width: 400px; /* 최대 너비를 제한 */
-    width: 100%; /* 전체 너비를 차지하지만 최대 300px로 제한 */
-}
-
-.projectList-filters label {
-    position: absolute;
-    top: 50%;
-    left: 10px;
-    transform: translateY(-50%);
-    font-size: 14px;
-    color: #666;
-    transition: all 0.3s ease;
-    pointer-events: none;
-}
-
-.projectList-filters input[type="text"] {
-    width: 500px;
-    padding: 20px 10px 5px;
-    font-size: 16px;
-    border: 1px solid #bbb;
-    border-radius: 4px;
-    box-sizing: border-box;
-    outline: none;
-    transition: all 0.3s ease;
-}
-
-.projectList-filters input:focus {
-    border: 2px solid rgb(35, 131, 226);
-}
-
-.projectList-filters input:focus + label,
-.projectList-filters input:not(:placeholder-shown) + label {
-    top: 10px;
-    font-size: 12px;
 }
 
 /* 상태별 스타일 - 헤더 배경색 */
@@ -582,103 +533,5 @@ body{
     /* 날짜 폰트 크기 조정 */
     color: #666;
     /* 날짜 색상 조정 */
-}
-
-
-
-
-
-
-
-
-
-
-/* 드롭다운 버튼 */
-.sprint-dropdown-button {
-    background-color: transparent; /* 배경 투명 */
-    border: 1px solid #bbb;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 14px; /* 글자 크기 */
-    line-height: normal; /* 기본 줄 간격 */
-    white-space: nowrap; /* 텍스트 줄바꿈 방지 */
-    border-radius: 4px; /* 약간 둥근 모서리 */
-    height: 50px; /* input 요소와 동일한 높이 */
-    padding: 0 15px; /* 내부 여백 */
-    margin-left: auto; /* 오른쪽으로 이동 */
-    font-size: 14px;
-}
-
-/* 화살표 스타일 */
-.sprint-dropdown-button::after {
-    content: ''; /* 반드시 content 추가 */
-    display: inline-block; /* 화살표를 화면에 표시 */
-    background: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"%3E%3Cpath fill="gray" d="M10 12l-6-6h12z"%3E%3C/path%3E%3C/svg%3E') no-repeat center;
-    background-size: 1em 1em; /* 화살표 크기 */
-    width: 1em; /* 화살표 너비 */
-    height: 1em; /* 화살표 높이 */
-    margin-left: 1em; /* 버튼 텍스트와의 간격 */
-}
-
-
-/* 드롭다운 콘텐츠 */
-.sprint-dropdown-content {
-    display: none;
-    position: absolute;
-    top: 100%; /* 버튼 바로 아래에 위치 */
-    left: 0;
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    padding: 8px ; /* 콘텐츠 안쪽 여백 */
-    z-index: 1000;
-    min-width: 100%; /* 버튼의 너비와 최소 맞춤 */
-}
-
-/* 드롭다운 콘텐츠 표시 */
-.sprint-dropdown-content.show {
-    display: block;
-}
-
-/* 스프린트 항목 스타일 */
-.sprint-item {
-    display: flex;
-    align-items: center;
-    padding: 8px; /* 상하좌우 여백 조정 */
-    font-size: 12px;
-
-    cursor: pointer;
-    white-space: nowrap;
-    border-radius: 4px;
-    gap: 5px; /* 체크박스와 텍스트 간격 */
-}
-
-/* 체크박스 스타일 */
-.sprint-checkbox {
-    text-align: left; /* 텍스트 정렬 */
-    width: 14px; /* 체크박스 크기 */
-    height: 14px; /* 체크박스 크기 */
-    cursor: pointer;
-}
-/* 마지막 항목의 경계선 제거 */
-.sprint-item:last-child {
-    border-bottom: none;
-}
-
-/* 스프린트 항목 호버 스타일 */
-.sprint-item:hover {
-    background-color: #f5f5f5; /* 호버 시 배경색 변경 */
-    color: #000; /* 텍스트 색상 변경 */
-}
-
-/* 스프린트 이름 스타일 */
-.sprint-name {
-
-    font-size: 14px; /* 글자 크기 축소 */
-    color: #333;
-    text-align: left; /* 텍스트 정렬 */
 }
 
