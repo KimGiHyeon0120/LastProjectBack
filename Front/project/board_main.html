@@ -217,6 +217,10 @@
                     return counts;
                 }, { total: 0, todo: 0, inProgress: 0, completed: 0 });
 
+
+
+                
+
                 const tasksHTML = sprint.tasks.map(task => `
                 <div class="task-card" 
                     ${userRole === "팀원" ? '' : `draggable="true" ondragstart="dragTask(event)"`} 
