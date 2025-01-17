@@ -188,23 +188,28 @@
         function renderSprints(sprints) {
             const sprintBoard = $("#sprintBoard");
             sprintBoard.empty();
-        
+
             if (!sprints || sprints.length === 0) {
                 sprintBoard.append("<p>스프린트 데이터가 없습니다.</p>");
                 return;
             }
-        
+
+            // "임시저장" 스프린트와 기타 스프린트 분리
+            const unassignedSprint = sprints.find(sprint => sprint.sprintName === "임시저장");
+            const otherSprints = sprints.filter(sprint => sprint.sprintName !== "임시저장");
+
             // 선택된 스프린트 필터링
             const checkedSprintIds = Array.from(document.querySelectorAll('.sprint-checkbox:checked')).map(cb => cb.value);
-        
+
             // 선택된 스프린트만 포함
             const filteredSprints = sprints.filter(sprint =>
                 checkedSprintIds.length === 0 || checkedSprintIds.includes(String(sprint.sprintId))
             );
-        
+
             filteredSprints.forEach(sprint => {
                 if (!sprint) return;
-        
+
+
                 const taskCounts = sprint.tasks.reduce((counts, task) => {
                     counts.total += 1;
                     if (task.statusId === 1) counts.todo += 1;       // 할 일 작업
@@ -212,32 +217,55 @@
                     if (task.statusId === 3) counts.completed += 1;  // 완료된 작업
                     return counts;
                 }, { total: 0, todo: 0, inProgress: 0, completed: 0 });
-        
-                // 작업 카드 HTML 생성
+
+
+
+                
+
                 const tasksHTML = sprint.tasks.map(task => `
-                    <div class="task-card" 
-                        ${userRole === "팀원" ? '' : `draggable="true" ondragstart="dragTask(event)"`} 
-                        data-task-id="${task.taskId}" 
-                        data-sprint-id="${sprint.sprintId}" 
-                        data-status-id="${task.statusId}" 
-                        data-assigned-to="${task.assignedTo}">
-                        
-                        <p class="task-name" onclick="openEditTaskPopup(${task.taskId})">
-                            <strong>${task.taskName}</strong>
-                        </p>
-                        <p>
-                            <span class="readonly-priority priority-${task.priority}">
-                                ${task.priority}
-                            </span>
-                        </p> 
-                        <p>
-                            <select id="statusDropdown-${task.taskId}" class="task-status-dropdown" data-task-id="${task.taskId}" data-assigned-to="${task.assignedTo}">
-                                <option value="">로딩 중...</option>
-                            </select>
-                        </p>
-                    </div>
-                `).join('');
-        
+                <div class="task-card" 
+                    ${userRole === "팀원" ? '' : `draggable="true" ondragstart="dragTask(event)"`} 
+                    data-task-id="${task.taskId}" 
+                    data-sprint-id="${sprint.sprintId}" 
+                    data-status-id="${task.statusId}" 
+                    data-assigned-to="${task.assignedTo}">
+                    
+                    <p class="task-name" onclick="openEditTaskPopup(${task.taskId})">
+                        <strong>${task.taskName}</strong>
+                    </p>
+                    <p>
+                        <span class="readonly-priority priority-${task.priority}">
+                            ${task.priority}
+                        </span>
+                    </p> 
+                    <p>
+                        <select id="statusDropdown-${task.taskId}" class="task-status-dropdown" data-task-id="${task.taskId}" data-assigned-to="${task.assignedTo}">
+                            <option value="">로딩 중...</option>
+                        </select>
+                    </p>
+                    <!-- 담당자 드롭다운 섹션 -->
+                                <div class="assignee-section">
+                                    <div class="assignee-dropdown" style="text-align: center;">
+                                        <img src="${task.assignedToImage || '../profile/default-profile.png'}" class="assignee-image" alt="프로필" onclick="toggleAssigneeDropdown(${task.taskId})" >
+                                        <span class="assignee-name">${task.assignedToName || '담당자 없음'}</span>
+                                    </div>
+                                    <div class="dropdown-options hidden" id="dropdown_${task.taskId}">
+                                    </div>
+                                </div>
+                </div>
+            `).join('');
+
+                // 스프린트 옵션 메뉴 생성
+                const optionsMenu = sprint.sprintName === "임시저장" ? "" : `
+                        <button class="options-btn">...</button>
+                        <div class="options-menu">
+                            ${userRole === "팀장" ? `
+                                <button class="edit-sprint-btn" data-sprint-id="${sprint.sprintId}">편집</button>
+                                <button class="delete-sprint-btn" data-sprint-id="${sprint.sprintId}">삭제</button>
+                            ` : ''}
+                        </div>
+                    `;
+
                 // 스프린트 HTML 생성
                 const sprintHTML = `
                     <div class="sprint" data-sprint-id="${sprint.sprintId}">
@@ -246,24 +274,38 @@
                             <p class="sprint-task-counts">
                                 할 일: ${taskCounts.todo}, 진행 중: ${taskCounts.inProgress}, 완료: ${taskCounts.completed}
                             </p>
+                            ${optionsMenu}
                         </div>
                         <div class="sprint-content" 
                             ondragover="allowDrop(event, ${sprint.sprintId})" 
                             ondrop="dropTask(event, ${sprint.sprintId})">
-                            ${tasksHTML || "<p>작업이 없습니다.</p>"}
-                        </div>
-                    </div>
-                `;
-        
+                            ${tasksHTML || "<p></p>"}
+                      
+                        ${sprint.sprintName !== "임시저장" && userRole !== "팀원" // 팀원이 아닌 경우만 추가 버튼을 렌더링
+                        ? `
+                                    <button class="add-task-btn" 
+                                            onclick="openAddTaskPopup(${sprint.sprintId}, '${sprint.endDate || ""}', '${sprint.sprintName}')">
+                                        + 추가
+                                    </button>
+                                
+                                  </div>`
+
+                        : ""}
+                    </div>`;
                 sprintBoard.append(sprintHTML);
-        
+
                 // 각 작업의 상태 드롭다운 로드
-                (sprint.tasks || []).forEach(task => loadStatusDropdown(task));
+                (sprint.tasks || []).forEach(task => {
+                    loadStatusDropdown(task);
+                });
             });
-        
+
             // 스프린트 관련 이벤트 바인딩
             bindSprintEvents();
         }
+
+
+
 
 
 
@@ -427,6 +469,7 @@
             }
         }
 
+
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
@@ -485,7 +528,6 @@
             const query = this.value.toLowerCase().trim();
             filterTasksBySearch(query);
         });
-
 
 
 
