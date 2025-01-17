@@ -352,6 +352,23 @@
                 [...otherSprints, unassignedSprint].forEach(sprint => {
                     if (!sprint) return;
 
+
+                    const taskCounts = sprint.tasks.reduce((counts, task) => {
+                        counts.total += 1;
+                        if (task.statusId === 1) counts.todo += 1;       // 할 일 작업
+                        if (task.statusId === 2) counts.inProgress += 1; // 진행 중 작업
+                        if (task.statusId === 3) counts.completed += 1;  // 완료된 작업
+                        return counts;
+                    }, { total: 0, todo: 0, inProgress: 0, completed: 0 });
+                    
+                    // 콘솔 출력
+                    console.log(`스프린트 이름: ${sprint.sprintName}`);
+                    console.log(`  총 작업 수: ${taskCounts.total}`);
+                    console.log(`  할 일 작업: ${taskCounts.todo}`);
+                    console.log(`  진행 중 작업: ${taskCounts.inProgress}`);
+                    console.log(`  완료 작업: ${taskCounts.completed}`);
+                    
+
                     // 작업 카드 HTML 생성
                     const tasksHTML = (sprint && sprint.tasks ? sprint.tasks.map(task => {
                         console.log("Rendering task:", task); // 콘솔: 현재 렌더링 중인 작업
@@ -408,9 +425,9 @@
                     <div class="sprint" data-sprint-id="${sprint.sprintId}">
                         <div class="sprint-header">
                             <h3>${sprint.sprintName}</h3>
-                            ${sprint.sprintName !== "임시저장"
-                            ? `<p class="sprint-dates">${formatDateToKorean(sprint.startDate)} ~ ${formatDateToKorean(sprint.endDate)}</p>`
-                            : ""}
+                            <p class="sprint-task-counts">
+                                할 일: ${taskCounts.todo}, 진행 중: ${taskCounts.inProgress}, 완료: ${taskCounts.completed}
+                            </p>
                             ${optionsMenu}
                         </div>
                         <div class="sprint-content" 
@@ -440,6 +457,7 @@
                 // 스프린트 관련 이벤트 바인딩
                 bindSprintEvents();
             }
+
 
             // 팀원 목록 렌더링 함수
             async function renderTeamMembers(taskId, projectId) {
