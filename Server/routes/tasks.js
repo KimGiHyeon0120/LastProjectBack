@@ -236,8 +236,6 @@ ORDER BY t.due_date ASC; -- 스프린트 이름별 정렬
 router.put('/update', async (req, res) => {
     const { taskId, taskName, description, assignedTo, status, priority, dueDate, startDate, changedBy } = req.body;
 
-    // 요청 데이터 디버깅
-    console.log("요청 데이터:", req.body);
 
     if (!taskId || !changedBy) {
         console.error("필수 필드 누락: taskId 또는 changedBy");
@@ -375,7 +373,6 @@ router.put('/update', async (req, res) => {
             SET ${fieldsToUpdate.join(", ")}
             WHERE task_id = ?
         `;
-        console.log("실행 쿼리:", query, "값:", updateValues);
 
         // 업데이트 실행
         await connection.promise().query(query, updateValues);
@@ -395,7 +392,6 @@ router.put('/update', async (req, res) => {
                 record.log_message,
                 record.log_type
             ]);
-            console.log("히스토리 기록:", historyValues);
 
             await connection.promise().query(historyQuery, [historyValues]);
         }
