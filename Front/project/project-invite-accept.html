@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>팀 초대 수락</title>
+</head>
+<body>
+  <h1>팀 초대 수락</h1>
+  <p>프로젝트에 초대되었습니다. 초대를 수락하시겠습니까?</p>
+  
+  <button id="acceptBtn">초대 수락</button>
+  <button id="declineBtn">초대 거절</button>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const invitationId = urlParams.get('invitation_id'); // URL에서 invitation_id 가져오기
+    const API_URL = "http://192.168.20.37:3000/api";
+    document.getElementById('acceptBtn').onclick = async () => {
+      try {
+        const response = await fetch(`${API_URL}/invite/accept/${invitationId}`, { method: 'POST' });
+        const data = await response.json();
+
+        if (response.ok) {
+          alert(data.message);
+        } else {
+          alert(data.error);
+        }
+      } catch (error) {
+        console.error("초대 수락 오류:", error);
+        alert("초대 수락에 실패했습니다.");
+      }
+    };
+
+    document.getElementById('declineBtn').onclick = async () => {
+      try {
+        const response = await fetch(`${API_URL}/invite/decline/${invitationId}`, { method: 'POST' });
+        const data = await response.json();
+
+        if (response.ok) {
+          alert(data.message);
+        } else {
+          alert(data.error);
+        }
+      } catch (error) {
+        console.error("초대 거절 오류:", error);
+        alert("초대 거절에 실패했습니다.");
+      }
+    };
+  </script>
+</body>
+</html>
