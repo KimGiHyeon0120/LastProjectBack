@@ -7,7 +7,6 @@ function loadHTML(url) {
             // 헤더에 HTML 삽입
             document.querySelector('header').innerHTML = html;
 
-            console.log("헤더 로드 완료");
 
             // 헤더 로드 후 이벤트 핸들러 초기화
             initializeNotificationHandlers();
@@ -353,7 +352,6 @@ function openProfilePopup() {
     // 사용자 프로필 데이터 로드
     loadUserProfile();
 
-    console.log('Profile popup initialized and opened');
 }
 
 
@@ -422,7 +420,6 @@ function updateProfilePreview() {
 // 사용자 프로필 데이터를 서버에서 가져와 폼 초기화
 function loadUserProfile() {
     const userIdx = sessionStorage.getItem("userIdx");
-    console.log("User ID:", userIdx);
 
     if (!userIdx) {
         alert("로그인 정보가 유효하지 않습니다. 다시 로그인해주세요.");
@@ -434,7 +431,6 @@ function loadUserProfile() {
         url: `${API_URL}/users/profile/${userIdx}`,
         type: 'GET',
         success: (response) => {
-            console.log("Profile Data:", response);
 
             if (response.message === '프로필 로드 성공') {
                 // 데이터에서 이름과 프로필 이미지 확인
@@ -457,7 +453,6 @@ function loadUserProfile() {
                     console.error('Profile image element not found!');
                 }
 
-                console.log('User profile loaded successfully.');
             } else {
                 alert('프로필 데이터를 불러오는데 실패했습니다.');
             }
@@ -475,7 +470,6 @@ function saveProfilePopup() {
     const userName = document.getElementById('profile-popup-user-name');
     const userIdx = sessionStorage.getItem("userIdx");
 
-    console.log("User ID for update:", userIdx);
 
     if (!userIdx) {
         alert("로그인 정보가 유효하지 않습니다. 다시 로그인해주세요.");
@@ -526,7 +520,6 @@ function saveProfilePopup() {
         contentType: false,
         data: formData,
         success: (response) => {
-            console.log("Profile Update Response:", response);
 
             if (response.message === '프로필이 성공적으로 수정되었습니다.') {
                 alert('변경사항이 저장되었습니다.');
@@ -559,7 +552,6 @@ function checkingPassword() {
     const userPassword = document.getElementById('password-input'); // 비밀번호 입력 필드 가져오기
     const errorMessage = document.getElementById('profile-popup-error-message');
 
-    console.log(userIdx)
     if (!userIdx) {
         alert("로그인 정보가 유효하지 않습니다. 다시 로그인해주세요.");
         window.location.href = "../users/login.html";
@@ -576,7 +568,6 @@ function checkingPassword() {
             user_password: userPassword.value // 입력된 비밀번호
         }),
         success: function (response) {
-            console.log('응답: ', response);
             if (response.message === '비밀번호 확인 완료.') {
                 // 저장 버튼 활성화
                 const saveButton = document.getElementById('profile-popup-save-button');
