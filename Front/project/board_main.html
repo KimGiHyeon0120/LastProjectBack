@@ -160,7 +160,7 @@
         const userIdx = sessionStorage.getItem("userIdx");
         const userIdxh = localStorage.getItem("userIdx"); // 사용자 ID
         const projectIdh = localStorage.getItem("projectId"); // 프로젝트 ID
-        const API_URL = "http://192.168.20.37:3000/api";
+        const API_URL = "http://localhost:3000/api";
         //192.168.20.37
 
         let userRole = null; // 초기값
@@ -230,6 +230,7 @@
                             <p class="task-name" onclick="openEditTaskPopup(${task.taskId})">
                                 <strong>${task.taskName}</strong>
                             </p>
+
                             <p style="visibility: ${task.statusId === 3 ? 'hidden' : 'visible'};">
                                 <span class="readonly-priority priority-${task.priority}">
                                     ${task.priority}
@@ -246,8 +247,10 @@
                                     <img src="${task.assignedToImage || '../profile/default-profile.png'}" class="assignee-image" alt="프로필" onclick="toggleAssigneeDropdown(${task.taskId})" >
                                     <span class="assignee-name">${task.assignedToName || '담당자 없음'}</span>
                                 </div>
+
                                 <div class="dropdown-options hidden" id="dropdown_${task.taskId}">
                                 </div>
+
                             </div>
                         </div>
                     `;
