@@ -894,32 +894,6 @@ input#taskDueDate:focus {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* 상태 헤더 컨테이너 */
 .status-header {
     display: inline-flex; /* 가로 배치 및 내용 크기 자동 조정 */
@@ -969,4 +943,3 @@ input#taskDueDate:focus {
 .board-column[data-status="완료"] .status-icon {
     color: #6C9B7D; /* 초록색 */
 }
-

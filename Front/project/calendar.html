@@ -171,19 +171,29 @@
                     // 이벤트 요소 생성
                     const titleEl = document.createElement('div');
                     titleEl.innerText = info.event.title;
-                    titleEl.style.marginBottom = '5px'; // 제목과 다른 요소 간격 추가
+                    titleEl.style.margin = '5px'; // 제목과 다른 요소 간격 추가
+                    titleEl.style.fontSize='14px';
+                    titleEl.style.fontWeight='bold';
 
                     const imageEl = document.createElement('img');
                     imageEl.src = profileImage;
                     imageEl.alt = assignedToName;
-                    imageEl.style.width = '30px';
-                    imageEl.style.height = '30px';
+                    imageEl.style.width = '24px';
+                    imageEl.style.height = '24px';
                     imageEl.style.borderRadius = '50%';
-                    imageEl.style.marginBottom = '5px';
+                    imageEl.style.margin= '5px';
+                    imageEl.style.flexDirection = 'column'; // 세로 정렬
+                    imageEl.style.alignItems = 'left'; // 가운데 정렬
+                    imageEl.style.justifyContent = 'center'; // 세로 가운데 정렬
+                    imageEl.style.display = 'flex';
 
                     const nameEl = document.createElement('span');
                     nameEl.innerText = assignedToName;
+                    nameEl.style.display = 'flex';
                     nameEl.style.fontSize = '12px';
+                    nameEl.style.flexDirection = 'column'; // 세로 정렬
+                    nameEl.style.alignItems = 'left'; // 가운데 정렬
+                    nameEl.style.justifyContent = 'center'; // 세로 가운데 정렬
 
                     // 컨테이너에 요소 추가
                     const containerEl = document.createElement('div');
@@ -292,11 +302,10 @@
         // 우선순위에 따른 색상 반환 함수
         function getColorByPriority(priority, type = 'background') {
             const colors = {
-                긴급: { background: '#555555', border: '#444444', text: 'white' }, // 가장 진한 회색
-                높음: { background: '#666666', border: '#555555', text: 'white' }, // 진한 회색
-                중간: { background: '#777777', border: '#666666', text: 'white' }, // 중간 회색
-                낮음: { background: '#888888', border: '#777777', text: 'white' }, // 밝은 회색
-                기본: { background: '#999999', border: '#888888', text: 'black' }  // 가장 밝은 회색
+                긴급: { background: '#ffcccc', border: '#800000', text: '#333' }, // 가장 진한 회색
+                높음: { background: '#ffe6e6', border: '#cc0000', text: '#333' }, // 진한 회색
+                중간: { background: '#fff5cc', border: '#806600', text: '#333' }, // 중간 회색
+                낮음: { background: '#d4f4dd', border: '#2c662d', text: '#333'}, // 밝은 회색
             };
 
             return colors[priority]?.[type] || colors.기본[type];
