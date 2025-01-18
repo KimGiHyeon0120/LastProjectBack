@@ -56,17 +56,18 @@ body {
     display: none;
 }
 
-/* .row에서 두 컬럼을 수평 배치 */
+/* 전체 행 스타일 */
 .row {
     display: flex;
     justify-content: space-between;
-    gap: 20px; /* 두 열 사이에 간격 추가 */
-    margin-top: 20px;
+    gap: 20px; /* 두 열 사이에 간격 */
+    margin-top: 20px; /* 행 간격 */
+    width: 100%; /* 행이 화면 전체를 차지하도록 설정 */
 }
 
 /* 왼쪽 컬럼 스타일 */
 .left-column {
-    flex: 1;
+    flex: 1; /* 동일한 비율로 좌우 공간 차지 */
     padding: 20px;
     background-color: #fff;
     border-radius: 8px;
@@ -75,7 +76,7 @@ body {
 
 /* 오른쪽 컬럼 스타일 */
 .right-column {
-    flex: 1;
+    flex: 1; /* 동일한 비율로 좌우 공간 차지 */
     padding: 20px;
     background-color: #fff;
     border-radius: 8px;
@@ -153,4 +154,125 @@ body {
 
 #team-member-list li:hover {
     background-color: #e6e6e6;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* 팀원별 작업 현황 요약 */
+
+/* 상태별 스타일 (th 전용) */
+.status-th {
+    font-weight: bold; /* 글자 굵기 */
+    text-align: center;
+    padding: 10px;
+}
+
+.status-할일 {
+    background-color: #f0f9ff; /* 파란색 톤 */
+    color: #007bff;
+}
+
+.status-진행중 {
+    background-color: #fff9e6; /* 노란색 톤 */
+    color: #ffc107;
+}
+
+.status-완료 {
+    background-color: #e6ffe6; /* 초록색 톤 */
+    color: #28a745;
+}
+
+/* 테이블 스타일 */
+#team-tasks-table {
+    width: 80%; /* 테이블 너비 */
+    margin: 20px auto; /* 중앙 정렬 */
+    border-collapse: collapse; /* 테두리 겹침 제거 */
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    color: #333; /* 기본 텍스트 색상 */
+    text-align: center; /* 테이블 내부 텍스트 가운데 정렬 */
+}
+
+#team-tasks-table th, #team-tasks-table td {
+    border: 1px solid #ddd; /* 셀 테두리 */
+    padding: 10px; /* 셀 패딩 */
+    text-align: center; /* 셀 텍스트 가운데 정렬 */
+}
+
+#team-tasks-table tr:nth-child(even) {
+    background-color: #f9f9f9; /* 짝수 행 배경색 */
+}
+
+#team-tasks-table tr:hover {
+    background-color: #f1f1f1; /* 마우스 오버 시 배경색 */
+}
+
+/* 본인 강조 스타일 */
+.highlight-row {
+    background-color: #e3f2fd; /* 연한 파란색 배경 */
+    font-weight: bold; /* 글자 굵기 */
+    color: #007bff; /* 파란색 글씨 */
+}
+
+.highlight-row td {
+    font-weight: bold; /* 본인 줄 전체 굵은 글씨 */
+    color: #007bff; /* 본인 줄 전체 파란 글씨 */
+}
+
+/* 테이블 컨테이너 */
+#team-tasks-container {
+    max-height: 300px; /* 최대 높이 제한 */
+    overflow-y: auto; /* 세로 스크롤 활성화 */
+    border: 1px solid #ddd; /* 테두리 추가 */
+    border-radius: 8px; /* 모서리 둥글게 */
+    padding: 10px; /* 내부 여백 */
+    margin-top: 20px; /* 상단 여백 */
+}
+
+/* 테이블을 화면 중앙에 정렬 */
+.content {
+    display: flex;
+    justify-content: center; /* 가로 중앙 정렬 */
+    align-items: flex-start; /* 세로는 상단 정렬 */
+    min-height: 100vh; /* 화면 전체 높이 */
+    flex-direction: column;
+    padding: 20px; /* 외부 여백 */
+}
+
+/* 푸터 스타일 */
+.team-tasks-table-footer {
+    background-color: #f9f9f9; /* 푸터 배경 */
+    font-weight: bold; /* 글자 굵게 */
+}
+
+
+
+
+
+
+/* 전체 프로젝트 진행률 */
+
+/* 원형 그래프 크기 조정 */
+#projectProgressChart {
+    max-width: 400px; /* 최대 너비 설정 */
+    max-height: 400px; /* 최대 높이 설정 */
+    width: 100%; /* 부모 컨테이너의 너비에 맞춤 */
+    height: auto; /* 비율을 유지하면서 높이 조정 */
 }
