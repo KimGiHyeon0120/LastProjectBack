@@ -156,7 +156,6 @@ router.delete('/delete', async (req, res) => {
             [unassignedSprintId, sprintId]
         );
 
-        console.log(`${taskUpdateResult.affectedRows}개의 작업이 "임시저장"으로 이동되었습니다.`);
 
         // 3. Sprint 삭제
         const [deleteResult] = await connection.promise().query(

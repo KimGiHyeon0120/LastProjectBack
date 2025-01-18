@@ -81,6 +81,17 @@
 
 
     <script>
+
+        const projectId = sessionStorage.getItem("projectId");
+        const userIdx = sessionStorage.getItem("userIdx"); // 로그인된 사용자 ID
+        const userIdxh = localStorage.getItem("userIdx"); // 사용자 ID
+        const projectIdh = localStorage.getItem("projectId"); // 프로젝트 ID
+        const API_URL = "http://localhost:3000/api";
+        //192.168.20.37
+
+
+
+        
         // 업무 진행상태 데이터 로드
         async function loadTasks() {
             try {
