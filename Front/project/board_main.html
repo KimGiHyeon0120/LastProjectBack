@@ -126,11 +126,6 @@
                 <label>스프린트 이름</label>
                 <input type="text" id="sprintName" placeholder="스프린트 이름을 입력하세요" required>
 
-                <label>시작 날짜</label>
-                <input type="date" id="startDate" required>
-
-                <label>종료 날짜</label>
-                <input type="date" id="endDate" required>
 
                 <div class="popup-buttons">
                     <button type="button" class="cancel-btn" id="cancelBtn">취소</button>
@@ -146,12 +141,6 @@
             <form class="popup-form">
                 <label>스프린트 이름</label>
                 <input type="text" id="editSprintName" required>
-
-                <label>시작 날짜</label>
-                <input type="date" id="editStartDate" required>
-
-                <label>종료 날짜</label>
-                <input type="date" id="editEndDate" required>
 
                 <div class="popup-buttons">
                     <button type="button" class="cancel-btn" id="editCancelBtn">취소</button>
@@ -208,7 +197,12 @@
 
             filteredSprints.forEach(sprint => {
                 if (!sprint) return;
-
+                // 상태 ID를 상태 이름으로 매핑
+                const statusNames = {
+                    1: "할 일",
+                    2: "진행 중",
+                    3: "완료"
+                };
 
                 const taskCounts = sprint.tasks.reduce((counts, task) => {
                     counts.total += 1;
@@ -219,41 +213,45 @@
                 }, { total: 0, todo: 0, inProgress: 0, completed: 0 });
 
 
+                // 콘솔에 상태 정보 출력
+                sprint.tasks.forEach(task => {
+                });
 
 
-
-                const tasksHTML = sprint.tasks.map(task => `
-                <div class="task-card" 
-                    ${userRole === "팀원" ? '' : `draggable="true" ondragstart="dragTask(event)"`} 
-                    data-task-id="${task.taskId}" 
-                    data-sprint-id="${sprint.sprintId}" 
-                    data-status-id="${task.statusId}" 
-                    data-assigned-to="${task.assignedTo}">
-                    
-                    <p class="task-name" onclick="openEditTaskPopup(${task.taskId})">
-                        <strong>${task.taskName}</strong>
-                    </p>
-                    <p>
-                        <span class="readonly-priority priority-${task.priority}">
-                            ${task.priority}
-                        </span>
-                    </p> 
-                    <p>
-                        <select id="statusDropdown-${task.taskId}" class="task-status-dropdown" data-task-id="${task.taskId}" data-assigned-to="${task.assignedTo}">
-                            <option value="">로딩 중...</option>
-                        </select>
-                    </p>
-                    <!-- 담당자 드롭다운 섹션 -->
-                                <div class="assignee-section">
-                                    <div class="assignee-dropdown" style="text-align: center;">
-                                        <img src="${task.assignedToImage || '../profile/default-profile.png'}" class="assignee-image" alt="프로필" onclick="toggleAssigneeDropdown(${task.taskId})" >
-                                        <span class="assignee-name">${task.assignedToName || '담당자 없음'}</span>
-                                    </div>
-                                    <div class="dropdown-options hidden" id="dropdown_${task.taskId}">
-                                    </div>
+                const tasksHTML = sprint.tasks.map(task => {
+                    return `
+                        <div class="task-card" 
+                            ${userRole === "팀원" ? '' : `draggable="true" ondragstart="dragTask(event)"`} 
+                            data-task-id="${task.taskId}" 
+                            data-sprint-id="${sprint.sprintId}" 
+                            data-status-id="${task.statusId}" 
+                            data-assigned-to="${task.assignedTo}">
+                            
+                            <p class="task-name" onclick="openEditTaskPopup(${task.taskId})">
+                                <strong>${task.taskName}</strong>
+                            </p>
+                            <p style="visibility: ${task.statusId === 3 ? 'hidden' : 'visible'};">
+                                <span class="readonly-priority priority-${task.priority}">
+                                    ${task.priority}
+                                </span>
+                            </p>
+                            <p>
+                                <select id="statusDropdown-${task.taskId}" class="task-status-dropdown" data-task-id="${task.taskId}" data-assigned-to="${task.assignedTo}">
+                                    <option value="">로딩 중...</option>
+                                </select>
+                            </p>
+                            <!-- 담당자 드롭다운 섹션 -->
+                            <div class="assignee-section">
+                                <div class="assignee-dropdown" style="text-align: center;">
+                                    <img src="${task.assignedToImage || '../profile/default-profile.png'}" class="assignee-image" alt="프로필" onclick="toggleAssigneeDropdown(${task.taskId})" >
+                                    <span class="assignee-name">${task.assignedToName || '담당자 없음'}</span>
                                 </div>
-                </div>
-            `).join('');
+                                <div class="dropdown-options hidden" id="dropdown_${task.taskId}">
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
 
                 // 스프린트 옵션 메뉴 생성
                 const optionsMenu = sprint.sprintName === "임시저장" ? "" : `
@@ -349,8 +347,6 @@
                 success: function (data) {
                     // 팝업에 기존 데이터 채우기
                     $("#editSprintName").val(data.sprintName);
-                    $("#editStartDate").val(data.startDate.split("T")[0]); // YYYY-MM-DD 형식
-                    $("#editEndDate").val(data.endDate.split("T")[0]);     // YYYY-MM-DD 형식
 
                     // 저장 버튼에 스프린트 ID 저장
                     $("#editSaveBtn").data("sprint-id", sprintId);
@@ -474,44 +470,101 @@
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
-        // 작업 상태 드롭다운 로드 함수
+        // 작업 상태 드롭다운을 로드하는 함수
         function loadStatusDropdown(task) {
+
+            // 상태 목록 API 호출
             $.ajax({
-                url: `${API_URL}/tasks/status-list`, // 상태 목록 API 호출
+                url: `${API_URL}/tasks/status-list`,
                 method: "GET",
                 success: function (statuses) {
-                    // 상태 목록 데이터를 옵션으로 변환
-                    const statusOptions = statuses.map(status => {
-                        // 상태명에서 띄어쓰기를 제거하고 하이픈으로 변환
-                        const statusClass = `status-${status.name.replace(/\s+/g, '')}`;
 
+                    // 상태 목록 유효성 확인
+                    if (!Array.isArray(statuses) || statuses.length === 0) {
+                        console.error("상태 목록 데이터가 비어 있습니다.");
+                        return;
+                    }
+
+                    // 상태 목록 데이터를 옵션 HTML로 변환
+                    const statusOptions = statuses.map(status => {
+                        const statusClass = `status-${status.name.replace(/\s+/g, '')}`;
+                        const isSelected = task.statusId === status.id ? 'selected' : '';
                         return `
-        <option 
-            value="${status.id}" 
-            ${task.statusId === status.id ? 'selected' : ''} 
-            data-status="${status.name}"
-            class="${statusClass}">
-            ${status.name} 
-        </option>
-    `;
+                    <option 
+                        value="${status.id}" 
+                        ${isSelected} 
+                        data-status="${status.name}" 
+                        class="${statusClass}">
+                        ${status.name}
+                    </option>
+                `;
                     }).join("");
 
-                    // 드롭다운 업데이트
+                    // 드롭다운 요소 찾기
                     const dropdown = $(`#statusDropdown-${task.taskId}`);
-                    dropdown.html(statusOptions);
+                    if (!dropdown.length) {
+                        console.error(`드롭다운 요소를 찾을 수 없습니다. 작업 ID: ${task.taskId}`);
+                        return;
+                    }
 
-                    // 상태에 맞는 디자인 클래스를 <select>에 적용
+                    // 기존 옵션 제거 및 새 옵션 추가
+                    dropdown.empty(); // 기존 옵션 제거
+                    dropdown.html(statusOptions); // 새 옵션 추가
+
+                    // 선택된 상태의 클래스 추가
                     const selectedStatus = statuses.find(status => status.id === task.statusId);
                     if (selectedStatus) {
                         const selectedClass = `status-${selectedStatus.name.replace(/\s+/g, '')}`;
-                        dropdown.addClass(selectedClass); // <select>에 상태 클래스 추가
+                        dropdown.removeClass().addClass(`task-status-dropdown ${selectedClass}`); // 기존 클래스 제거 후 새 클래스 추가
+                    } else {
+                        console.warn(`선택된 상태를 찾을 수 없습니다. 작업 ID: ${task.taskId}`);
                     }
                 },
                 error: function (err) {
-                    console.error(err);
+                    console.error("상태 목록 API 호출 오류:", err);
                 }
             });
         }
+
+        // 전역 이벤트 리스너 등록
+        $(document).off("change", ".task-status-dropdown").on("change", ".task-status-dropdown", function () {
+            const dropdown = $(this);
+            const newStatus = dropdown.val(); // 선택한 새로운 상태 값
+            const taskId = dropdown.data("task-id"); // 작업 ID
+            const changedBy = sessionStorage.getItem("userIdx"); // 변경한 사용자 ID (세션에서 가져옴)
+
+
+            if (!taskId || !newStatus) {
+                console.error("작업 ID 또는 새로운 상태 값이 유효하지 않습니다.");
+                return;
+            }
+
+            // 상태 업데이트 요청
+            $.ajax({
+                url: `${API_URL}/tasks/update`,
+                method: "PUT",
+                contentType: "application/json",
+                data: JSON.stringify({
+                    taskId: parseInt(taskId, 10), // 작업 ID를 숫자로 변환
+                    status: parseInt(newStatus, 10), // 상태 ID를 숫자로 변환
+                    changedBy: parseInt(changedBy, 10) // 변경한 사용자 ID를 숫자로 변환
+                }),
+                success: function (response) {
+
+                    // 화면 새로고침
+                    location.reload();
+                },
+                error: function (err) {
+                    console.error(`작업 ID ${taskId} 상태 업데이트 중 오류 발생:`, err);
+
+                    // 오류 시 사용자에게 알림
+                    alert("상태 변경에 실패했습니다. 다시 시도해주세요.");
+                }
+            });
+        });
+
+
+
 
 
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -647,9 +700,7 @@
                     // 데스크 추가 버튼 비활성화
                     $("#taskCreateBtn").prop("disabled", true).hide();
 
-                    console.log("팀원은 제한된 작업만 수행할 수 있습니다.");
                 } else {
-                    console.log("팀장은 모든 작업을 수행할 수 있습니다.");
                 }
             }
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -722,16 +773,6 @@
 
             $("#createBtn").off("click").on("click", function () {
                 const sprintName = $("#sprintName").val();
-                const startDate = $("#startDate").val();
-                const endDate = $("#endDate").val();
-
-                if (!sprintName || !startDate || !endDate) {
-                    return;
-                }
-
-                if (new Date(startDate) > new Date(endDate)) {
-                    return;
-                }
 
                 // 서버로 데이터 전송
                 $.ajax({
@@ -741,8 +782,6 @@
                     data: JSON.stringify({
                         projectId, // 프로젝트 ID
                         sprintName,
-                        startDate,
-                        endDate,
                     }),
                     success: function (response) {
                         $(".popup-background").fadeOut();
@@ -894,8 +933,6 @@
                 // 오늘 날짜 디폴트 값 설정
                 const today = getTodayDate();
                 $("#sprintName").val(""); // 스프린트 이름 초기화
-                $("#startDate").val(today); // 시작 날짜 초기화
-                $("#endDate").val(today);   // 종료 날짜 초기화
 
                 // 팝업 열기
                 $(".popup-background").fadeIn();
@@ -932,22 +969,12 @@
             $("#editSaveBtn").off("click").on("click", function () {
                 const sprintId = $(this).data("sprint-id");
                 const sprintName = $("#editSprintName").val();
-                const startDate = $("#editStartDate").val();
-                const endDate = $("#editEndDate").val();
-
-                if (!sprintName || !startDate || !endDate) {
-                    return;
-                }
-
-                if (new Date(startDate) > new Date(endDate)) {
-                    return;
-                }
 
                 $.ajax({
                     url: `${API_URL}/sprint/update`,
                     method: "PUT",
                     contentType: "application/json",
-                    data: JSON.stringify({ sprintId, sprintName, startDate, endDate }),
+                    data: JSON.stringify({ sprintId, sprintName }),
                     success: function (response) {
                         closePopup();
                         fetchSprints(); // 스프린트 목록 새로고침
@@ -980,47 +1007,6 @@
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
-            // 작업 상태 변경 이벤트 처리
-            $(document).on("change", ".status-dropdown", function () {
-                const taskId = $(this).closest(".task-card").data("task-id");
-                const newStatus = $(this).val();
-                const assignedTo = $(this).data("assigned-to"); // 담당자 ID
-                const changedBy = userIdx;
-
-                // 디버깅 로그
-                console.log("Status Change Request:", { taskId, newStatus, changedBy, assignedTo });
-
-                // 데이터 유효성 확인
-                if (!taskId || !newStatus) {
-
-                    location.href = location.href; // 이전 값으로 복원
-                    return;
-                }
-
-                // 권한 검증
-                if (userRole !== "팀장" && userIdx != assignedTo) {
-
-                    location.href = location.href; // 이전 값으로 복원
-                    return;
-                }
-
-                // AJAX 요청
-                $.ajax({
-                    url: `${API_URL}/tasks/update`,
-                    method: "PUT",
-                    contentType: "application/json",
-                    data: JSON.stringify({ taskId, status: newStatus, changedBy }),
-                    success: function (response) {
-                        console.log("상태 변경 성공:", response);
-                        $(this).data("previous-value", newStatus); // 새로운 상태 저장
-                    },
-                    error: function (err) {
-                        console.error("상태 변경 중 오류:", err);
-                        $(this).val($(this).data("previous-value")); // 이전 값으로 복원
-                        alert("상태 변경에 실패했습니다. 권한을 확인하거나 관리자에게 문의하세요.");
-                    }
-                });
-            });
 
 
 
@@ -1183,7 +1169,6 @@
 
                     // 권한 검증
                     const isEditable = userRole === "팀장" || userIdx == assignedTo || assignedTo === null;
-                    console.log("isEditable:", isEditable, "userRole:", userRole, "userIdx:", userIdx, "assignedTo:", assignedTo);
 
                     if (!isEditable) {
                         alert("작업을 저장할 권한이 없습니다.");
@@ -1383,7 +1368,6 @@
                 }
                 dropdown.appendChild(noAssigneeOption);
 
-                console.log("[성공] 담당자 드롭다운이 업데이트되었습니다.");
             } catch (err) {
                 console.error("[오류] 담당자 목록 가져오기 중 오류 발생:", err);
             }
@@ -1514,7 +1498,6 @@
                 contentType: "application/json",
                 data: JSON.stringify(sprintOrder),
                 success: function () {
-                    console.log("스프린트 순서 저장 완료");
                 },
                 error: function (err) {
                     console.error("스프린트 순서 저장 실패", err);
