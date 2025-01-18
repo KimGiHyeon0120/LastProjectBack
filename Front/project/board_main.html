@@ -513,7 +513,47 @@
             });
         }
 
+            // 작업 상태 변경 이벤트 처리
+            $(document).on("change", ".status-dropdown", function () {
+                const taskId = $(this).closest(".task-card").data("task-id");
+                const newStatus = $(this).val();
+                const assignedTo = $(this).data("assigned-to"); // 담당자 ID
+                const changedBy = userIdx;
 
+                // 디버깅 로그
+                console.log("Status Change Request:", { taskId, newStatus, changedBy, assignedTo });
+
+                // 데이터 유효성 확인
+                if (!taskId || !newStatus) {
+
+                    location.href = location.href; // 이전 값으로 복원
+                    return;
+                }
+
+                // 권한 검증
+                if (userRole !== "팀장" && userIdx != assignedTo) {
+
+                    location.href = location.href; // 이전 값으로 복원
+                    return;
+                }
+
+                // AJAX 요청
+                $.ajax({
+                    url: `${API_URL}/tasks/update`,
+                    method: "PUT",
+                    contentType: "application/json",
+                    data: JSON.stringify({ taskId, status: newStatus, changedBy }),
+                    success: function (response) {
+                        console.log("상태 변경 성공:", response);
+                        $(this).data("previous-value", newStatus); // 새로운 상태 저장
+                    },
+                    error: function (err) {
+                        console.error("상태 변경 중 오류:", err);
+                        $(this).val($(this).data("previous-value")); // 이전 값으로 복원
+                        alert("상태 변경에 실패했습니다. 권한을 확인하거나 관리자에게 문의하세요.");
+                    }
+                });
+            });
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
