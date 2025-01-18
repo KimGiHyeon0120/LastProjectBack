@@ -237,9 +237,15 @@
                                 </span>
                             </p>
                             <p>
-                                <select id="statusDropdown-${task.taskId}" class="task-status-dropdown" data-task-id="${task.taskId}" data-assigned-to="${task.assignedTo}">
-                              
-                                </select>
+<div class="task-status-dropdown-wrapper">
+    <div class="task-status-dropdown" id="statusDropdown-${task.taskId}" data-task-id="${task.taskId}" data-assigned-to="${task.assignedTo}">
+        <span class="selected-status"></span>
+        <div class="dropdown-icon">▼</div>
+    </div>
+    <div class="dropdown-status-options" id="dropdown-options-${task.taskId}">
+        <!-- 동적으로 추가될 옵션들 -->
+    </div>
+</div>
                             </p>
                             <!-- 담당자 드롭다운 섹션 -->
                             <div class="assignee-section">
@@ -473,61 +479,85 @@
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
-        // 작업 상태 드롭다운을 로드하는 함수
-        function loadStatusDropdown(task) {
+// 작업 상태 드롭다운을 로드하는 함수
+function loadStatusDropdown(task) {
+    // 상태 목록 API 호출
+    $.ajax({
+        url: `${API_URL}/tasks/status-list`,
+        method: "GET",
+        success: function (statuses) {
 
-            // 상태 목록 API 호출
-            $.ajax({
-                url: `${API_URL}/tasks/status-list`,
-                method: "GET",
-                success: function (statuses) {
+            // 상태 목록 유효성 확인
+            if (!Array.isArray(statuses) || statuses.length === 0) {
+                console.error("상태 목록 데이터가 비어 있습니다.");
+                return;
+            }
 
-                    // 상태 목록 유효성 확인
-                    if (!Array.isArray(statuses) || statuses.length === 0) {
-                        console.error("상태 목록 데이터가 비어 있습니다.");
-                        return;
-                    }
-
-                    // 상태 목록 데이터를 옵션 HTML로 변환
-                    const statusOptions = statuses.map(status => {
-                        const statusClass = `status-${status.name.replace(/\s+/g, '')}`;
-                        const isSelected = task.statusId === status.id ? 'selected' : '';
-                        return `
-                    <option 
-                        value="${status.id}" 
-                        ${isSelected} 
-                        data-status="${status.name}" 
-                        class="${statusClass}">
+            // 상태 목록 데이터를 옵션 HTML로 변환
+            const statusOptions = statuses.map(status => {
+                const statusClass = `status-${status.name.replace(/\s+/g, '')}`;
+                const isSelected = task.statusId === status.id ? 'selected' : '';
+                return `
+                    <div 
+                        class="dropdown-status-option ${statusClass}" 
+                        data-status-id="${status.id}" 
+                        data-status-name="${status.name}">
+                        <span class="status-icon">●</span>
                         ${status.name}
-                    </option>
+                    </div>
                 `;
-                    }).join("");
+            }).join("");
 
-                    // 드롭다운 요소 찾기
-                    const dropdown = $(`#statusDropdown-${task.taskId}`);
-                    if (!dropdown.length) {
-                        console.error(`드롭다운 요소를 찾을 수 없습니다. 작업 ID: ${task.taskId}`);
-                        return;
-                    }
+            // 드롭다운 요소 찾기
+            const dropdown = $(`#statusDropdown-${task.taskId}`);
+            const dropdownOptions = $(`#dropdown-options-${task.taskId}`);
 
-                    // 기존 옵션 제거 및 새 옵션 추가
-                    dropdown.empty(); // 기존 옵션 제거
-                    dropdown.html(statusOptions); // 새 옵션 추가
+            if (!dropdown.length) {
+                console.error(`드롭다운 요소를 찾을 수 없습니다. 작업 ID: ${task.taskId}`);
+                return;
+            }
 
-                    // 선택된 상태의 클래스 추가
-                    const selectedStatus = statuses.find(status => status.id === task.statusId);
-                    if (selectedStatus) {
-                        const selectedClass = `status-${selectedStatus.name.replace(/\s+/g, '')}`;
-                        dropdown.removeClass().addClass(`task-status-dropdown ${selectedClass}`); // 기존 클래스 제거 후 새 클래스 추가
-                    } else {
-                        console.warn(`선택된 상태를 찾을 수 없습니다. 작업 ID: ${task.taskId}`);
-                    }
-                },
-                error: function (err) {
-                    console.error("상태 목록 API 호출 오류:", err);
-                }
+            // 옵션 추가
+            dropdownOptions.html(statusOptions);
+
+            // 선택된 상태의 클래스 추가 및 상태명 표시
+            const selectedStatus = statuses.find(status => status.id === task.statusId);
+            if (selectedStatus) {
+                const selectedClass = `status-${selectedStatus.name.replace(/\s+/g, '')}`;
+                dropdown.addClass(selectedClass); // 드롭다운에 클래스 추가
+
+                // 선택된 상태명을 표시
+                dropdown.find(".selected-status").text(selectedStatus.name);
+            } else {
+                console.warn(`선택된 상태를 찾을 수 없습니다. 작업 ID: ${task.taskId}`);
+            }
+
+            // 드롭다운 클릭 이벤트
+            dropdown.on("click", function() {
+                dropdownOptions.toggle();
             });
+
+            // 옵션 선택 시
+            dropdownOptions.on("click", ".dropdown-status-option", function() {
+                const selectedStatus = $(this).data("status-name");
+                const selectedStatusId = $(this).data("status-id");
+
+                // 선택된 상태 표시
+                dropdown.find(".selected-status").text(selectedStatus);
+                dropdownOptions.hide();
+
+                // 선택된 상태를 해당 task에 반영
+                task.statusId = selectedStatusId;
+            });
+
+        },
+        error: function (err) {
+            console.error("상태 목록 API 호출 오류:", err);
         }
+    });
+}
+
+
 
         // 전역 이벤트 리스너 등록
         $(document).off("change", ".task-status-dropdown").on("change", ".task-status-dropdown", function () {
@@ -555,7 +585,7 @@
                 success: function (response) {
 
                     // 화면 새로고침
-                    fetchSprints(); 
+                    fetchSprints();
                 },
                 error: function (err) {
                     console.error(`작업 ID ${taskId} 상태 업데이트 중 오류 발생:`, err);

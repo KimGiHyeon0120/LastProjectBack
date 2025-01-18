@@ -744,41 +744,85 @@ input#taskDueDate:focus {
 }
 
 
-/* 기본 드롭다운 스타일 */
+/* 드롭다운 외관 스타일 */
+.task-status-dropdown-wrapper {
+    position: relative;
+    width: auto;
+}
+
 .task-status-dropdown {
-    appearance: none ;
-    border: none ;
-    background: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"%3E%3Cpath fill="gray" d="M10 12l-6-6h12z"%3E%3C/path%3E%3C/svg%3E') no-repeat right 0.5em center ;
-    background-size: 1em ;
-    padding-right: 2em ;
+    display: flex;
+    justify-content: space-between;
     padding: 6px 8px;
-    border-radius: 4px ;
-    font-weight: bold ;
-    font-size: 12px ;
-    width: auto ;
+    border-radius: 4px;
+    cursor: pointer;
 }
 
-
-.task-status-option option {
-    font-size: 14px; /* 옵션 글씨 크기 */
-    padding: 10px; /* 옵션 간격 */
+/* 선택된 상태 스타일 */
+.selected-status {
+    font-size: 12px;
+    color: #333;
+    font-weight: bold;
 }
-/* 상태별 스타일 */
+
+.dropdown-icon {
+    font-size: 12px;
+    color: gray;
+}
+
+/* 옵션 목록 */
+.dropdown-status-options {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0; /* 왼쪽이 아니라 오른쪽으로 정렬 */
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    z-index: 1;
+}
+
+.dropdown-status-option {
+    border-radius: 2px;
+    padding: 8px;
+    margin: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+}
+
+/* 선택된 옵션 스타일 */
+.dropdown-status-option:hover {
+    background-color: #f0f0f0;
+}
+
+/* 상태별 아이콘 색상 */
+.status-할일 .status-icon {
+    color: #91918E; /* 회색 */
+}
+
+.status-진행중 .status-icon {
+    color: #5B97BD; /* 파란색 */
+}
+
+.status-완료 .status-icon {
+    color: #6C9B7D; /* 초록색 */
+}
+
+/* 선택된 상태에 맞는 클래스 */
 .status-할일 {
-    background-color: #f0f9ff; /* 파란색 톤 */
-    color: #007bff;
-    
+    background-color: #E3E2E0;
 }
 
 .status-진행중 {
-    background-color: #fff9e6; /* 노란색 톤 */
-    color: #ffc107;
+    background-color: #D3E5EF;
 }
 
 .status-완료 {
-    background-color: #e6ffe6; /* 초록색 톤 */
-    color: #28a745;
+    background-color: #DBEDDB;
 }
+
 
 
 
