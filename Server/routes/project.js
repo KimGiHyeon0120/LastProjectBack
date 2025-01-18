@@ -79,10 +79,8 @@ router.get('/list-by-user', async (req, res) => {
     }
 
     try {
-        console.log("사용자 ID:", userId); // 디버깅: 요청받은 사용자 ID
 
         // 소유한 프로젝트 조회
-        console.log("소유한 프로젝트 조회 시작");
         const [ownedProjects] = await connection.promise().query(
             `SELECT 
                 p.project_id,
@@ -90,20 +88,17 @@ router.get('/list-by-user', async (req, res) => {
                 p.created_at,
                 p.is_team_project,
                 pr.project_role_name AS role_name, -- 역할 이름
-                (SELECT u.user_name 
-                 FROM Project_Members pm 
-                 JOIN Users u ON pm.user_idx = u.user_idx
-                 WHERE pm.project_role_id = 1 AND pm.project_id = p.project_id
-                 LIMIT 1) AS leader_name -- 팀장의 이름 가져오기
+                pm.user_idx AS leader_idx, -- 팀장의 ID
+                u.user_name AS leader_name -- 팀장의 이름
              FROM Projects p
-             LEFT JOIN Project_Members pm ON p.project_id = pm.project_id AND pm.user_idx = ?
+             LEFT JOIN Project_Members pm ON pm.project_id = p.project_id AND pm.project_role_id = 1
+             LEFT JOIN Users u ON pm.user_idx = u.user_idx
              LEFT JOIN Project_Roles pr ON pm.project_role_id = pr.project_role_id
              WHERE p.user_idx = ?`,
-            [userId, userId]
+            [userId]
         );
 
         // 참여한 프로젝트 조회
-        console.log("참여 중인 프로젝트 조회 시작");
         const [participatingProjects] = await connection.promise().query(
             `SELECT 
                 p.project_id,
@@ -111,21 +106,17 @@ router.get('/list-by-user', async (req, res) => {
                 p.created_at,
                 p.is_team_project,
                 pr.project_role_name AS role_name, -- 역할 이름
-                (SELECT u.user_name 
-                 FROM Project_Members pm 
-                 JOIN Users u ON pm.user_idx = u.user_idx
-                 WHERE pm.project_role_id = 1 AND pm.project_id = p.project_id
-                 LIMIT 1) AS leader_name -- 팀장의 이름 가져오기
+                pm_leader.user_idx AS leader_idx, -- 팀장의 ID
+                u_leader.user_name AS leader_name -- 팀장의 이름
              FROM Projects p
-             INNER JOIN Project_Members pm ON p.project_id = pm.project_id
-             LEFT JOIN Project_Roles pr ON pm.project_role_id = pr.project_role_id
-             WHERE pm.user_idx = ?`,
+             INNER JOIN Project_Members pm_user ON pm_user.project_id = p.project_id AND pm_user.user_idx = ?
+             LEFT JOIN Project_Members pm_leader ON pm_leader.project_id = p.project_id AND pm_leader.project_role_id = 1
+             LEFT JOIN Users u_leader ON pm_leader.user_idx = u_leader.user_idx
+             LEFT JOIN Project_Roles pr ON pm_user.project_role_id = pr.project_role_id`,
             [userId]
         );
 
-        // 데이터 반환
-        console.log("소유한 프로젝트 결과:", ownedProjects);
-        console.log("참여 중인 프로젝트 결과:", participatingProjects);
+
 
         res.status(200).json({
             ownedProjects,

@@ -330,6 +330,24 @@ body {
     color: #0056b3; /* 호버 시 더 진한 파란색 텍스트 */
 }
 
+/* 삭제 버튼 */
+.popup-project-settings-delete-btn {
+    padding: 10px 20px;
+    background-color: #fff5f5; /* 흰색에 살짝 빨간색 섞인 배경 */
+    color: #dc3545; /* 빨간색 텍스트 */
+    border: none; /* 테두리 제거 */
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    margin-left: 10px; /* 저장 버튼과 간격 */
+}
+
+.popup-project-settings-delete-btn:hover {
+    background-color: #ffe5e5; /* 호버 시 약간 더 진한 빨간색 배경 */
+    color: #a71d2a; /* 호버 시 더 진한 빨간색 텍스트 */
+}
+
 /* 팀원 관리 버튼 컨테이너 */
 .popup-project-settings-member-item button {
     margin-left: 10px;
