@@ -498,7 +498,7 @@ body {
 
 
 
-
+/* 내 작업 리스트 */
 
 /* 작업 섹션 스타일 */
 #mytasks {
@@ -507,6 +507,9 @@ body {
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 /* 작업 리스트 스타일 */
@@ -514,8 +517,8 @@ body {
     list-style: none;
     padding: 0;
     margin: 0;
-    max-height: 650px; /* 최대 높이 */
-    overflow-y: auto; /* 스크롤 활성화 */
+    max-height: 650px;
+    overflow-y: auto;
 }
 
 /* 스프린트 항목 스타일 */
@@ -524,17 +527,18 @@ body {
     padding: 15px;
     border: 1px solid #ddd;
     border-radius: 8px;
-    background-color: #f9f9f9;
+    background-color: #ffffff;
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s, box-shadow 0.2s;
+    overflow: hidden;
 }
 
 /* 스프린트 제목 스타일 */
 .mytasks-list li h4 {
-    margin: 0 0 10px;
-    font-size: 1.2rem;
-    color: #333;
-    border-bottom: 2px solid #007bff;
+    margin: 0 0 15px;
+    font-size: 1.4rem;
+    color: #0056b3;
+    border-bottom: 2px solid #0056b3;
     padding-bottom: 5px;
 }
 
@@ -544,31 +548,55 @@ body {
     border-collapse: collapse;
     margin-top: 10px;
     font-size: 0.9rem;
+    color: #333;
 }
 
 .mytasks-list li table th,
 .mytasks-list li table td {
     border: 1px solid #ddd;
-    padding: 8px;
+    padding: 10px;
     text-align: left;
 }
 
 .mytasks-list li table th {
-    background-color: #007bff;
+    background-color: #0056b3;
     color: #fff;
     font-weight: bold;
+    text-align: center;
+}
+
+.mytasks-list li table td {
+    text-align: center;
 }
 
 .mytasks-list li table tbody tr:nth-child(odd) {
     background-color: #f9f9f9;
 }
 
+.mytasks-list li table tbody tr:nth-child(even) {
+    background-color: #ffffff;
+}
+
 .mytasks-list li table tbody tr:hover {
-    background-color: #f1f1f1;
+    background-color: #e9f5ff;
+    transition: background-color 0.3s ease;
 }
 
 /* 스프린트 카드 hover 효과 */
 .mytasks-list li:hover {
     transform: scale(1.02);
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* 반응형 테이블 */
+@media (max-width: 768px) {
+    .mytasks-list li table th,
+    .mytasks-list li table td {
+        font-size: 0.8rem;
+        padding: 6px;
+    }
+
+    .mytasks-list li h4 {
+        font-size: 1.2rem;
+    }
 }

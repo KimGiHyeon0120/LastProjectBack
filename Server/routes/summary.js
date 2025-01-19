@@ -132,8 +132,6 @@ router.get('/projects/:project_id/sprints', async (req, res) => {
 });
 
 
-
-
 // 3. 스프린트별 작업량
 router.get('/sprints/:sprint_id/team/tasks', async (req, res) => {
     const { sprint_id } = req.params;
@@ -158,6 +156,42 @@ router.get('/sprints/:sprint_id/team/tasks', async (req, res) => {
 });
 
 
+// 전체 스프린트 작업량
+router.get('/alltasks/all', async (req, res) => {
+    const projectId = req.query.projectId; // 프로젝트 ID를 쿼리 파라미터로 받음
+
+    const query = `
+        SELECT 
+            u.user_name AS memberName,
+            COUNT(t.task_id) AS taskCount
+        FROM Tasks t
+        JOIN Users u ON t.assigned_to = u.user_idx
+        WHERE t.project_id = ?
+        GROUP BY t.assigned_to;
+    `;
+
+    try {
+        console.log("받은 프로젝트 ID:", projectId); // 디버깅용
+        if (!projectId) {
+            console.error("프로젝트 ID가 전달되지 않았습니다.");
+            return res.status(400).json({ error: "프로젝트 ID가 누락되었습니다." });
+        }
+
+        console.log("SQL 실행 중, 프로젝트 ID:", projectId);
+        const [results] = await connection.promise().query(query, [projectId]);
+        console.log("SQL 쿼리 결과:", results); // SQL 결과 로그
+
+        if (results.length === 0) {
+            console.warn("프로젝트에 할당된 작업이 없습니다.");
+            return res.json([]); // 빈 배열 반환
+        }
+
+        res.json(results);
+    } catch (error) {
+        console.error("SQL 실행 오류:", error);
+        res.status(500).json({ error: "Failed to fetch all sprint tasks" });
+    }
+});
 
 
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -173,11 +207,16 @@ router.get('/tasks/urgent', async (req, res) => {
             t.task_id AS taskId,
             t.task_name AS taskName,
             t.due_date AS dueDate,
-            t.priority AS priority,
+            CASE 
+                WHEN t.due_date = CURDATE() OR t.due_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY) THEN '긴급'
+                WHEN DATEDIFF(t.due_date, CURDATE()) <= 3 THEN '높음'
+                WHEN DATEDIFF(t.due_date, CURDATE()) <= 5 THEN '중간'
+                ELSE '낮음'
+            END AS priority,
             u.user_name AS assignedTo
         FROM Tasks t
         LEFT JOIN Users u ON t.assigned_to = u.user_idx
-        WHERE t.due_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY) -- 오늘 + 1일인 작업만
+        WHERE (t.due_date = CURDATE() OR t.due_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY)) -- 오늘 또는 내일인 작업만
         AND t.Tasks_status_id != 3; -- 상태가 '완료'가 아닌 작업만
     `;
 
@@ -191,6 +230,58 @@ router.get('/tasks/urgent', async (req, res) => {
 });
 
 
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
+
+
+// 5. 내 작업 리스트
+router.get('/tasks/mytasks', async (req, res) => {
+    const userId = req.query.userId; // 클라이언트에서 전달된 사용자 ID
+    const projectId = req.query.projectId; // 클라이언트에서 전달된 프로젝트 ID
+
+    if (!userId || !projectId) {
+        return res.status(400).json({ error: "사용자 ID와 프로젝트 ID가 필요합니다." });
+    }
+
+    try {
+        const query = `
+SELECT 
+    t.task_name AS taskName, -- 작업 이름
+    ts.Tasks_status_name AS taskStatus, -- 작업 상태 (기본 상태 그대로 가져옴)
+    CASE 
+        WHEN t.due_date = CURDATE() OR t.due_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY) THEN '긴급'
+        WHEN DATEDIFF(t.due_date, CURDATE()) <= 3 THEN '높음'
+        WHEN DATEDIFF(t.due_date, CURDATE()) <= 5 THEN '중간'
+        ELSE '낮음'
+    END AS priority, -- 우선순위
+    DATE_FORMAT(t.due_date, '%Y년 %m월 %d일') AS dueDate, -- 마감일
+    s.sprint_name AS sprintName, -- 스프린트 이름
+    DATE_FORMAT(t.start_date, '%Y년 %m월 %d일') AS startDate -- 시작일
+FROM Tasks t
+LEFT JOIN Tasks_status ts ON t.Tasks_status_id = ts.Tasks_status_id
+LEFT JOIN Sprints s ON t.sprint_id = s.sprint_id
+WHERE t.assigned_to = ? AND t.project_id = ?
+ORDER BY s.sprint_id, t.due_date ASC;
+        `;
+
+        const [results] = await connection.promise().query(query, [userId, projectId]);
+        res.json(results);
+    } catch (error) {
+        console.error("Error fetching user tasks:", error);
+        res.status(500).json({ error: "Failed to fetch user tasks" });
+    }
+});
+
+
+
+
+
+
+
+
+
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 module.exports = router;
