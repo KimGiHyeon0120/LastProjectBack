@@ -239,8 +239,10 @@
                             <p>
 <div class="task-status-dropdown-wrapper">
     <div class="task-status-dropdown" id="statusDropdown-${task.taskId}" data-task-id="${task.taskId}" data-assigned-to="${task.assignedTo}">
+     
         <span class="selected-status"></span>
-        <div class="dropdown-icon">▼</div>
+      
+        <div class="dropdown-icon"></div>
     </div>
     <div class="dropdown-status-options" id="dropdown-options-${task.taskId}">
         <!-- 동적으로 추가될 옵션들 -->
@@ -479,21 +481,16 @@
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
-// 작업 상태 드롭다운을 로드하는 함수
-function loadStatusDropdown(task) {
-    // 상태 목록 API 호출
+        function loadStatusDropdown(task) {
     $.ajax({
         url: `${API_URL}/tasks/status-list`,
         method: "GET",
         success: function (statuses) {
-
-            // 상태 목록 유효성 확인
             if (!Array.isArray(statuses) || statuses.length === 0) {
                 console.error("상태 목록 데이터가 비어 있습니다.");
                 return;
             }
 
-            // 상태 목록 데이터를 옵션 HTML로 변환
             const statusOptions = statuses.map(status => {
                 const statusClass = `status-${status.name.replace(/\s+/g, '')}`;
                 const isSelected = task.statusId === status.id ? 'selected' : '';
@@ -508,7 +505,6 @@ function loadStatusDropdown(task) {
                 `;
             }).join("");
 
-            // 드롭다운 요소 찾기
             const dropdown = $(`#statusDropdown-${task.taskId}`);
             const dropdownOptions = $(`#dropdown-options-${task.taskId}`);
 
@@ -517,39 +513,57 @@ function loadStatusDropdown(task) {
                 return;
             }
 
-            // 옵션 추가
             dropdownOptions.html(statusOptions);
 
-            // 선택된 상태의 클래스 추가 및 상태명 표시
             const selectedStatus = statuses.find(status => status.id === task.statusId);
             if (selectedStatus) {
                 const selectedClass = `status-${selectedStatus.name.replace(/\s+/g, '')}`;
-                dropdown.addClass(selectedClass); // 드롭다운에 클래스 추가
-
-                // 선택된 상태명을 표시
+                dropdown.addClass(selectedClass);
                 dropdown.find(".selected-status").text(selectedStatus.name);
+
+      
             } else {
                 console.warn(`선택된 상태를 찾을 수 없습니다. 작업 ID: ${task.taskId}`);
             }
 
-            // 드롭다운 클릭 이벤트
-            dropdown.on("click", function() {
+            dropdown.on("click", function () {
                 dropdownOptions.toggle();
             });
 
-            // 옵션 선택 시
-            dropdownOptions.on("click", ".dropdown-status-option", function() {
+            dropdownOptions.on("click", ".dropdown-status-option", function () {
                 const selectedStatus = $(this).data("status-name");
                 const selectedStatusId = $(this).data("status-id");
 
-                // 선택된 상태 표시
                 dropdown.find(".selected-status").text(selectedStatus);
                 dropdownOptions.hide();
 
-                // 선택된 상태를 해당 task에 반영
                 task.statusId = selectedStatusId;
+
+                // 상태 변경을 서버에 반영
+                $.ajax({
+                    url: `${API_URL}/tasks/update`,
+                    method: "PUT",
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        taskId: task.taskId,
+                        status: selectedStatusId,
+                        changedBy: sessionStorage.getItem("userIdx")
+                    }),
+                    success: function (response) {
+                        // 상태 변경 성공 시 추가 작업
+                        // 화면 새로고침
+                        fetchSprints();
+                    },
+                    error: function (err) {
+                        console.error(`작업 ID ${task.taskId} 상태 업데이트 중 오류 발생:`, err);
+                        alert("상태 변경에 실패했습니다. 다시 시도해주세요.");
+                    }
+                });
             });
 
+         
+
+            dropdownOptions.hide();
         },
         error: function (err) {
             console.error("상태 목록 API 호출 오류:", err);
@@ -559,42 +573,10 @@ function loadStatusDropdown(task) {
 
 
 
-        // 전역 이벤트 리스너 등록
-        $(document).off("change", ".task-status-dropdown").on("change", ".task-status-dropdown", function () {
-            const dropdown = $(this);
-            const newStatus = dropdown.val(); // 선택한 새로운 상태 값
-            const taskId = dropdown.data("task-id"); // 작업 ID
-            const changedBy = sessionStorage.getItem("userIdx"); // 변경한 사용자 ID (세션에서 가져옴)
 
 
-            if (!taskId || !newStatus) {
-                console.error("작업 ID 또는 새로운 상태 값이 유효하지 않습니다.");
-                return;
-            }
 
-            // 상태 업데이트 요청
-            $.ajax({
-                url: `${API_URL}/tasks/update`,
-                method: "PUT",
-                contentType: "application/json",
-                data: JSON.stringify({
-                    taskId: parseInt(taskId, 10), // 작업 ID를 숫자로 변환
-                    status: parseInt(newStatus, 10), // 상태 ID를 숫자로 변환
-                    changedBy: parseInt(changedBy, 10) // 변경한 사용자 ID를 숫자로 변환
-                }),
-                success: function (response) {
 
-                    // 화면 새로고침
-                    fetchSprints();
-                },
-                error: function (err) {
-                    console.error(`작업 ID ${taskId} 상태 업데이트 중 오류 발생:`, err);
-
-                    // 오류 시 사용자에게 알림
-                    alert("상태 변경에 실패했습니다. 다시 시도해주세요.");
-                }
-            });
-        });
 
 
 
