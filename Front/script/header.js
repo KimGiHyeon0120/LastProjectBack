@@ -108,6 +108,15 @@ function highlightActiveLink() {
 // 문서 로딩 후 HTML 로드
 document.addEventListener('DOMContentLoaded', function () {
     loadHTML("./header.html");  // header.html 파일 로드
+    loadUserProfile();
+    // 페이지 로드 시 "알림이 없습니다." 기본 문구를 표시
+    const notificationDropdown = document.getElementById("notificationDropdown");
+    if (notificationDropdown) {
+        notificationDropdown.innerHTML = `<p class="no-notifications">알림이 없습니다.</p>`;
+    }
+
+    // 알림 데이터 초기화
+    fetchNotifications();
 });
 
 
@@ -121,6 +130,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
 
 // 알림 핸들러 초기화
 function initializeNotificationHandlers() {
@@ -153,7 +163,7 @@ async function fetchNotifications() {
     }
 
     try {
-        const response = await fetch(`${API_URL}/notification?userId=${userIdxh}&projectId=${projectIdh}`);
+        const response = await fetch(`${API_URL}/notification?userId=${userIdx}&projectId=${projectId}`);
         const data = await response.json();
 
         // 알림 데이터 렌더링
@@ -184,26 +194,28 @@ function renderNotifications(notifications) {
         return;
     }
 
-    // 읽지 않은 알림 개수 계산
-    const unreadCount = notifications.filter(notification => notification.is_read_by_assignee === 0).length;
+    // 읽지 않은 알림만 필터링
+    const unreadNotifications = notifications.filter(notification => notification.is_read_by_assignee === 0);
 
-    // 읽지 않은 알림 개수 뱃지 표시
-    if (unreadCount > 0) {
-        notificationBadge.textContent = unreadCount;
-        notificationBadge.style.display = "inline-block";
-    } else {
+    // 읽지 않은 알림이 없는 경우 처리
+    if (unreadNotifications.length === 0) {
+        notificationDropdown.innerHTML = `<p class="no-notifications">알림이 없습니다.</p>`;
         notificationBadge.style.display = "none";
+        return;
     }
 
-    // 알림 항목 렌더링
-    notifications.forEach(notification => {
+    // 읽지 않은 알림 개수 뱃지 표시
+    notificationBadge.textContent = unreadNotifications.length > 0 ? unreadNotifications.length : "";
+    notificationBadge.style.display = unreadNotifications.length > 0 ? "inline-block" : "none";
+
+    // 읽지 않은 알림 렌더링
+    unreadNotifications.forEach(notification => {
         const senderName = notification.sender_name || "알 수 없는 사용자";
         const taskName = notification.task_name || "작업 없음";
         const message = notification.message || "내용 없음";
-        const isRead = notification.is_read_by_assignee === 1;
 
         notificationDropdown.innerHTML += `
-            <div class="notification-item ${isRead ? "read" : "unread"}" data-id="${notification.notification_id}">
+            <div class="notification-item unread" data-id="${notification.notification_id}">
                 <p><strong>${senderName}</strong> - <span>${taskName}</span></p>
                 <p class="notification-message">${message}</p>
             </div>
@@ -228,10 +240,6 @@ function addNotificationItemClickEvent() {
                 return;
             }
 
-            // 읽음 상태 UI 업데이트
-            item.classList.remove("unread");
-            item.classList.add("read");
-
             try {
                 // 읽음 상태 업데이트 API 요청
                 const response = await fetch(`${API_URL}/notification/mark-as-read`, {
@@ -246,14 +254,22 @@ function addNotificationItemClickEvent() {
                     throw new Error(`요청 실패: ${response.statusText}`);
                 }
 
-                // 읽음 처리 후 알림 목록 다시 로드
-                fetchNotifications();
+                // UI에서 읽은 알림 제거
+                item.remove();
+
+                // 읽지 않은 알림 개수 업데이트
+                const unreadCount = document.querySelectorAll(".notification-item.unread").length;
+                const notificationBadge = document.getElementById("notificationBadge");
+
+                if (unreadCount > 0) {
+                    notificationBadge.textContent = unreadCount;
+                    notificationBadge.style.display = "inline-block";
+                } else {
+                    notificationBadge.style.display = "none";
+                    notificationDropdown.innerHTML = `<p class="no-notifications">알림이 없습니다.</p>`;
+                }
             } catch (error) {
                 console.error("알림 읽음 처리 중 오류 발생:", error);
-
-                // 읽음 처리 실패 시 UI 롤백
-                item.classList.remove("read");
-                item.classList.add("unread");
             }
         });
     });
@@ -609,7 +625,3 @@ function checkingPassword() {
 }
 
 
-// 페이지 로드 시 프로필 데이터를 가져옴
-document.addEventListener('DOMContentLoaded', function () {
-    loadUserProfile();
-});

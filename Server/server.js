@@ -13,6 +13,7 @@ const notifiRoutes = require('./routes/notification');
 require('dotenv').config();
 const emailRoutes = require('./routes/verifyEmail.js');
 const summaryRoutes = require('./routes/summary');
+const { startDailyNotificationJob } = require('./routes/scheduler');
 
 const app = express();
 
@@ -37,6 +38,10 @@ app.use('/api/comment', commentRoutes);
 app.use('/api/notification', notifiRoutes);
 app.use('/api/verifyEmail', emailRoutes);
 app.use('/api/summary', summaryRoutes);
+
+
+// 스케줄러 시작
+startDailyNotificationJob();
 
 // 서버 시작
 const PORT = process.env.PORT || 3000;
