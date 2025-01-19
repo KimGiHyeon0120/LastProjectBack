@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="../css/board_main.css">
     <link rel="stylesheet" href="../css/form-control.css">
     <link rel="stylesheet" href="../css/popup.css">
+    <link rel="stylesheet" href="../css/delect_popup.css">
 </head>
 
 
@@ -45,80 +46,94 @@
         <div id="sprintBoard" class="sprint-board">
 
         </div>
+        <div class="delete-popup-background" style="display: none;"></div>
+        <!-- 작업 삭제 팝업 -->
+        <div id="popup-delete-task" class="delete-popup" style="display: none;">
+            <div class="delete-popup-header">
+                <img src="../img/warning-icon.png" alt="아이콘" class="header-icon"> <!-- 이미지 삽입 -->
+                <div class="header-text">이 작업을 삭제하시겠습니까</div>
+            </div>
+            <div class="delete-popup-form">
+                <p>삭제하면 영구적으로 제거됩니다.</p>
+            </div>
+            <div class="delete-popup-buttons">
+                <button class="cancel-btn">취소</button>
+                <button class="delete-btn">삭제</button>
+            </div>
+        </div>
 
 
+        <!-- 팝업 배경 (오버레이) -->
+        <div class="popup-background" id="popupBackground"></div>
 
-<!-- 팝업 배경 (오버레이) -->
-<div class="popup-background" id="popupBackground"></div>
+        <!-- 작업 편집 팝업 -->
+        <div class="popup" id="editTaskPopup" style="display: none;">
+            <div class="popup-header">
+                <div class="header-text">작업 편집</div>
+                <button type="button" class="delete-btn" id="deleteTaskBtn"></button>
+            </div>
+            <form class="popup-form">
+                <label>작업 이름</label>
+                <input type="text" id="editTaskName" placeholder="작업 이름을 입력하세요" required />
 
-<!-- 작업 편집 팝업 -->
-<div class="popup" id="editTaskPopup" style="display: none;">
-    <div class="popup-header">
-        <div class="header-text">작업 편집</div>
-        <button type="button" class="delete-btn" id="deleteTaskBtn"></button>
-    </div>
-    <form class="popup-form">
-        <label>작업 이름</label>
-        <input type="text" id="editTaskName" placeholder="작업 이름을 입력하세요" required />
-
-        <label>작업 설명</label>
-        <textarea id="editTaskDescription" placeholder="작업 설명을 입력하세요"></textarea>
-        <div class="date-container">
-            <div class="date-field">
-        <label>시작 날짜</label>
-        <input type="date" id="editTaskStartDate" />
+                <label>작업 설명</label>
+                <textarea id="editTaskDescription" placeholder="작업 설명을 입력하세요"></textarea>
+                <div class="date-container">
+                    <div class="date-field">
+                        <label>시작 날짜</label>
+                        <input type="date" id="editTaskStartDate" />
+                    </div>
+                    <div class="date-field">
+                        <label>마감 날짜</label>
+                        <input type="date" id="editTaskDueDate" />
+                    </div>
                 </div>
-                <div class="date-field">
-        <label>마감 날짜</label>
-        <input type="date" id="editTaskDueDate" />
+
+
+                <div class="popup-buttons">
+                    <button type="button" class="cancel-btn" id="cancelEditTaskBtn">취소</button>
+                    <button type="button" class="save-btn" id="saveEditTaskBtn">저장</button>
+
+                </div>
+            </form>
         </div>
-    </div>
-  
 
-        <div class="popup-buttons">
-            <button type="button" class="cancel-btn" id="cancelEditTaskBtn">취소</button>
-            <button type="button" class="save-btn" id="saveEditTaskBtn">저장</button>
+        <!-- 작업 추가 팝업 -->
+        <div class="popup" id="addTaskPopup">
+            <div class="popup-header">작업 추가</div>
+            <form class="popup-form">
+                <label>작업 이름</label>
+                <input type="text" id="taskName" placeholder="작업 이름을 입력하세요" required />
 
+                <label>작업 설명</label>
+                <textarea id="taskDescription" placeholder="작업 설명을 입력하세요"></textarea>
+                <div class="date-container">
+                    <div class="date-field">
+                        <label>시작 날짜</label>
+                        <input type="date" id="taskStartDate" required />
+                    </div>
+                    <div class="date-field">
+                        <label>마감 날짜</label>
+                        <input type="date" id="taskDueDate" required />
+                    </div>
+                </div>
+
+
+
+
+                <!-- 담당자 선택 추가 -->
+                <label>담당자</label>
+                <select id="taskAssignedTo" required>
+                    <option value="" selected>담당자 없음</option> <!-- 기본값 설정 -->
+                    <!-- 팀원 목록은 JavaScript로 동적 추가 -->
+                </select>
+
+                <div class="popup-buttons">
+                    <button type="button" class="cancel-btn" id="cancelTaskBtn">취소</button>
+                    <button type="button" class="save-btn" id="taskCreateBtn" data-sprint-id="">저장</button>
+                </div>
+            </form>
         </div>
-    </form>
-</div>
-
-<!-- 작업 추가 팝업 -->
-<div class="popup" id="addTaskPopup">
-    <div class="popup-header">작업 추가</div>
-    <form class="popup-form">
-        <label>작업 이름</label>
-        <input type="text" id="taskName" placeholder="작업 이름을 입력하세요" required />
-
-        <label>작업 설명</label>
-        <textarea id="taskDescription" placeholder="작업 설명을 입력하세요"></textarea>
-        <div class="date-container">
-            <div class="date-field">
-        <label>시작 날짜</label>
-        <input type="date" id="taskStartDate" required />
-    </div>
-    <div class="date-field">
-        <label>마감 날짜</label>
-        <input type="date" id="taskDueDate" required />
-    </div>
-</div>
-
-     
-
-
-        <!-- 담당자 선택 추가 -->
-        <label>담당자</label>
-        <select id="taskAssignedTo" required>
-            <option value="" selected>담당자 없음</option> <!-- 기본값 설정 -->
-            <!-- 팀원 목록은 JavaScript로 동적 추가 -->
-        </select>
-
-        <div class="popup-buttons">
-            <button type="button" class="cancel-btn" id="cancelTaskBtn">취소</button>
-            <button type="button" class="save-btn" id="taskCreateBtn" data-sprint-id="">저장</button>
-        </div>
-    </form>
-</div>
 
         <!-- 스프린트 생성 팝업 -->
         <div class="popup" id="sprintPopup">
@@ -1292,31 +1307,45 @@
 
 
 
-
-
-                // 작업 삭제
+                // 작업 삭제 버튼 클릭 시 팝업 열기
                 $("#deleteTaskBtn").click(function () {
-                    const taskId = $(this).data("task-id");
+                    // 팝업 배경과 삭제 팝업 보이기
+                    $(".delete-popup-background").fadeIn();
+                    $("#popup-delete-task").fadeIn();
 
-                    if (!confirm("정말로 이 작업을 삭제하시겠습니까?")) {
-                        return;
-                    }
+                    // 삭제 버튼 클릭 시 실제 삭제 진행
+                    $("#popup-delete-task .delete-btn").click(function () {
+                        const taskId = $(this).data("task-id"); // 삭제할 작업 ID (필요시 전달)
 
+                        $.ajax({
+                            url: `${API_URL}/tasks/delete`,
+                            method: "DELETE",
+                            contentType: "application/json",
+                            data: JSON.stringify({ taskId }),
+                            success: function () {
+                                $(".delete-popup-background").fadeOut(); // 배경 닫기
+                                $("#popup-delete-task").fadeOut(); // 삭제 팝업 닫기
+                                fetchSprints(); // 스프린트 새로고침
+                            },
+                            error: function (err) {
+                                console.error("작업 삭제 실패:", err);
+                            },
+                        });
+                    });
 
-                    $.ajax({
-                        url: `${API_URL}/tasks/delete`,
-                        method: "DELETE",
-                        contentType: "application/json",
-                        data: JSON.stringify({ taskId }),
-                        success: function () {
-                            $("#editTaskPopup").fadeOut();
-                            $(".popup-background").fadeOut();
-                            fetchSprints(); // 스프린트 새로고침
-                        },
-                        error: function (err) {
-                        },
+                    // 취소 버튼 클릭 시 팝업 닫기
+                    $("#popup-delete-task .cancel-btn").click(function () {
+                        $(".delete-popup-background").fadeOut(); // 배경 닫기
+                        $("#popup-delete-task").fadeOut(); // 삭제 팝업 닫기
+                    });
+
+                    // 배경 클릭 시 팝업 닫기
+                    $(".popup-background").click(function () {
+                        $(this).fadeOut();
+                        $("#popup-delete-task").fadeOut();
                     });
                 });
+
             });
 
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
