@@ -223,7 +223,6 @@
 
             await renderTasks(calendar, projectId);
             calendar.render();
-            console.log("FullCalendar Initialized");
         }
 
 
@@ -231,35 +230,48 @@
         // ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
-        // 서버에 이벤트 삭제 요청 보내는 함수
+        // 서버에 이벤트 업데이트 요청 보내는 함수
         async function updateEventOnServer(event) {
             try {
-                const statusId = mapStatusToId(event.extendedProps.status); // 상태 이름 -> ID 변환
+                // 상태 이름 -> ID 변환
+                const statusId = mapStatusToId(event.extendedProps.status);
 
                 // 날짜를 로컬 시간대에 맞게 처리
-                const adjustedStartDate = new Date(event.start);
-                adjustedStartDate.setDate(adjustedStartDate.getDate() - 1); // 시작 날짜 -1일
+                const adjustedStartDate = event.start ? new Date(event.start) : null;
+                const adjustedEndDate = event.end ? new Date(event.end) : null;
 
-                let adjustedEndDate = null;
-                if (event.end) {
-                    adjustedEndDate = new Date(event.end);
+                if (adjustedStartDate) {
+                    adjustedStartDate.setDate(adjustedStartDate.getDate() - 1); // 시작 날짜 -1일
+                }
+                if (adjustedEndDate) {
                     adjustedEndDate.setDate(adjustedEndDate.getDate() - 1); // 종료 날짜 -1일
                 }
 
+                // 요청 데이터 생성
                 const requestData = {
                     taskId: event.id,
-                    taskName: event.title,
+                    taskName: event.title || '이름 없음', // 기본값 설정
                     description: event.extendedProps.description || '',
                     assignedTo: event.extendedProps.assignedTo || null,
                     status: statusId || 1, // 상태가 없으면 기본값 1
-                    priority: event.extendedProps.priority || '낮음',
-                    startDate: adjustedStartDate.toLocaleDateString('en-CA'), // YYYY-MM-DD 형식 반환
-                    dueDate: adjustedEndDate ? adjustedEndDate.toLocaleDateString('en-CA') : null, // 종료일 없을 때 null 처리
-                    changedBy: userIdx // 변경자 ID
+                    priority: event.extendedProps.priority || '낮음', // 기본 우선순위
+                    startDate: adjustedStartDate
+                        ? adjustedStartDate.toLocaleDateString('en-CA') // YYYY-MM-DD 형식
+                        : null,
+                    dueDate: adjustedEndDate
+                        ? adjustedEndDate.toLocaleDateString('en-CA') // YYYY-MM-DD 형식
+                        : null,
+                    changedBy: userIdx || null // 변경자 ID, 기본값 null
                 };
 
-                console.log("업데이트 요청 데이터:", requestData);
+                // 필수 데이터 유효성 검사
+                if (!requestData.taskId || !requestData.taskName || !requestData.changedBy) {
+                    console.error('필수 데이터 누락:', requestData);
+                    alert('업데이트에 필요한 데이터가 누락되었습니다.');
+                    return;
+                }
 
+                // 서버 요청
                 const response = await fetch(`${API_URL}/tasks/update`, {
                     method: 'PUT',
                     headers: {
@@ -269,14 +281,20 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error('이벤트 업데이트 실패');
+                    // 서버 오류 처리
+                    const errorData = await response.json();
+                    console.error('이벤트 업데이트 실패:', errorData);
+                    alert('이벤트 업데이트 중 문제가 발생했습니다.');
+                    return;
                 }
 
+                // 성공 메시지
+                console.log('이벤트 업데이트 성공:', await response.json());
             } catch (error) {
                 console.error('이벤트 업데이트 오류:', error);
+                alert('이벤트 업데이트 중 오류가 발생했습니다. 다시 시도해주세요.');
             }
         }
-
 
 
         // ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
