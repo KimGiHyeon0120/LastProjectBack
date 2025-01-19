@@ -161,7 +161,7 @@
         const userIdx = sessionStorage.getItem("userIdx");
         const userIdxh = localStorage.getItem("userIdx"); // 사용자 ID
         const projectIdh = localStorage.getItem("projectId"); // 프로젝트 ID
-        const API_URL = "http://192.168.20.37:3000/api";
+        const API_URL = "http://localhost:3000/api";
         //192.168.20.37
 
         let userRole = null; // 초기값
@@ -993,11 +993,8 @@
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
             $("#addSprintBtn").click(function () {
-                // 오늘 날짜 디폴트 값 설정
-                const today = getTodayDate();
+                console.log("스프린트 추가 버튼 클릭"); // 클릭 이벤트 테스트
                 $("#sprintName").val(""); // 스프린트 이름 초기화
-
-                // 팝업 열기
                 $(".popup-background").fadeIn();
                 $("#sprintPopup").fadeIn();
             });
