@@ -11,7 +11,7 @@ const mentionsRoutes = require('./routes/mentions');
 const commentRoutes = require('./routes/comment');
 const notifiRoutes = require('./routes/notification');
 require('dotenv').config();
-const emailRoutes = require('./routes/userVerification');
+const emailRoutes = require('./routes/verifyEmail.js');
 const summaryRoutes = require('./routes/summary');
 
 const app = express();
@@ -35,7 +35,7 @@ app.use('/api/tasks', tesksRoutes);
 app.use('/api/mentions', mentionsRoutes);
 app.use('/api/comment', commentRoutes);
 app.use('/api/notification', notifiRoutes);
-app.use('/api/userVerification', emailRoutes);
+app.use('/api/verifyEmail', emailRoutes);
 app.use('/api/summary', summaryRoutes);
 
 // 서버 시작
