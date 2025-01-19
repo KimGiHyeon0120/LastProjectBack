@@ -5,7 +5,6 @@ const fetch = require('node-fetch');
 function startDailyNotificationJob() {
     schedule.scheduleJob('0 0 * * *', async () => {
         try {
-            console.log('스케줄링 작업 실행: 마감 1일 전 알림 생성');
 
             const response = await fetch('http://192.168.20.37:3000/api/notification/daily-notification', {
                 method: 'POST',
@@ -18,7 +17,6 @@ function startDailyNotificationJob() {
             }
 
             const result = await response.json();
-            console.log('마감 1일 전 알림 생성 결과:', result);
         } catch (err) {
             console.error('스케줄링 작업 오류:', err);
         }

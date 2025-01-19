@@ -20,95 +20,184 @@ const transporter = nodemailer.createTransport({
 });
 
 
+
+
+
 // 팀 초대
 router.post("/invite", async (req, res) => {
-  const { project_id, invitee_email } = req.body;
+  const { project_id, invitee_email, inviter_id } = req.body; // 클라이언트에서 전달
 
-  // 세션에서 사용자 정보 가져오기
-  const user = req.session.user;
-
-  if (!user) {
-    return res.status(401).json({ error: "로그인이 필요합니다." });
+  if (!inviter_id || !project_id || !invitee_email) {
+    return res.status(400).json({ error: "필수 데이터가 누락되었습니다." });
   }
 
-  const inviter_id = user.user_idx; // 현재 로그인한 사용자 ID
-
   try {
-    // 초대 정보 저장
+    // 초대 정보를 데이터베이스에 저장
     const [result] = await db.query(
-      `INSERT INTO Team_Invitations (project_id, inviter_user_idx, invitee_user_idx, status)
-       VALUES (?, ?, (SELECT user_idx FROM Users WHERE user_email = ?), ?)`,
-      [project_id, inviter_id, invitee_email, "Pending"] // 초대 상태는 기본값 'Pending'
+      `INSERT INTO Team_Invitations (project_id, inviter_id, invitee_email, status)
+           VALUES (?, ?, ?, 'Pending')`,
+      [project_id, inviter_id, invitee_email]
     );
 
-    // 초대 이메일 전송
-    const inviteLink = `http://127.0.0.1:5501/Front/project/project-invite-accept.html?invitation_id=${result.insertId}`;
+    // 초대하는 사람과 초대받은 사람의 이름 조회
+    const [[inviter]] = await db.query(
+      `SELECT user_name FROM Users WHERE user_idx = ?`,
+      [inviter_id]
+    );
+
+    const [[invitee]] = await db.query(
+      `SELECT user_name, user_idx FROM Users WHERE user_email = ?`,
+      [invitee_email]
+    );
+
+    // 프로젝트 이름 조회
+    const [[project]] = await db.query(
+      `SELECT project_name FROM Projects WHERE project_id = ?`,
+      [project_id]
+    );
+
+    if (!inviter || !project) {
+      return res.status(404).json({ error: "초대 데이터가 올바르지 않습니다." });
+    }
+
+    // 초대 이메일 링크 생성
+    const inviteLink = `http://127.0.0.1:5501/Front/project/project-invite-accept.html?invitation_id=${result.insertId}&inviter_id=${invitee.user_idx}`;
+
+    // 이메일 전송
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: invitee_email,
       subject: "팀 초대",
-      html: `<p>${user.user_name}님이 프로젝트에 초대했습니다.</p>
-             <p>프로젝트 이름: ${project_id}</p>
-             <a href="${inviteLink}">초대 수락</a>`,
+      html: `<p>${inviter.user_name}님이 프로젝트에 초대했습니다.</p>
+                 <p>초대받은 사람: ${invitee ? invitee.user_name : "사용자"}님</p>
+                 <p>프로젝트 이름: ${project.project_name}</p>
+                 <a href="${inviteLink}">초대 수락</a>`,
     });
 
     res.status(200).json({ message: "초대 이메일이 전송되었습니다." });
   } catch (err) {
-    console.error(err);
+    console.error("초대 처리 중 오류:", err);
     res.status(500).json({ error: "초대 전송에 실패했습니다." });
   }
 });
 
 
 
+
+
+
+
+
 // 초대 수락
 router.post('/invite/accept/:invitation_id', async (req, res) => {
-  const invitationId = req.params.invitation_id;  // URL에서 invitation_id 가져오기
-  const userId = req.user.user_idx;  // 현재 로그인한 사용자 ID (미들웨어로 처리)
+  const invitationId = req.params.invitation_id; // URL에서 초대 ID 가져오기
 
   try {
     // 초대 정보 확인
-    const [invitation] = await db.query('SELECT * FROM Team_Invitations WHERE invitation_id = ? AND invitee_user_idx = ?', [invitationId, userId]);
+    const [invitation] = await db.query(
+      `SELECT project_id, invitee_email 
+       FROM Team_Invitations 
+       WHERE invitation_id = ? AND status = 'Pending'`,
+      [invitationId]
+    );
 
     if (invitation.length === 0) {
-      return res.status(404).json({ error: '초대 정보가 없거나 유효하지 않은 초대입니다.' });
+      return res.status(404).json({ error: '유효하지 않거나 이미 처리된 초대입니다.' });
     }
 
+    const { project_id, invitee_email } = invitation[0];
+
+    // 초대받은 사용자의 user_idx 확인
+    const [invitee] = await db.query(
+      `SELECT user_idx 
+       FROM Users 
+       WHERE user_email = ?`,
+      [invitee_email]
+    );
+
+    if (invitee.length === 0) {
+      return res.status(404).json({ error: '초대받은 사용자가 존재하지 않습니다.' });
+    }
+
+    const user_idx = invitee[0].user_idx;
+
     // 초대 상태 업데이트 (Accepted)
-    await db.query('UPDATE Team_Invitations SET status = ?, responded_at = NOW() WHERE invitation_id = ?', ['Accepted', invitationId]);
+    await db.query(
+      `UPDATE Team_Invitations 
+       SET status = 'Accepted', updated_at = NOW() 
+       WHERE invitation_id = ?`,
+      [invitationId]
+    );
 
-    // 프로젝트에 사용자가 참여하도록 로직 추가 (예: 프로젝트 참가자 테이블에 추가)
+    // 프로젝트에 사용자 추가
+    await db.query(
+      `INSERT INTO Project_Members (project_id, user_idx, project_role_id) 
+       VALUES (?, ?, ?)`,
+      [project_id, user_idx, 2] // role_id: 2 (팀원)
+    );
 
-    res.json({ message: '초대가 수락되었습니다. 프로젝트에 참여하게 되었습니다.' });
+    res.json({
+      message: '초대가 수락되었습니다. 프로젝트에 참여하게 되었습니다.',
+      project_id,
+      user_idx,
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: '초대 수락에 실패했습니다.' });
+    console.error('초대 수락 처리 중 오류:', err);
+    res.status(500).json({ error: '초대 수락 처리 중 오류가 발생했습니다.' });
   }
 });
 
 
+
+
+
+
+
+
+
+
 // 초대 거절
 router.post('/invite/decline/:invitation_id', async (req, res) => {
-  const invitationId = req.params.invitation_id;  // URL에서 invitation_id 가져오기
-  const userId = req.user.user_idx;  // 현재 로그인한 사용자 ID (미들웨어로 처리)
+  const invitationId = req.params.invitation_id; // URL에서 초대 ID 가져오기
 
   try {
     // 초대 정보 확인
-    const [invitation] = await db.query('SELECT * FROM Team_Invitations WHERE invitation_id = ? AND invitee_user_idx = ?', [invitationId, userId]);
+    const [invitation] = await db.query(
+      `SELECT * 
+       FROM Team_Invitations 
+       WHERE invitation_id = ?`,
+      [invitationId]
+    );
 
     if (invitation.length === 0) {
       return res.status(404).json({ error: '초대 정보가 없거나 유효하지 않은 초대입니다.' });
     }
 
     // 초대 상태 업데이트 (Declined)
-    await db.query('UPDATE Team_Invitations SET status = ?, responded_at = NOW() WHERE invitation_id = ?', ['Declined', invitationId]);
+    await db.query(
+      `UPDATE Team_Invitations 
+       SET status = 'Declined', updated_at = NOW() 
+       WHERE invitation_id = ?`,
+      [invitationId]
+    );
 
     res.json({ message: '초대가 거절되었습니다.' });
   } catch (err) {
-    console.error(err);
+    console.error('초대 거절 처리 중 오류:', err);
     res.status(500).json({ error: '초대 거절에 실패했습니다.' });
   }
 });
+
+
+
+
+
+
+
+
+
+
+
 
 // 아이디 인증 요청 처리 (아이디 존재 여부 확인)
 router.post('/verify-user-id', async (req, res) => {
