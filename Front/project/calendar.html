@@ -40,7 +40,9 @@
         const userIdx = sessionStorage.getItem("userIdx");
         const userIdxh = localStorage.getItem("userIdx"); // 사용자 ID
         const projectIdh = localStorage.getItem("projectId"); // 프로젝트 ID
-        const API_URL = "http://localhost:3000/api";
+        const API_URL = "http://192.168.20.37:3000/api";
+        //192.168.20.37
+
 
         const prevButton = document.getElementById("prev");
         const nextButton = document.getElementById("next");
@@ -172,8 +174,8 @@
                     const titleEl = document.createElement('div');
                     titleEl.innerText = info.event.title;
                     titleEl.style.margin = '5px'; // 제목과 다른 요소 간격 추가
-                    titleEl.style.fontSize='14px';
-                    titleEl.style.fontWeight='bold';
+                    titleEl.style.fontSize = '14px';
+                    titleEl.style.fontWeight = 'bold';
 
                     const imageEl = document.createElement('img');
                     imageEl.src = profileImage;
@@ -181,7 +183,7 @@
                     imageEl.style.width = '24px';
                     imageEl.style.height = '24px';
                     imageEl.style.borderRadius = '50%';
-                    imageEl.style.margin= '5px';
+                    imageEl.style.margin = '5px';
                     imageEl.style.flexDirection = 'column'; // 세로 정렬
                     imageEl.style.alignItems = 'left'; // 가운데 정렬
                     imageEl.style.justifyContent = 'center'; // 세로 가운데 정렬
@@ -233,11 +235,17 @@
         async function updateEventOnServer(event) {
             try {
                 const statusId = mapStatusToId(event.extendedProps.status); // 상태 이름 -> ID 변환
-        
+
                 // 날짜를 로컬 시간대에 맞게 처리
-                const startDate = event.start.toLocaleDateString('en-CA'); // YYYY-MM-DD 형식 반환
-                const endDate = event.end ? event.end.toLocaleDateString('en-CA') : null; // 종료일 없을 때 null 처리
-        
+                const adjustedStartDate = new Date(event.start);
+                adjustedStartDate.setDate(adjustedStartDate.getDate() - 1); // 시작 날짜 -1일
+
+                let adjustedEndDate = null;
+                if (event.end) {
+                    adjustedEndDate = new Date(event.end);
+                    adjustedEndDate.setDate(adjustedEndDate.getDate() - 1); // 종료 날짜 -1일
+                }
+
                 const requestData = {
                     taskId: event.id,
                     taskName: event.title,
@@ -245,13 +253,13 @@
                     assignedTo: event.extendedProps.assignedTo || null,
                     status: statusId || 1, // 상태가 없으면 기본값 1
                     priority: event.extendedProps.priority || '낮음',
-                    startDate: startDate,
-                    dueDate: endDate,
+                    startDate: adjustedStartDate.toLocaleDateString('en-CA'), // YYYY-MM-DD 형식 반환
+                    dueDate: adjustedEndDate ? adjustedEndDate.toLocaleDateString('en-CA') : null, // 종료일 없을 때 null 처리
                     changedBy: userIdx // 변경자 ID
                 };
-        
+
                 console.log("업데이트 요청 데이터:", requestData);
-        
+
                 const response = await fetch(`${API_URL}/tasks/update`, {
                     method: 'PUT',
                     headers: {
@@ -259,16 +267,17 @@
                     },
                     body: JSON.stringify(requestData)
                 });
-        
+
                 if (!response.ok) {
                     throw new Error('이벤트 업데이트 실패');
                 }
-        
+
             } catch (error) {
                 console.error('이벤트 업데이트 오류:', error);
             }
         }
-        
+
+
 
         // ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -305,7 +314,7 @@
                 긴급: { background: '#ffcccc', border: '#800000', text: '#333' }, // 가장 진한 회색
                 높음: { background: '#ffe6e6', border: '#cc0000', text: '#333' }, // 진한 회색
                 중간: { background: '#fff5cc', border: '#806600', text: '#333' }, // 중간 회색
-                낮음: { background: '#d4f4dd', border: '#2c662d', text: '#333'}, // 밝은 회색
+                낮음: { background: '#d4f4dd', border: '#2c662d', text: '#333' }, // 밝은 회색
             };
 
             return colors[priority]?.[type] || colors.기본[type];
