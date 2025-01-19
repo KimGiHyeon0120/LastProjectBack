@@ -11,6 +11,8 @@ body{
 
     /* 드롭다운이 보일 수 있도록 설정 */
     position: relative;
+
+    
     /* 자식 요소 절대 위치 계산을 위해 */
 }
 
@@ -19,6 +21,7 @@ body{
     background-color: #f9f9f9;
     border-radius: 4px;
     padding: 15px;
+    
 }
 /* 상태 헤더 컨테이너 */
 .status-header {
@@ -191,7 +194,7 @@ body{
 .dropdown-options {
     position: absolute;
     /* 절대 위치 */
-    top: 60px;
+    top: 50px;
     /* 프로필 이미지 바로 아래로 위치 조정 */
     left: 0;
     z-index: 2000;
@@ -218,6 +221,7 @@ body{
 }
 
 .dropdown-item {
+    border-radius: 4px;
     display: flex;
     align-items: center;
     padding: 5px;
@@ -244,167 +248,7 @@ body{
     color: #333;
 }
 
-/* 팝업 컨테이너 */
-.popup {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 400px;
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    /* 더 뚜렷한 그림자 */
-    z-index: 1000;
-    /* 배경보다 위에 위치 */
-    padding: 20px;
-      
-}
 
-/* 팝업 헤더 */
-.popup-header {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 20px;
-    text-align: left;
-    color: #333;
-}
-
-/* 폼 내부 스타일 */
-.popup-form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  
-}
-
-/* 입력 필드 스타일 */
-.popup-form input,
-.popup-form textarea,
-.popup-form select {
-    padding: 8px 0px 8px 8px;
-    font-size: 14px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    width: 100%;
-    transition: border-color 0.3s ease;
-}
-
-.popup-form input:focus,
-.popup-form textarea:focus,
-.popup-form select:focus {
-    outline: none;
-    border: 2px solid #40a9ff;
-}
-.date-field {
-    flex: 1;
-    /* 양쪽 필드 크기를 동일하게 설정 */
-}
-
-.date-field label {
-    display: block;
-    margin-bottom: 5px;
-    /* 레이블과 필드 간격 */
-
-}
-
-.date-field input {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-sizing: border-box;
-}
-/* 텍스트 영역 스타일 */
-.popup-form textarea {
-    resize: none;
-    height: 100px;
-}
-
-/* 버튼 섹션 */
-.popup-buttons {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 15px;
-}
-
-.popup-buttons button {
-    padding: 10px 15px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-/* 취소 버튼 */
-.popup-buttons .cancel-btn {
-    background-color: #ddd;
-    color: #333;
-}
-
-.popup-buttons .cancel-btn:hover {
-    background-color: #bbb;
-}
-
-/* 저장 버튼 */
-.popup-buttons .save-btn {
-    background-color: #40a9ff;
-    color: #fff;
-}
-
-.popup-buttons .save-btn:hover {
-    background-color: #1890ff;
-}
-
-/* 팝업 배경 */
-/* 팝업 배경 (오버레이) */
-.popup-background {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    /* 어두운 반투명 배경 */
-    z-index: 999;
-    /* 팝업 아래에 위치 */
-}
-
-.popup .activity-tabs {
-    display: flex;
-    justify-content: space-between;
-    margin: 15px 0;
-}
-
-.popup .tab-button {
-    flex: 1;
-    padding: 10px;
-    margin: 0 5px;
-    background: #f5f5f5;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    text-align: center;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-
-.popup .tab-button.active {
-    background: #007bff;
-    color: white;
-    border-color: #007bff;
-}
-
-.popup .activity-content {
-    max-height: 150px;
-    overflow-y: auto;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 10px;
-    background: #fafafa;
-}
 
 
 
@@ -454,14 +298,6 @@ body{
     background: #f0f0f0;
 }
 
-.date-container {
-    display: flex;
-    justify-content: space-between;
-    gap: 20px;
-    /* 좌우 간격 */
-    margin-bottom: 15px;
-    /* 아래 여백 */
-}
 
 
 

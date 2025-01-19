@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="../css/projectList.css">
     <script src="../script/header.js"></script>
     <link rel="stylesheet" href="../css/projectList.css">
+    <link rel="stylesheet" href="../css/popup.css">
     <link rel="stylesheet" href="../../Front/profile/">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
@@ -52,7 +53,24 @@
     </div>
 
 
+<!-- 팝업 배경 (오버레이) -->
+<div class="popup-background" style="display: none;"></div>
 
+<!-- 새 프로젝트 만들기 팝업 -->
+<div class="popup" id="popup-create-project">
+    <div class="popup-header">
+        <div class="header-text">새 프로젝트 만들기</div>
+
+    </div>
+    <div class="popup-form">
+        <label for="project-name">프로젝트 이름</label>
+        <input type="text" id="project-name" placeholder="프로젝트 이름을 입력하세요" />
+    </div>
+    <div class="popup-buttons">
+        <button class="cancel-btn">취소</button>
+        <button class="save-btn">저장</button>
+    </div>
+</div>
 
 
     <!-- 프로젝트 설정 팝업 -->
@@ -213,14 +231,24 @@
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
-
             $(".projectList-create-btn").on("click", function () {
-                const projectName = prompt("새 프로젝트 이름을 입력하세요:"); // 프로젝트 이름 입력받기
+                // 팝업 열기
+                $(".popup-background").show();
+                $("#popup-create-project").show();
+            });
+
+            $(".popup-background, .popup .delete-btn, .popup .cancel-btn").on("click", function () {
+                // 팝업 닫기
+                $(".popup-background").hide();
+                $("#popup-create-project").hide();
+            });
+
+            $(".popup .save-btn").on("click", function () {
+                const projectName = $("#project-name").val(); // 입력된 프로젝트 이름
                 if (!projectName) {
                     alert("프로젝트 이름을 입력해야 합니다.");
                     return; // 입력이 없으면 종료
                 }
-
 
                 // AJAX 요청: 프로젝트 생성
                 $.ajax({
@@ -233,12 +261,12 @@
                         isTeamProject: 1, // 팀 프로젝트 여부
                     }),
                     success: function (response) {
-                        alert("프로젝트가 성공적으로 생성되었습니다!");
-                        location.reload(); // 성공 시 페이지 새로고침
+                        fetchProjects(userIdx); // 프로젝트 목록 갱신
+                        $(".popup-background").hide(); // 팝업 닫기
+                        $("#popup-create-project").hide(); // 팝업 닫기
                     },
                     error: function (err) {
                         console.error("프로젝트 생성 실패:", err);
-                        alert("프로젝트 생성 중 오류가 발생했습니다.");
                     },
                 });
             });
