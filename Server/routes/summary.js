@@ -167,27 +167,26 @@ router.get('/sprints/:sprint_id/team/tasks', async (req, res) => {
 
 
 // 4. 마감 임박 프로젝트
-router.get('/projects/urgent', async (req, res) => {
+router.get('/tasks/urgent', async (req, res) => {
     const query = `
         SELECT 
-            p.project_name AS projectName,
-            p.due_date AS dueDate,
-            ROUND(
-                (SUM(CASE WHEN t.Tasks_status_id = 3 THEN 1 ELSE 0 END) / COUNT(t.task_id)) * 100, 2
-            ) AS progress
-        FROM Projects p
-        LEFT JOIN Tasks t ON p.project_id = t.project_id
-        WHERE p.due_date IS NOT NULL AND p.due_date > NOW()
-        GROUP BY p.project_id
-        ORDER BY p.due_date ASC;
+            t.task_id AS taskId,
+            t.task_name AS taskName,
+            t.due_date AS dueDate,
+            t.priority AS priority,
+            u.user_name AS assignedTo
+        FROM Tasks t
+        LEFT JOIN Users u ON t.assigned_to = u.user_idx
+        WHERE t.due_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY) -- 오늘 + 1일인 작업만
+        AND t.Tasks_status_id != 3; -- 상태가 '완료'가 아닌 작업만
     `;
 
     try {
         const [results] = await connection.promise().query(query);
         res.json(results);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Failed to fetch urgent projects' });
+        console.error("Error fetching urgent tasks:", error);
+        res.status(500).json({ error: "Failed to fetch urgent tasks" });
     }
 });
 
