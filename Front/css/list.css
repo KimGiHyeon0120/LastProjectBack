@@ -11,6 +11,8 @@ body{
 
     /* 드롭다운이 보일 수 있도록 설정 */
     position: relative;
+
+    
     /* 자식 요소 절대 위치 계산을 위해 */
 }
 
@@ -19,6 +21,7 @@ body{
     background-color: #f9f9f9;
     border-radius: 4px;
     padding: 15px;
+    
 }
 /* 상태 헤더 컨테이너 */
 .status-header {
@@ -191,7 +194,7 @@ body{
 .dropdown-options {
     position: absolute;
     /* 절대 위치 */
-    top: 60px;
+    top: 50px;
     /* 프로필 이미지 바로 아래로 위치 조정 */
     left: 0;
     z-index: 2000;
@@ -218,6 +221,7 @@ body{
 }
 
 .dropdown-item {
+    border-radius: 4px;
     display: flex;
     align-items: center;
     padding: 5px;

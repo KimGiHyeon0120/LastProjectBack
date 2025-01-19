@@ -143,6 +143,7 @@ header {
     /* 호버 시 배경색 */
 }
 
+
 .nav-right img {
     width: 24px;
     /* 아이콘 크기 */
@@ -150,6 +151,7 @@ header {
     padding: 4px;
     border-radius: 50%;
     /* 프로필 둥근 모양 */
+    margin-right: 10px;
     transition: background-color 0.3s ease, color 0.3s ease;
     /* 부드러운 전환 효과 */
     object-fit: cover;
@@ -254,9 +256,8 @@ header {
     /* 헤더 높이만큼 공간을 둔다 */
     transition: margin-left 0.3s ease;
     /* margin-left 애니메이션 */
-    overflow-y: auto; /* 본문에만 스크롤 생성 */
-}
 
+}
 
 
 
@@ -283,11 +284,6 @@ header {
     cursor: pointer;
 }
 
-#notificationIcon img {
-    width: 24px;
-    height: 24px;
-}
-
 #notificationBadge {
     position: absolute;
     bottom: 0px;
@@ -303,6 +299,17 @@ header {
     z-index: 10;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
+
+
+
+
+
+
+
+
+
+
+
 
 /* 알림 드롭다운 기본 스타일 */
 #notificationDropdown {
@@ -320,6 +327,11 @@ header {
     max-height: 400px;
     overflow-y: auto;
 }
+
+
+
+
+
 
 /* 드롭다운 숨김 상태 */
 #notificationDropdown.hidden {
@@ -398,12 +410,13 @@ header {
     border-radius: 4px;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
     z-index: 100;
-    width: 200px;
-    padding: 10px 0;
+    width: auto;
+    padding: 8px ;
 }
 
 .header-profile-popup ul {
     list-style: none;
+    
     margin: 0;
     padding: 0;
 }
@@ -413,7 +426,8 @@ header {
 }
 
 .header-profile-popup ul li {
-    padding: 15px 20px;
+    padding: 8px;
+    border-radius: 4px;
     /* 상하 15px, 좌우 20px로 클릭 영역 확장 */
     border-bottom: 1px solid #f0f0f0;
     cursor: pointer;
@@ -423,11 +437,10 @@ header {
 .header-profile-popup ul li a {
     text-decoration: none;
     color: black;
-    display: block;
     /* `block`으로 설정해 클릭 가능한 전체 영역 확대 */
 }
 
-.header-profile-popup ul li a:hover {
+.header-profile-popup ul li:hover {
     background-color: #f0f0f0;
     /* hover 효과 추가 */
 }

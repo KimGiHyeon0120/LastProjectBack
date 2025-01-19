@@ -7,6 +7,8 @@ body {
     border-radius: 4px;
     padding: 15px;
     width: 100%;
+    border-bottom: 2px solid #ddd;
+    border-right: 2px solid #ddd;
     margin-top: 20px;
     margin-bottom: 20px;
     max-width: calc(33.333% - 15px); /* 한 줄에 3개 */
@@ -146,6 +148,8 @@ body {
 .task-card {
     border: 1px solid #ddd;
     display: flex;
+    border-bottom: 2px solid #ddd;
+    border-right: 2px solid #ddd;
     align-items: center;
     justify-content: space-between;
     padding: 8px 10px;
