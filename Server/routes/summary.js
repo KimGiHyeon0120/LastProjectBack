@@ -11,72 +11,138 @@ const connection = mysql.createConnection({
     database: 'project',
 });
 
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
 // 1. 팀원별 작업 상태 요약
-router.get('/team/tasks', async (req, res) => {
+router.get('/team/tasks', (req, res) => {
+    const { projectId } = req.query;
+
+    if (!projectId) {
+        return res.status(400).json({ error: 'projectId is required' });
+    }
+
     const query = `
         SELECT 
+            u.user_idx AS userIdx, -- 사용자 ID 추가
             u.user_name AS memberName,
             SUM(CASE WHEN t.Tasks_status_id = 3 THEN 1 ELSE 0 END) AS completed,
             SUM(CASE WHEN t.Tasks_status_id = 2 THEN 1 ELSE 0 END) AS inProgress,
             SUM(CASE WHEN t.Tasks_status_id = 1 THEN 1 ELSE 0 END) AS toDo
         FROM Tasks t
         JOIN Users u ON t.assigned_to = u.user_idx
+        WHERE t.project_id = ?
         GROUP BY t.assigned_to;
     `;
 
-    try {
-        const [results] = await connection.promise().query(query);
+    connection.query(query, [projectId], (error, results) => {
+        if (error) {
+            console.error(error);
+            return res.status(500).json({ error: 'Failed to fetch team tasks' });
+        }
         res.json(results);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Failed to fetch team tasks' });
-    }
+    });
 });
 
+
+
+
+
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+
 // 2. 전체 프로젝트 진행률
-router.get('/summary/team/tasks', async (req, res) => {
+router.get('/all/tasks', async (req, res) => {
+    const { projectId } = req.query;
+
+    if (!projectId) {
+        return res.status(400).json({ error: "projectId is required" });
+    }
+
     const query = `
         SELECT 
-            SUM(CASE WHEN t.Tasks_status_id = 3 THEN 1 ELSE 0 END) AS completed,
-            SUM(CASE WHEN t.Tasks_status_id = 2 THEN 1 ELSE 0 END) AS inProgress,
-            SUM(CASE WHEN t.Tasks_status_id = 1 THEN 1 ELSE 0 END) AS toDo,
-            COUNT(*) AS totalTasks
-        FROM Tasks t;
+            Tasks_status_id,
+            COUNT(*) AS count
+        FROM Tasks
+        WHERE project_id = ?
+        GROUP BY Tasks_status_id;
     `;
 
     try {
-        const [results] = await connection.promise().query(query);
-        if (results.length > 0) {
-            const { completed, inProgress, toDo, totalTasks } = results[0];
-            res.json({
-                completed: completed,
-                inProgress: inProgress,
-                toDo: toDo,
-                percentages: {
-                    completed: ((completed / totalTasks) * 100).toFixed(2),
-                    inProgress: ((inProgress / totalTasks) * 100).toFixed(2),
-                    toDo: ((toDo / totalTasks) * 100).toFixed(2),
-                },
-            });
-        } else {
-            res.json({ completed: 0, inProgress: 0, toDo: 0, percentages: {} });
-        }
+        const [results] = await connection.promise().query(query, [projectId]);
+
+        // 상태별 작업 개수 초기화
+        let completed = 0;
+        let inProgress = 0;
+        let toDo = 0;
+
+        // 상태별 데이터를 results에서 추출
+        results.forEach((row) => {
+            if (row.Tasks_status_id === 3) completed = row.count;
+            if (row.Tasks_status_id === 2) inProgress = row.count;
+            if (row.Tasks_status_id === 1) toDo = row.count;
+        });
+
+        // 응답 데이터 구성
+        res.json({
+            completed,
+            inProgress,
+            toDo,
+            totalTasks: completed + inProgress + toDo,
+        });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Failed to fetch task summary' });
+        console.error("Error executing query:", error);
+        res.status(500).json({ error: "Failed to fetch task summary" });
     }
 });
 
-// 3. 스프린트별 작업량
-router.get('/summary/sprints/:sprint_id/team/tasks', async (req, res) => {
-    const { sprint_id } = req.params;
+
+
+
+
+
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+// 프로젝트별 스프린트 목록 가져오기
+router.get('/projects/:project_id/sprints', async (req, res) => {
+    const { project_id } = req.params; // 프로젝트 ID
+
     const query = `
         SELECT 
-            u.user_name AS memberName,
-            COUNT(t.task_id) AS taskCount
+            sprint_id AS sprintId,
+            sprint_name AS sprintName
+        FROM Sprints
+        WHERE project_id = ?; -- 특정 프로젝트에 속한 스프린트만 선택
+    `;
+
+    try {
+        const [results] = await connection.promise().query(query, [project_id]);
+        res.json(results);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to fetch sprints for the project' });
+    }
+});
+
+
+// 3. 스프린트별 작업량
+router.get('/sprints/:sprint_id/team/tasks', async (req, res) => {
+    const { sprint_id } = req.params;
+
+    const query = `
+        SELECT 
+            u.user_name AS memberName, -- 팀원 이름
+            COUNT(t.task_id) AS taskCount -- 팀원의 작업량
         FROM Tasks t
         JOIN Users u ON t.assigned_to = u.user_idx
-        WHERE t.sprint_id = ?
+        WHERE t.sprint_id = ? -- 특정 스프린트 ID
         GROUP BY t.assigned_to;
     `;
 
@@ -89,29 +155,133 @@ router.get('/summary/sprints/:sprint_id/team/tasks', async (req, res) => {
     }
 });
 
-// 4. 마감 임박 프로젝트
-router.get('/summary/projects/urgent', async (req, res) => {
+
+// 전체 스프린트 작업량
+router.get('/alltasks/all', async (req, res) => {
+    const projectId = req.query.projectId; // 프로젝트 ID를 쿼리 파라미터로 받음
+
     const query = `
         SELECT 
-            p.project_name AS projectName,
-            p.due_date AS dueDate,
-            ROUND(
-                (SUM(CASE WHEN t.Tasks_status_id = 3 THEN 1 ELSE 0 END) / COUNT(t.task_id)) * 100, 2
-            ) AS progress
-        FROM Projects p
-        LEFT JOIN Tasks t ON p.project_id = t.project_id
-        WHERE p.due_date IS NOT NULL AND p.due_date > NOW()
-        GROUP BY p.project_id
-        ORDER BY p.due_date ASC;
+            u.user_name AS memberName,
+            COUNT(t.task_id) AS taskCount
+        FROM Tasks t
+        JOIN Users u ON t.assigned_to = u.user_idx
+        WHERE t.project_id = ?
+        GROUP BY t.assigned_to;
+    `;
+
+    try {
+        console.log("받은 프로젝트 ID:", projectId); // 디버깅용
+        if (!projectId) {
+            console.error("프로젝트 ID가 전달되지 않았습니다.");
+            return res.status(400).json({ error: "프로젝트 ID가 누락되었습니다." });
+        }
+
+        console.log("SQL 실행 중, 프로젝트 ID:", projectId);
+        const [results] = await connection.promise().query(query, [projectId]);
+        console.log("SQL 쿼리 결과:", results); // SQL 결과 로그
+
+        if (results.length === 0) {
+            console.warn("프로젝트에 할당된 작업이 없습니다.");
+            return res.json([]); // 빈 배열 반환
+        }
+
+        res.json(results);
+    } catch (error) {
+        console.error("SQL 실행 오류:", error);
+        res.status(500).json({ error: "Failed to fetch all sprint tasks" });
+    }
+});
+
+
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+// 4. 마감 임박 프로젝트
+router.get('/tasks/urgent', async (req, res) => {
+    const query = `
+        SELECT 
+            t.task_id AS taskId,
+            t.task_name AS taskName,
+            t.due_date AS dueDate,
+            CASE 
+                WHEN t.due_date = CURDATE() OR t.due_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY) THEN '긴급'
+                WHEN DATEDIFF(t.due_date, CURDATE()) <= 3 THEN '높음'
+                WHEN DATEDIFF(t.due_date, CURDATE()) <= 5 THEN '중간'
+                ELSE '낮음'
+            END AS priority,
+            u.user_name AS assignedTo
+        FROM Tasks t
+        LEFT JOIN Users u ON t.assigned_to = u.user_idx
+        WHERE (t.due_date = CURDATE() OR t.due_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY)) -- 오늘 또는 내일인 작업만
+        AND t.Tasks_status_id != 3; -- 상태가 '완료'가 아닌 작업만
     `;
 
     try {
         const [results] = await connection.promise().query(query);
         res.json(results);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Failed to fetch urgent projects' });
+        console.error("Error fetching urgent tasks:", error);
+        res.status(500).json({ error: "Failed to fetch urgent tasks" });
     }
 });
+
+
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+// 5. 내 작업 리스트
+router.get('/tasks/mytasks', async (req, res) => {
+    const userId = req.query.userId; // 클라이언트에서 전달된 사용자 ID
+    const projectId = req.query.projectId; // 클라이언트에서 전달된 프로젝트 ID
+
+    if (!userId || !projectId) {
+        return res.status(400).json({ error: "사용자 ID와 프로젝트 ID가 필요합니다." });
+    }
+
+    try {
+        const query = `
+SELECT 
+    t.task_name AS taskName, -- 작업 이름
+    ts.Tasks_status_name AS taskStatus, -- 작업 상태 (기본 상태 그대로 가져옴)
+    CASE 
+        WHEN t.due_date = CURDATE() OR t.due_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY) THEN '긴급'
+        WHEN DATEDIFF(t.due_date, CURDATE()) <= 3 THEN '높음'
+        WHEN DATEDIFF(t.due_date, CURDATE()) <= 5 THEN '중간'
+        ELSE '낮음'
+    END AS priority, -- 우선순위
+    DATE_FORMAT(t.due_date, '%Y년 %m월 %d일') AS dueDate, -- 마감일
+    s.sprint_name AS sprintName, -- 스프린트 이름
+    DATE_FORMAT(t.start_date, '%Y년 %m월 %d일') AS startDate -- 시작일
+FROM Tasks t
+LEFT JOIN Tasks_status ts ON t.Tasks_status_id = ts.Tasks_status_id
+LEFT JOIN Sprints s ON t.sprint_id = s.sprint_id
+WHERE t.assigned_to = ? AND t.project_id = ?
+ORDER BY s.sprint_id, t.due_date ASC;
+        `;
+
+        const [results] = await connection.promise().query(query, [userId, projectId]);
+        res.json(results);
+    } catch (error) {
+        console.error("Error fetching user tasks:", error);
+        res.status(500).json({ error: "Failed to fetch user tasks" });
+    }
+});
+
+
+
+
+
+
+
+
+
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 module.exports = router;
