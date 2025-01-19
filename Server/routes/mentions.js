@@ -23,7 +23,6 @@ router.post('/send', async (req, res) => {
     const { taskId, mentionMessage, mentionedUsers, sentBy } = req.body;
 
     if (!taskId || !mentionMessage || !sentBy) {
-        console.log('필수 데이터 누락:', { taskId, mentionMessage, sentBy });
         return res.status(400).json({ message: '필수 데이터를 모두 입력해주세요.' });
     }
 
@@ -38,7 +37,6 @@ router.post('/send', async (req, res) => {
         );
 
         if (taskData.length === 0) {
-            console.log('작업이 존재하지 않습니다:', { taskId });
             return res.status(404).json({ message: '작업을 찾을 수 없습니다.' });
         }
 

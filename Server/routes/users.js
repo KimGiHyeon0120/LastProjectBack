@@ -189,7 +189,6 @@ router.post('/find-id', (req, res) => {
 // 비밀번호 변경
 router.post('/reset-password', async (req, res) => {
     const { userId, newPassword } = req.body;
-    console.log(userId, newPassword);  // 요청 받은 값 확인
 
     if (!userId || !newPassword) {
         return res.status(400).json({ success: false, message: '아이디와 새 비밀번호를 입력해주세요.' });
@@ -297,9 +296,6 @@ router.post('/profile-setting', upload.single('user_profile_image'), async (req,
     // 데이터베이스에 저장될 경로 (프론트엔드에서 접근할 경로)
     const user_profile_image = req.file ? `../profile/${req.file.filename}` : null;
 
-    console.log('Request Body:', req.body);
-    console.log('Uploaded File:', req.file);
-
     // 검증
     if (!user_idx || (!user_name && !user_profile_image)) {
         return res.status(400).json({ message: '사용자 ID 또는 수정할 필드가 누락되었습니다.' });
@@ -374,6 +370,54 @@ router.post('/password-verify', async (req, res) => {
 
 
 
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+// 사용자 검색 API
+router.get("/search", (req, res) => {
+    const { query, projectId } = req.query;
+
+    if (!query) {
+        return res.status(400).json({ error: "검색어(query)가 필요합니다." });
+    }
+
+    try {
+        // 검색어를 기반으로 사용자 검색 (이름 또는 이메일) + 팀원 제외 조건 추가
+        let sql = `
+            SELECT 
+                u.user_idx, 
+                u.user_name, 
+                u.user_email, 
+                u.user_profile_image 
+            FROM Users u
+            WHERE 
+                (u.user_name LIKE ? OR u.user_email LIKE ?)
+                AND u.user_is_active = 1
+                AND u.user_idx NOT IN (
+                    SELECT pm.user_idx 
+                    FROM Project_Members pm 
+                    WHERE pm.project_id = ?
+                )
+        `;
+        const params = [`%${query}%`, `%${query}%`, projectId];
+
+        // 데이터베이스에서 사용자 검색
+        connection.query(sql, params, (err, results) => {
+            if (err) {
+                console.error("사용자 검색 오류:", err);
+                return res.status(500).json({ error: "사용자 검색 중 오류가 발생했습니다." });
+            }
+
+            // 결과 반환
+            res.json(results);
+        });
+    } catch (err) {
+        console.error("서버 오류:", err);
+        res.status(500).json({ error: "서버에서 오류가 발생했습니다." });
+    }
+});
 
 
 
@@ -381,8 +425,8 @@ router.post('/password-verify', async (req, res) => {
 
 
 
-
-
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
 
@@ -427,15 +471,11 @@ router.get('/login/google', (req, res) => {
 
 // 회원가입 요청
 router.get('/signup', (req, res) => {
-    console.log('Google Signup Request Initiated');
     let url = 'https://accounts.google.com/o/oauth2/v2/auth';
     url += `?client_id=${GOOGLE_CLIENT_ID}`;
-    console.log(`Client ID: ${GOOGLE_CLIENT_ID}`); // 디버깅
     url += `&redirect_uri=${GOOGLE_SIGNUP_REDIRECT_URI}`;
-    console.log(`Redirect URI: ${GOOGLE_SIGNUP_REDIRECT_URI}`); // 디버깅
     url += '&response_type=code';
     url += '&scope=email profile';
-    console.log(`Generated Google Auth URL: ${url}`); // 디버깅
     res.redirect(url);
 });
 
@@ -521,15 +561,12 @@ router.get('/googlelogin/redirect', async (req, res) => {
 // 회원가입 리디렉션 처리
 router.get('/googlesignup/redirect', async (req, res) => {
     const { code } = req.query;
-    console.log(`Google Signup Redirect Hit`);
-    console.log(`Received Authorization Code: ${code}`); // 디버깅
     if (!code) {
         console.error('Authorization code not provided!');
         return res.status(400).send('No authorization code provided');
     }
 
     try {
-        console.log('Requesting Access Token from Google...');
         const tokenResponse = await axios.post(GOOGLE_TOKEN_URL, {
             code,
             client_id: GOOGLE_CLIENT_ID,
@@ -538,17 +575,14 @@ router.get('/googlesignup/redirect', async (req, res) => {
             grant_type: 'authorization_code',
         });
 
-        console.log('Received Access Token:', tokenResponse.data.access_token); // 디버깅
         const accessToken = tokenResponse.data.access_token;
 
-        console.log('Requesting User Info from Google...');
         const userInfoResponse = await axios.get(GOOGLE_USERINFO_URL, {
             headers: {
                 Authorization: `Bearer ${accessToken}`,
             },
         });
 
-        console.log('Received User Info:', userInfoResponse.data); // 디버깅
         res.json(userInfoResponse.data);
     } catch (error) {
         console.error('Error during signup redirect:', error.message); // 디버깅

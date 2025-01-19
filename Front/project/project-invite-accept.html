@@ -1,52 +1,82 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>팀 초대 수락</title>
 </head>
+
 <body>
   <h1>팀 초대 수락</h1>
   <p>프로젝트에 초대되었습니다. 초대를 수락하시겠습니까?</p>
-  
+
   <button id="acceptBtn">초대 수락</button>
   <button id="declineBtn">초대 거절</button>
 
   <script>
     const urlParams = new URLSearchParams(window.location.search);
-    const invitationId = urlParams.get('invitation_id'); // URL에서 invitation_id 가져오기
-    const API_URL = "http://192.168.20.37:3000/api/verifyEmail'";
+    const invitationId = urlParams.get('invitation_id'); // URL에서 초대 ID 가져오기
+    const userIdxx = urlParams.get('inviter_id');
+    const API_URL = "http://192.168.20.37:3000/api";
+    sessionStorage.setItem('userIdx', userIdxx);
+    const userIdx = sessionStorage.getItem('userIdx');
+
     document.getElementById('acceptBtn').onclick = async () => {
       try {
-        const response = await fetch(`${API_URL}/invite/accept/${invitationId}`, { method: 'POST' });
-        const data = await response.json();
-
-        if (response.ok) {
-          alert(data.message);
-        } else {
-          alert(data.error);
-        }
+          const response = await fetch(`${API_URL}/verifyEmail/invite/accept/${invitationId}`, {
+              method: 'POST',
+          });
+          const data = await response.json();
+  
+          if (response.ok) {
+              const inviterId = urlParams.get('inviter_id'); // URL에서 초대자의 ID 가져오기
+  
+              // 팀원들에게 알림 전송
+              await fetch(`${API_URL}/notification/team/add-notification`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                      project_id: data.project_id,
+                      new_member_id: userIdx, // 초대 수락한 사용자 ID
+                      inviter_id: inviterId, // 초대한 사용자 ID
+                  }),
+              });
+  
+              alert('초대가 수락되었습니다.');
+              window.location.href = 'projectList.html';
+          } else {
+              alert(data.error);
+          }
       } catch (error) {
-        console.error("초대 수락 오류:", error);
-        alert("초대 수락에 실패했습니다.");
+          console.error('초대 수락 오류:', error);
+          alert('초대 수락에 실패했습니다.');
       }
-    };
+  };
+
+
+
 
     document.getElementById('declineBtn').onclick = async () => {
       try {
-        const response = await fetch(`${API_URL}/invite/decline/${invitationId}`, { method: 'POST' });
+        const response = await fetch(`${API_URL}/verifyEmail/invite/decline/${invitationId}`, {
+          method: 'POST',
+        });
         const data = await response.json();
 
         if (response.ok) {
           alert(data.message);
+          // 초대 거절 후 projectList.html로 이동
+          window.location.href = './projectList.html';
         } else {
           alert(data.error);
         }
       } catch (error) {
-        console.error("초대 거절 오류:", error);
-        alert("초대 거절에 실패했습니다.");
+        console.error('초대 거절 오류:', error);
+        alert('초대 거절에 실패했습니다.');
       }
     };
   </script>
 </body>
+
 </html>

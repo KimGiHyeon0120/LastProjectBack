@@ -171,15 +171,12 @@ router.get('/alltasks/all', async (req, res) => {
     `;
 
     try {
-        console.log("받은 프로젝트 ID:", projectId); // 디버깅용
         if (!projectId) {
             console.error("프로젝트 ID가 전달되지 않았습니다.");
             return res.status(400).json({ error: "프로젝트 ID가 누락되었습니다." });
         }
 
-        console.log("SQL 실행 중, 프로젝트 ID:", projectId);
         const [results] = await connection.promise().query(query, [projectId]);
-        console.log("SQL 쿼리 결과:", results); // SQL 결과 로그
 
         if (results.length === 0) {
             console.warn("프로젝트에 할당된 작업이 없습니다.");

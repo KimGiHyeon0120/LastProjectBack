@@ -97,14 +97,12 @@ router.post('/mentions/send', async (req, res) => {
     const { taskId, mentionMessage, mentionedUsers, sentBy } = req.body;
 
     // 필수 데이터 검증
-    if (!taskId || !mentionMessage || !sentBy) {
-        console.error('필수 데이터 누락:', { taskId, mentionMessage, sentBy });
+    if (!taskId || !mentionMessage || !sentBy || !mentionedUsers || mentionedUsers.length === 0) {
+        console.error('필수 데이터 누락:', { taskId, mentionMessage, sentBy, mentionedUsers });
         return res.status(400).json({ message: '필수 데이터를 모두 입력해주세요.' });
     }
 
     try {
-        // 디버깅: 입력 데이터 확인
-
         // Mentions 데이터 생성
         const mentions = mentionedUsers.map(userName => [
             taskId,
@@ -112,7 +110,6 @@ router.post('/mentions/send', async (req, res) => {
             sentBy,
             mentionMessage
         ]);
-
 
         // Mentions 데이터 삽입
         await connection.promise().query(
@@ -123,30 +120,138 @@ router.post('/mentions/send', async (req, res) => {
 
         // Notifications 데이터 생성
         const notifications = mentionedUsers.map(userName => [
-            userName,
-            `@${sentBy}님이 작업 "${taskId}"에 멘션했습니다: ${mentionMessage}`,
-            null, // 관련 프로젝트 ID (없으면 null)
+            null, // 관련 프로젝트 ID가 없으면 null
             taskId,
+            userName,
+            `@${sentBy}님이 작업 "${taskId}"에서 멘션했습니다: ${mentionMessage}`,
             0 // 읽지 않음 상태
         ]);
 
-
         // Notifications 데이터 삽입
-        if (notifications.length > 0) {
-            await connection.promise().query(
-                `INSERT INTO Notifications (user_idx, message, related_project_id, related_task_id, is_read)
-                 VALUES ?`,
-                [notifications]
-            );
-        }
+        await connection.promise().query(
+            `INSERT INTO Notifications (related_project_id, related_task_id, user_idx, message, is_read)
+             VALUES ?`,
+            [notifications]
+        );
 
         res.status(201).json({ message: '멘션과 알림이 성공적으로 처리되었습니다.' });
     } catch (err) {
-        // 디버깅: 에러 로그 출력
         console.error('멘션 생성 오류:', err);
         res.status(500).json({ message: '멘션 생성 중 오류가 발생했습니다.' });
     }
 });
+
+
+
+
+// ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+// 팀원 초대장
+router.post('/team/send', async (req, res) => {
+    const { project_id, inviter_id, invitee_email } = req.body;
+
+    if (!project_id || !inviter_id || !invitee_email) {
+        return res.status(400).json({ message: '필수 데이터를 모두 입력해주세요.' });
+    }
+
+    try {
+        // 초대받는 사용자의 `user_idx` 가져오기
+        const [invitee] = await connection.promise().query(
+            `SELECT user_idx 
+             FROM users 
+             WHERE user_email = ?`,
+            [invitee_email]
+        );
+
+        if (invitee.length === 0) {
+            return res.status(404).json({ message: '해당 이메일의 사용자를 찾을 수 없습니다.' });
+        }
+
+        const userIdx = invitee[0].user_idx;
+
+        // 알림 삽입
+        await connection.promise().query(
+            `INSERT INTO notifications (user_idx, sent_by, message, related_project_id, is_read_by_assignee, read_by_team_leader)
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [
+                userIdx,
+                inviter_id,
+                `${invitee_email}님이 프로젝트 ${project_id}에 초대되었습니다.`,
+                project_id,
+                0, // is_read_by_assignee
+                0, // read_by_team_leader
+            ]
+        );
+
+        res.status(200).json({ message: '팀 초대 알림이 성공적으로 전송되었습니다.' });
+    } catch (err) {
+        console.error('팀 초대 알림 삽입 오류:', err);
+        res.status(500).json({ message: '팀 초대 알림 전송 중 오류가 발생했습니다.' });
+    }
+});
+
+
+
+// ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+//팀원 추가 된 알림
+router.post('/team/add-notification', async (req, res) => {
+    const { project_id, new_member_id, inviter_id } = req.body;
+
+    if (!project_id || !new_member_id || !inviter_id) {
+        console.error('필수 데이터 누락:', { project_id, new_member_id, inviter_id });
+        return res.status(400).json({ message: '필수 데이터를 모두 입력해주세요.' });
+    }
+
+    try {
+        // 프로젝트의 모든 팀원 가져오기 (새로운 팀원을 제외)
+        const [teamMembers] = await connection.promise().query(
+            `SELECT user_idx 
+             FROM Project_Members 
+             WHERE project_id = ? AND user_idx != ?`,
+            [project_id, new_member_id]
+        );
+
+        if (teamMembers.length === 0) {
+            return res.status(404).json({ message: '프로젝트에 다른 팀원이 없습니다.' });
+        }
+
+        const uniqueMembers = [...new Set(teamMembers.map(member => member.user_idx))];
+
+        // 알림 메시지 생성
+        const notifications = uniqueMembers.map(userIdx => [
+            userIdx, // 알림 수신자
+            inviter_id, // 알림 발신자
+            `새로운 팀원이 프로젝트에 추가되었습니다.`,
+            project_id, // 관련 프로젝트 ID
+            null, // 관련 작업 ID 없음
+            0, // 읽지 않음 상태
+            0, // 읽지 않음 상태
+        ]);
+
+        // 알림 삽입
+        await connection.promise().query(
+            `INSERT INTO notifications (user_idx, sent_by, message, related_project_id, related_task_id, is_read_by_assignee, read_by_team_leader)
+             VALUES ?`,
+            [notifications]
+        );
+
+        res.status(200).json({ message: '팀원들에게 알림이 성공적으로 전송되었습니다.' });
+    } catch (err) {
+        console.error('알림 전송 오류:', err);
+        res.status(500).json({ message: '팀원 알림 전송 중 오류가 발생했습니다.' });
+    }
+});
+
+
+
+
+
+
 
 
 
@@ -316,8 +421,6 @@ router.get('/', async (req, res) => {
         // 쿼리 실행
         const [notifications] = await connection.promise().query(query, queryParams);
 
-        // 디버깅 로그
-        console.log("조회된 알림:", notifications);
 
         if (!notifications.length) {
             return res.status(404).json({ message: '알림이 없습니다.' });
