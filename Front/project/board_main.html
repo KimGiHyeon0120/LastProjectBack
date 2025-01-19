@@ -56,6 +56,14 @@
     <div class="popup-header">
         <div class="header-text">작업 편집</div>
         <button type="button" class="delete-btn" id="deleteTaskBtn"></button>
+
+
+
+
+
+
+
+        
     </div>
     <form class="popup-form">
         <label>작업 이름</label>
@@ -161,7 +169,7 @@
         const userIdx = sessionStorage.getItem("userIdx");
         const userIdxh = localStorage.getItem("userIdx"); // 사용자 ID
         const projectIdh = localStorage.getItem("projectId"); // 프로젝트 ID
-        const API_URL = "http://localhost:3000/api";
+        const API_URL = "http://192.168.20.37:3000/api";
         //192.168.20.37
 
         let userRole = null; // 초기값
@@ -220,6 +228,7 @@
 
 
                 const tasksHTML = sprint.tasks.map(task => {
+                    console.log("Rendering task with ID:", task.taskId); // taskId 콘솔 출력
                     return `
                         <div class="task-card" 
                             ${userRole === "팀원" ? '' : `draggable="true" ondragstart="dragTask(event)"`} 
@@ -1295,22 +1304,31 @@
                 $("#deleteTaskBtn").click(function () {
                     const taskId = $(this).data("task-id");
 
+                    if (!taskId) {
+                        alert("작업 ID가 유효하지 않습니다.");
+                        return;
+                    }
+                
                     if (!confirm("정말로 이 작업을 삭제하시겠습니까?")) {
                         return;
                     }
-
-
+                
+                    console.log("삭제할 작업 ID:", taskId);
+                
                     $.ajax({
                         url: `${API_URL}/tasks/delete`,
                         method: "DELETE",
                         contentType: "application/json",
                         data: JSON.stringify({ taskId }),
                         success: function () {
+                            console.log("작업이 삭제되었습니다.");
                             $("#editTaskPopup").fadeOut();
                             $(".popup-background").fadeOut();
                             fetchSprints(); // 스프린트 새로고침
                         },
                         error: function (err) {
+                            console.error("작업 삭제 실패:", err.responseJSON || err.responseText);
+                            alert("작업 삭제 중 오류가 발생했습니다. 다시 시도해주세요.");
                         },
                     });
                 });
@@ -1369,40 +1387,56 @@
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
+
+
+
+
+
+
+
+
+
+
         // 작업 편집 팝업 열기
         function openEditTaskPopup(taskId) {
+            // taskId가 전달되지 않은 경우
             if (!taskId) {
                 console.error("작업 ID가 전달되지 않았습니다.");
                 alert("작업 ID가 유효하지 않습니다. 페이지를 새로고침합니다.");
                 window.location.reload(); // 작업 ID가 없으면 새로고침
                 return;
             }
-
+        
+            // taskId를 콘솔에 출력
+            console.log("넘겨받은 작업 ID:", taskId);
+        
             $.ajax({
                 url: `${API_URL}/tasks/${taskId}`,
                 method: "GET",
                 success: async function (task) {
+                    console.log("로드된 작업 ID:", taskId); // 확인용 추가 로그
+        
                     $("#saveEditTaskBtn").data("task-id", taskId);
-
+        
                     $("#editTaskName").val(task.taskName || "");
                     $("#editTaskDescription").val(task.description || "");
                     $("#editTaskStartDate").val(task.startDate ? task.startDate.split("T")[0] : "");
                     $("#editTaskDueDate").val(task.dueDate ? task.dueDate.split("T")[0] : "");
-
+        
                     const isEditable = userRole === "팀장" || userIdx == task.assignedTo;
                     $("#editTaskName, #editTaskDescription, #editTaskStartDate, #editTaskDueDate, #editTaskStatus, #editTaskAssignedTo")
                         .prop("disabled", !isEditable);
                     $("#saveEditTaskBtn, #deleteTaskBtn").toggle(isEditable);
-
+        
                     loadTaskStatus(task.statusId, isEditable);
-
+        
                     const projectId = sessionStorage.getItem("projectId");
                     if (projectId) {
                         await renderEditAssigneeDropdown(projectId, task.assignedTo);
                     } else {
                         console.error("프로젝트 ID를 찾을 수 없습니다.");
                     }
-
+        
                     $(".popup-background").fadeIn();
                     $("#editTaskPopup").fadeIn();
                 },
@@ -1413,7 +1447,6 @@
                 }
             });
         }
-
 
 
 
