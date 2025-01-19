@@ -59,19 +59,6 @@ body {
     /* 제목이 가능한 공간을 차지하도록 */
 }
 
-/* 스프린트 날짜 스타일 */
-.sprint-dates {
-    font-size: 14px;
-    /* 약간 크기 키움 */
-    color: #666;
-    /* 더 차분한 색상 */
-    text-align: right;
-    /* 날짜는 오른쪽 정렬 */
-    margin: 0;
-    flex-shrink: 0;
-    /* 날짜 영역 크기 고정 */
-    margin-right: 50px;
-}
 
 /* 스프린트 컨텐츠 */
 .sprint-content {
@@ -84,33 +71,7 @@ body {
 
 
 
-/* 작업 이름 기본 스타일 */
-.task-name {
-    cursor: pointer;
-    color: #007bff;
-    /* 파란색 */
-    font-weight: normal;
-    /* 기본 글씨 두께 */
-    transition: color 0.2s ease, font-weight 0.2s ease;
-    /* 전환 효과 */
-}
 
-/* 작업 이름에 마우스 오버 시 스타일 */
-.task-name:hover {
-    color: #0056b3;
-    /* 더 진한 파란색 */
-    font-weight: bold;
-    /* 글씨 두께를 굵게 변경 */
-    text-decoration: underline;
-    /* 밑줄 추가 (선택 사항) */
-}
-
-
-.task-priority {
-    flex-shrink: 0;
-    font-size: 12px;
-    color: #888;
-}
 
 
 
@@ -200,7 +161,6 @@ body {
 
 
 /* 옵션 버튼 스타일 */
-/* 옵션 버튼 스타일 */
 .options-btn {
     background: none; /* 배경 제거 */
     border: none; /* 기본 버튼 테두리 제거 */
@@ -278,36 +238,44 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    /* 각 요소 간의 간격 균등 분배 */
     padding: 8px 10px;
     background-color: white;
-    /* 연한 하늘색 테두리 */
     border-radius: 4px;
-    /* 테두리에 약간의 곡선 추가 */
     cursor: pointer;
     margin-top: 5px;
     margin-bottom: 5px;
     font-size: 14px;
     transition: background-color 0.3s ease, transform 0.2s ease;
-    /* 인터렉션 효과 추가 */
 }
 
-/* 작업 이름 텍스트 스타일 */
+/* 작업 이름과 우선순위 간의 간격을 명확하게 설정 */
 .task-card p {
-    
-    flex: 1;
-    /* 가능한 공간을 차지하도록 */
     margin: 0;
-    padding-right: 10px;
-    /* 우선순위와의 간격 확보 */
-    overflow: hidden;
-    /* 넘치는 텍스트 숨김 */
-    text-overflow: ellipsis;
-    /* 말줄임표 추가 */
-    white-space: nowrap;
-    /* 텍스트 줄바꿈 방지 */
+    padding-right: 10px; /* 우선순위와의 간격 확보 */
+    white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+}
+/* 작업 이름 텍스트 스타일 */
+.task-card .task-name {
+    flex-grow: 1;
+    /* 가능한 공간을 차지하게 설정 */
+    min-width: 150px; /* 최소 너비 */
+    max-width: 150px; /* 최대 너비 */
+    overflow: hidden; /* 넘치는 텍스트 숨김 */
+    text-overflow: ellipsis; /* 말줄임표 추가 */
+    white-space: nowrap; /* 줄바꿈 방지 */
+    margin-right: 15px; /* 우선순위와 간격 확보 */
 }
 
+/* 작업 이름에 마우스 오버 시 스타일 */
+.task-name:hover {
+    color: #0056b3;
+    /* 더 진한 파란색 */
+    font-weight: bold;
+    /* 글씨 두께를 굵게 변경 */
+    text-decoration: underline;
+    /* 밑줄 추가 (선택 사항) */
+    
+}
 
 .task-card:hover {
     background-color: #f5f5f5;
@@ -315,12 +283,6 @@ body {
 }
 
 
-
-/* 작업 이름과 상태 간격 조정 */
-.task-card p+p {
-    margin-left: 15px;
-    /* 요소 간 간격 추가 */
-}
 
 /* 작업 이름 스타일 */
 .task-card p strong {
@@ -333,9 +295,9 @@ body {
     white-space: nowrap;
 }
 
-/* 공통 스타일 */
-.readonly-priority {
-    display: inline-block;
+/* 우선순위 표시를 위한 스타일 */
+.task-card p span.readonly-priority {
+
     padding: 4px 10px;
     border-radius: 4px;
     font-size: 12px;
@@ -384,6 +346,107 @@ body {
     }
 }
 
+/* 드롭다운 외관 스타일 */
+.task-status-dropdown-wrapper {
+    position: relative;
+    width: auto;
+
+}
+
+.task-status-dropdown {
+    display: flex;
+    
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* 선택된 상태 스타일 */
+.selected-status {
+    font-size: 12px;
+
+    color: #333;
+    font-weight: bold;
+}
+
+.dropdown-icon {
+    width: 11px; /* 아이콘의 너비 */
+    height: 18px; /* 아이콘의 높이 */
+    background: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"%3E%3Cpath fill="gray" d="M10 12l-6-6h12z"%3E%3C/path%3E%3C/svg%3E') no-repeat center;
+    background-size: contain; /* 이미지가 컨테이너 크기에 맞게 조정되도록 */
+    margin-left: 4px;
+
+
+}
+
+
+/* 옵션 목록 */
+.dropdown-status-options {
+    display: block; /* 세로로 배치 */
+    position: absolute;
+    top: 100%;
+    left: 0; /* 왼쪽 고정 */
+    width: auto; /* 오른쪽으로 넓어짐 */
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    z-index: 1;
+}
+
+/* 드롭다운 옵션 */
+.dropdown-status-option {
+    display: block; /* 세로로 배치 */
+    padding: 4px 10px;
+    margin: 4px; /* 각 옵션 간의 간격 */
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+    white-space: nowrap; /* 텍스트가 한 줄로 표시되도록 */
+    width: auto; /* 너비가 텍스트에 맞게 자동 조정되도록 설정 */
+}
+
+
+/* 선택된 옵션 스타일 */
+.dropdown-status-option:hover {
+    background-color: #f0f0f0;
+}
+
+/* 상태별 아이콘 색상 */
+.status-할일 .status-icon {
+    color: #91918E; /* 회색 */
+    margin-bottom: 5px;
+    margin-right: 5px;
+    font-size: 8px;
+
+}
+
+.status-진행중 .status-icon {
+    color: #5B97BD; /* 파란색 */
+    margin-bottom: 5px;
+    margin-right: 5px;
+    font-size: 8px;
+}
+
+.status-완료 .status-icon {
+    color: #6C9B7D; /* 초록색 */
+    margin-bottom: 5px;
+    margin-right: 5px;
+     font-size: 8px;
+}
+
+/* 선택된 상태에 맞는 클래스 */
+.status-할일 {
+    background-color: #E3E2E0;
+}
+
+.status-진행중 {
+    background-color: #D3E5EF;
+}
+
+.status-완료 {
+    background-color: #DBEDDB;
+}
 
 
 /* 팀원 읽기 전용 스타일 */
@@ -744,84 +807,7 @@ input#taskDueDate:focus {
 }
 
 
-/* 드롭다운 외관 스타일 */
-.task-status-dropdown-wrapper {
-    position: relative;
-    width: auto;
-}
-
-.task-status-dropdown {
-    display: flex;
-    justify-content: space-between;
-    padding: 6px 8px;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-/* 선택된 상태 스타일 */
-.selected-status {
-    font-size: 12px;
-    color: #333;
-    font-weight: bold;
-}
-
-.dropdown-icon {
-    font-size: 12px;
-    color: gray;
-}
-
 /* 옵션 목록 */
-.dropdown-status-options {
-    display: none;
-    position: absolute;
-    top: 100%;
-    right: 0; /* 왼쪽이 아니라 오른쪽으로 정렬 */
-    background-color: #fff;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    z-index: 1;
-}
-
-.dropdown-status-option {
-    border-radius: 2px;
-    padding: 8px;
-    margin: 5px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    font-weight: bold;
-}
-
-/* 선택된 옵션 스타일 */
-.dropdown-status-option:hover {
-    background-color: #f0f0f0;
-}
-
-/* 상태별 아이콘 색상 */
-.status-할일 .status-icon {
-    color: #91918E; /* 회색 */
-}
-
-.status-진행중 .status-icon {
-    color: #5B97BD; /* 파란색 */
-}
-
-.status-완료 .status-icon {
-    color: #6C9B7D; /* 초록색 */
-}
-
-/* 선택된 상태에 맞는 클래스 */
-.status-할일 {
-    background-color: #E3E2E0;
-}
-
-.status-진행중 {
-    background-color: #D3E5EF;
-}
-
-.status-완료 {
-    background-color: #DBEDDB;
-}
 
 
 
