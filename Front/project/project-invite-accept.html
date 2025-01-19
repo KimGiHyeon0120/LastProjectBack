@@ -18,7 +18,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     const invitationId = urlParams.get('invitation_id'); // URL에서 초대 ID 가져오기
     const userIdxx = urlParams.get('inviter_id');
-    const API_URL = "http://localhost:3000/api";
+    const API_URL = "http://192.168.20.37:3000/api";
     sessionStorage.setItem('userIdx', userIdxx);
     const userIdx = sessionStorage.getItem('userIdx');
 
