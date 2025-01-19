@@ -4,11 +4,11 @@ const mysql = require('mysql2/promise');
 const router = express.Router();
 
 const db = mysql.createPool({
-    host: 'localhost',
-    port: 3306,
-    user: 'root',
-    password: '1234',
-    database: 'project',
+  host: 'localhost',
+  port: 3306,
+  user: 'root',
+  password: '1234',
+  database: 'project',
 });
 // 이메일 전송 설정
 const transporter = nodemailer.createTransport({
@@ -19,25 +19,35 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+
 // 팀 초대
 router.post("/invite", async (req, res) => {
   const { project_id, invitee_email } = req.body;
-  const inviter_id = req.user.user_idx; // 현재 로그인한 사용자 ID (미들웨어로 처리)
+
+  // 세션에서 사용자 정보 가져오기
+  const user = req.session.user;
+
+  if (!user) {
+    return res.status(401).json({ error: "로그인이 필요합니다." });
+  }
+
+  const inviter_id = user.user_idx; // 현재 로그인한 사용자 ID
 
   try {
     // 초대 정보 저장
     const [result] = await db.query(
-      "INSERT INTO Team_Invitations (project_id, inviter_user_idx, invitee_user_idx, status) VALUES (?, ?, (SELECT user_idx FROM Users WHERE user_email = ?), ?)",
-      [project_id, inviter_id, invitee_email, 'Pending'] // 초대 상태는 기본값 'Pending'
+      `INSERT INTO Team_Invitations (project_id, inviter_user_idx, invitee_user_idx, status)
+       VALUES (?, ?, (SELECT user_idx FROM Users WHERE user_email = ?), ?)`,
+      [project_id, inviter_id, invitee_email, "Pending"] // 초대 상태는 기본값 'Pending'
     );
 
-    // 이메일 전송
+    // 초대 이메일 전송
     const inviteLink = `http://127.0.0.1:5501/Front/project/project-invite-accept.html?invitation_id=${result.insertId}`;
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: invitee_email,
       subject: "팀 초대",
-      html: `<p>${req.user.user_name}님이 프로젝트에 초대했습니다.</p>
+      html: `<p>${user.user_name}님이 프로젝트에 초대했습니다.</p>
              <p>프로젝트 이름: ${project_id}</p>
              <a href="${inviteLink}">초대 수락</a>`,
     });
@@ -48,6 +58,9 @@ router.post("/invite", async (req, res) => {
     res.status(500).json({ error: "초대 전송에 실패했습니다." });
   }
 });
+
+
+
 // 초대 수락
 router.post('/invite/accept/:invitation_id', async (req, res) => {
   const invitationId = req.params.invitation_id;  // URL에서 invitation_id 가져오기
@@ -72,6 +85,7 @@ router.post('/invite/accept/:invitation_id', async (req, res) => {
     res.status(500).json({ error: '초대 수락에 실패했습니다.' });
   }
 });
+
 
 // 초대 거절
 router.post('/invite/decline/:invitation_id', async (req, res) => {
@@ -126,15 +140,15 @@ router.post('/verify-user-id-email', async (req, res) => {
     }
 
     // 인증 코드 생성 (6자리 숫자)
-    const verificationCode = Math.floor(100000 + Math.random() * 900000); 
+    const verificationCode = Math.floor(100000 + Math.random() * 900000);
 
     // 인증 코드 유효 시간 설정 (5분)
     const expirationTime = new Date();
     expirationTime.setMinutes(expirationTime.getMinutes() + 5);
 
     // 인증 코드와 만료 시간을 데이터베이스에 저장
-    await db.query('UPDATE users SET verification_code = ?, verification_code_expiration = ? WHERE user_email = ?', 
-    [verificationCode, expirationTime, email]);
+    await db.query('UPDATE users SET verification_code = ?, verification_code_expiration = ? WHERE user_email = ?',
+      [verificationCode, expirationTime, email]);
 
     // 이메일 발송
     const transporter = nodemailer.createTransport({
@@ -168,7 +182,7 @@ router.post('/verify-id-code', async (req, res) => {
   try {
     // 이메일과 인증 코드 확인 (만료되지 않은 코드만 확인)
     const [rows] = await db.query(
-      'SELECT user_id FROM users WHERE user_email = ? AND verification_code = ? AND verification_code_expiration > NOW()', 
+      'SELECT user_id FROM users WHERE user_email = ? AND verification_code = ? AND verification_code_expiration > NOW()',
       [email, verificationCode]
     );
 
@@ -179,7 +193,7 @@ router.post('/verify-id-code', async (req, res) => {
     // 인증이 완료된 후 유저 아이디 반환
     const userId = rows[0].user_id;
 
-    res.json({ userId } );
+    res.json({ userId });
   } catch (err) {
 
     res.status(500).json({ error: '서버 오류가 발생했습니다.' });

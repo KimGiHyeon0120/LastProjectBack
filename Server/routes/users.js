@@ -374,6 +374,54 @@ router.post('/password-verify', async (req, res) => {
 
 
 
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+// 사용자 검색 API
+router.get("/search", (req, res) => {
+    const { query, projectId } = req.query;
+
+    if (!query) {
+        return res.status(400).json({ error: "검색어(query)가 필요합니다." });
+    }
+
+    try {
+        // 검색어를 기반으로 사용자 검색 (이름 또는 이메일) + 팀원 제외 조건 추가
+        let sql = `
+            SELECT 
+                u.user_idx, 
+                u.user_name, 
+                u.user_email, 
+                u.user_profile_image 
+            FROM Users u
+            WHERE 
+                (u.user_name LIKE ? OR u.user_email LIKE ?)
+                AND u.user_is_active = 1
+                AND u.user_idx NOT IN (
+                    SELECT pm.user_idx 
+                    FROM Project_Members pm 
+                    WHERE pm.project_id = ?
+                )
+        `;
+        const params = [`%${query}%`, `%${query}%`, projectId];
+
+        // 데이터베이스에서 사용자 검색
+        connection.query(sql, params, (err, results) => {
+            if (err) {
+                console.error("사용자 검색 오류:", err);
+                return res.status(500).json({ error: "사용자 검색 중 오류가 발생했습니다." });
+            }
+
+            // 결과 반환
+            res.json(results);
+        });
+    } catch (err) {
+        console.error("서버 오류:", err);
+        res.status(500).json({ error: "서버에서 오류가 발생했습니다." });
+    }
+});
 
 
 
@@ -381,8 +429,8 @@ router.post('/password-verify', async (req, res) => {
 
 
 
-
-
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
 

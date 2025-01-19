@@ -85,7 +85,7 @@
     <script>
         const userIdx = sessionStorage.getItem("userIdx"); // 로그인된 사용자 ID
         const userIdxh = localStorage.getItem("userIdx"); // 사용자 ID
-        const API_URL = "http://192.168.20.37:3000/api";
+        const API_URL = "http://localhost:3000/api";
         //192.168.20.37
 
         $(document).ready(function () {
@@ -310,22 +310,31 @@
 
                             const additionalControls = isCurrentUserLeader && member.role !== "팀장"
                                 ? `
-                            <button class="grant-leader-btn" data-user-idx="${member.user_idx}">팀장 권한 부여</button>
-                            <button class="remove-member-btn" data-user-idx="${member.user_idx}">삭제</button>
-                            `
+                <button class="grant-leader-btn" data-user-idx="${member.user_idx}">팀장 권한 부여</button>
+                <button class="remove-member-btn" data-user-idx="${member.user_idx}">삭제</button>
+                `
                                 : "";
 
                             return `
-                            <li class="popup-project-settings-member-item 
-                                ${isCurrentUser ? "current-user" : ""}
-                                ${member.role === "팀장" ? "leader" : ""}" 
-                                data-user-idx="${member.user_idx}">
-                                ${member.name} ${additionalControls}
-                            </li>
-                            `;
+                <li class="popup-project-settings-member-item 
+                    ${isCurrentUser ? "current-user" : ""}
+                    ${member.role === "팀장" ? "leader" : ""}" 
+                    data-user-idx="${member.user_idx}">
+                    ${member.name} ${additionalControls}
+                </li>
+                `;
                         }).join("");
 
                         $("#list-team-members").html(teamMembersList);
+
+                        // 팀장일 경우 "추가 +" 버튼 추가
+                        if (isCurrentUserLeader) {
+                            $("#list-team-members").append(`
+                    <li class="popup-project-settings-member-item add-member-item">
+                        <button class="add-member-btn" data-project-id="${projectId}">+ 팀원 추가</button>
+                    </li>
+                `);
+                        }
 
                         // 팝업 열기
                         $("#popup-project-settings").data("project-id", projectId).fadeIn();
@@ -338,6 +347,148 @@
             });
 
 
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+            // 팀원 추가 버튼 클릭 이벤트
+            $(document).on("click", ".add-member-btn", function () {
+                const addMemberItem = $(this).closest(".add-member-item");
+                const projectId = $(this).data("project-id");
+
+                // 버튼을 입력 필드로 전환
+                addMemberItem.html(`
+        <input type="email" class="add-member-input" placeholder="초대할 이메일 입력" />
+        <div id="autocomplete-email-box" class="autocomplete-box"></div>
+        <button class="confirm-add-member-btn" data-project-id="${projectId}">확인</button>
+        <button class="cancel-add-member-btn">취소</button>
+    `);
+            });
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+            // 자동완성 기능
+            $(document).on("keyup", ".add-member-input", function () {
+                const query = $(this).val().trim();
+                const projectId = $(this).siblings(".confirm-add-member-btn").data("project-id");
+                const autocompleteBox = $(this).siblings("#autocomplete-email-box");
+
+                if (query.length < 2) {
+                    autocompleteBox.hide(); // 입력이 짧으면 숨김
+                    return;
+                }
+
+                // 서버에 검색 요청
+                $.ajax({
+                    url: `${API_URL}/users/search`,
+                    method: "GET",
+                    data: { query, projectId }, // query: 검색어, projectId: 현재 프로젝트 ID
+                    success: function (users) {
+                        autocompleteBox.empty().show(); // 이전 결과 초기화 후 표시
+
+                        if (users.length === 0) {
+                            autocompleteBox.append(`<div class="autocomplete-item">결과가 없습니다.</div>`);
+                            return;
+                        }
+
+                        users.forEach(user => {
+                            autocompleteBox.append(`
+                                <div class="autocomplete-item" data-email="${user.user_email}">
+                                    <img src="${user.user_profile_image || '../profile/default-profile.png'}" 
+                                        alt="프로필" 
+                                        style="width:20px; height:20px; border-radius:50%; margin-right:10px;">
+                                    ${user.user_name} (${user.user_email})
+                                </div>
+                            `);
+                        });
+                    },
+                    error: function (err) {
+                        console.error("사용자 검색 오류:", err);
+                    },
+                });
+            });
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+            // 자동완성 항목 클릭
+            $(document).on("click", ".autocomplete-item", function () {
+                const selectedEmail = $(this).data("email");
+                const inputField = $(this).closest(".add-member-item").find(".add-member-input");
+
+                inputField.val(selectedEmail); // 선택된 이메일을 입력 필드에 설정
+                $("#autocomplete-email-box").hide(); // 자동완성 박스 숨김
+            });
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+            // 텍스트 박스 외부 클릭 시 자동완성 박스 숨김
+            $(document).on("click", function (e) {
+                if (!$(e.target).closest(".add-member-input, #autocomplete-email-box").length) {
+                    $("#autocomplete-email-box").hide();
+                }
+            });
+
+
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+            // 확인 버튼
+            $(document).on("click", ".confirm-add-member-btn", function () {
+                const projectId = $(this).data("project-id");
+                const inviteeEmail = $(this).siblings(".add-member-input").val().trim();
+            
+                if (!inviteeEmail) {
+                    alert("초대할 이메일을 입력하세요.");
+                    return;
+                }
+            
+                // 초대 요청 전송
+                $.ajax({
+                    url: `${API_URL}/verifyEmail/invite`,
+                    method: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({ project_id: projectId, invitee_email: inviteeEmail }),
+                    success: function (response) {
+                        alert("초대 이메일이 전송되었습니다.");
+                        // 팀 초대 필드를 기존의 "추가 +" 버튼으로 복원
+                        restoreAddMemberButton(projectId);
+                    },
+                    error: function (err) {
+                        console.error("초대 요청 실패:", err);
+                        alert("초대 요청에 실패했습니다.");
+                    },
+                });
+            });
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+            //취소 버튼 클릭
+            $(document).on("click", ".cancel-add-member-btn", function () {
+                const projectId = $(this).siblings(".confirm-add-member-btn").data("project-id");
+                restoreAddMemberButton(projectId);
+            });
+
+
+            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+            // "추가 +" 버튼 복원 함수
+            function restoreAddMemberButton(projectId) {
+                const addMemberItem = $(".add-member-item");
+                addMemberItem.html(`
+                    <button class="add-member-btn" data-project-id="${projectId}">+ 팀원 추가</button>
+                `);
+            }
 
 
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
