@@ -75,7 +75,6 @@
             <form class="popup-form">
                 <label>작업 이름</label>
                 <input type="text" id="editTaskName" placeholder="작업 이름을 입력하세요" required />
-
                 <label>작업 설명</label>
                 <textarea id="editTaskDescription" placeholder="작업 설명을 입력하세요"></textarea>
                 <div class="date-container">
@@ -235,6 +234,7 @@
 
 
                 const tasksHTML = sprint.tasks.map(task => {
+                    console.log("Rendering task with ID:", task.taskId); // taskId 콘솔 출력
                     return `
                         <div class="task-card" 
                             ${userRole === "팀원" ? '' : `draggable="true" ondragstart="dragTask(event)"`} 
@@ -1008,11 +1008,8 @@
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
             $("#addSprintBtn").click(function () {
-                // 오늘 날짜 디폴트 값 설정
-                const today = getTodayDate();
+                console.log("스프린트 추가 버튼 클릭"); // 클릭 이벤트 테스트
                 $("#sprintName").val(""); // 스프린트 이름 초기화
-
-                // 팝업 열기
                 $(".popup-background").fadeIn();
                 $("#sprintPopup").fadeIn();
             });
@@ -1401,40 +1398,56 @@
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
+
+
+
+
+
+
+
+
+
+
         // 작업 편집 팝업 열기
         function openEditTaskPopup(taskId) {
+            // taskId가 전달되지 않은 경우
             if (!taskId) {
                 console.error("작업 ID가 전달되지 않았습니다.");
                 alert("작업 ID가 유효하지 않습니다. 페이지를 새로고침합니다.");
                 window.location.reload(); // 작업 ID가 없으면 새로고침
                 return;
             }
-
+        
+            // taskId를 콘솔에 출력
+            console.log("넘겨받은 작업 ID:", taskId);
+        
             $.ajax({
                 url: `${API_URL}/tasks/${taskId}`,
                 method: "GET",
                 success: async function (task) {
+                    console.log("로드된 작업 ID:", taskId); // 확인용 추가 로그
+        
                     $("#saveEditTaskBtn").data("task-id", taskId);
-
+        
                     $("#editTaskName").val(task.taskName || "");
                     $("#editTaskDescription").val(task.description || "");
                     $("#editTaskStartDate").val(task.startDate ? task.startDate.split("T")[0] : "");
                     $("#editTaskDueDate").val(task.dueDate ? task.dueDate.split("T")[0] : "");
-
+        
                     const isEditable = userRole === "팀장" || userIdx == task.assignedTo;
                     $("#editTaskName, #editTaskDescription, #editTaskStartDate, #editTaskDueDate, #editTaskStatus, #editTaskAssignedTo")
                         .prop("disabled", !isEditable);
                     $("#saveEditTaskBtn, #deleteTaskBtn").toggle(isEditable);
-
+        
                     loadTaskStatus(task.statusId, isEditable);
-
+        
                     const projectId = sessionStorage.getItem("projectId");
                     if (projectId) {
                         await renderEditAssigneeDropdown(projectId, task.assignedTo);
                     } else {
                         console.error("프로젝트 ID를 찾을 수 없습니다.");
                     }
-
+        
                     $(".popup-background").fadeIn();
                     $("#editTaskPopup").fadeIn();
                 },
@@ -1445,7 +1458,6 @@
                 }
             });
         }
-
 
 
 

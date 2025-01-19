@@ -29,20 +29,12 @@ router.post('/create', async (req, res) => {
         return res.status(400).json({ message: '필수 필드를 모두 입력해주세요.' });
     }
 
-    // 날짜 유효성 검증
-    if (!startDate || !endDate) {
-        return res.status(400).json({ message: '시작일과 종료일을 입력해주세요.' });
-    }
-
-    if (new Date(startDate) > new Date(endDate)) {
-        return res.status(400).json({ message: '시작일은 종료일보다 이전이어야 합니다.' });
-    }
 
     try {
         // 스크립트 생성
         const [result] = await connection.promise().query(
-            `INSERT INTO Sprints (project_id, sprint_name, start_date, end_date) VALUES (?, ?, ?, ?)`,
-            [projectId, sprintName, startDate, endDate]
+            `INSERT INTO Sprints (project_id, sprint_name) VALUES (?, ?)`,
+            [projectId, sprintName]
         );
 
         res.status(201).json({
