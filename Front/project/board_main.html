@@ -480,102 +480,149 @@
 
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-
         function loadStatusDropdown(task) {
-    $.ajax({
-        url: `${API_URL}/tasks/status-list`,
-        method: "GET",
-        success: function (statuses) {
-            if (!Array.isArray(statuses) || statuses.length === 0) {
-                console.error("상태 목록 데이터가 비어 있습니다.");
-                return;
-            }
+            $.ajax({
+                url: `${API_URL}/tasks/status-list`,
+                method: "GET",
+                success: function (statuses) {
+                    if (!Array.isArray(statuses) || statuses.length === 0) {
+                        console.error("상태 목록 데이터가 비어 있습니다.");
+                        return;
+                    }
 
-            const statusOptions = statuses.map(status => {
-                const statusClass = `status-${status.name.replace(/\s+/g, '')}`;
-                const isSelected = task.statusId === status.id ? 'selected' : '';
-                return `
-                    <div 
-                        class="dropdown-status-option ${statusClass}" 
-                        data-status-id="${status.id}" 
-                        data-status-name="${status.name}">
-                        <span class="status-icon">●</span>
-                        ${status.name}
-                    </div>
-                `;
-            }).join("");
+                    // 현재 상태를 제외한 나머지 상태 필터링
+                    const filteredStatuses = statuses.filter(status => status.id !== task.statusId);
 
-            const dropdown = $(`#statusDropdown-${task.taskId}`);
-            const dropdownOptions = $(`#dropdown-options-${task.taskId}`);
+                    // 상태 목록 HTML 생성
+                    const statusOptions = filteredStatuses.map(status => {
+                        const statusClass = `status-${status.name.replace(/\s+/g, '')}`;
+                        return `
+                        <div 
+                            class="dropdown-status-option ${statusClass}" 
+                            data-status-id="${status.id}" 
+                            data-status-name="${status.name}">
+                            <span class="status-icon">●</span>
+                            ${status.name}
+                        </div>
+                    `;
+                    }).join("");
 
-            if (!dropdown.length) {
-                console.error(`드롭다운 요소를 찾을 수 없습니다. 작업 ID: ${task.taskId}`);
-                return;
-            }
+                    const dropdown = $(`#statusDropdown-${task.taskId}`);
+                    const dropdownOptions = $(`#dropdown-options-${task.taskId}`);
 
-            dropdownOptions.html(statusOptions);
+                    if (!dropdown.length) {
+                        console.error(`드롭다운 요소를 찾을 수 없습니다. 작업 ID: ${task.taskId}`);
+                        return;
+                    }
 
-            const selectedStatus = statuses.find(status => status.id === task.statusId);
-            if (selectedStatus) {
-                const selectedClass = `status-${selectedStatus.name.replace(/\s+/g, '')}`;
-                dropdown.addClass(selectedClass);
-                dropdown.find(".selected-status").text(selectedStatus.name);
+                    dropdownOptions.html(statusOptions);
 
-      
-            } else {
-                console.warn(`선택된 상태를 찾을 수 없습니다. 작업 ID: ${task.taskId}`);
-            }
+                    // 현재 상태 표시
+                    const selectedStatus = statuses.find(status => status.id === task.statusId);
+                    if (selectedStatus) {
+                        const selectedClass = `status-${selectedStatus.name.replace(/\s+/g, '')}`;
+                        dropdown.addClass(selectedClass);
+                        dropdown.find(".selected-status").text(selectedStatus.name);
+                    } else {
+                        console.warn(`선택된 상태를 찾을 수 없습니다. 작업 ID: ${task.taskId}`);
+                    }
 
-            dropdown.on("click", function () {
-                dropdownOptions.toggle();
+                    dropdown.on("click", function () {
+                        dropdownOptions.toggle();
+                    });
+
+                    dropdownOptions.on("click", ".dropdown-status-option", function () {
+                        const selectedStatus = $(this).data("status-name");
+                        const selectedStatusId = $(this).data("status-id");
+
+                        dropdown.find(".selected-status").text(selectedStatus);
+                        dropdownOptions.hide();
+
+                        task.statusId = selectedStatusId;
+
+                        // 상태 변경을 서버에 반영
+                        $.ajax({
+                            url: `${API_URL}/tasks/update`,
+                            method: "PUT",
+                            contentType: "application/json",
+                            data: JSON.stringify({
+                                taskId: task.taskId,
+                                status: selectedStatusId,
+                                changedBy: sessionStorage.getItem("userIdx"),
+                            }),
+                            success: function (response) {
+                                fetchSprints();
+                            },
+                            error: function (err) {
+                                console.error(`작업 ID ${task.taskId} 상태 업데이트 중 오류 발생:`, err);
+                                alert("상태 변경에 실패했습니다. 다시 시도해주세요.");
+                            },
+                        });
+                    });
+
+                    dropdownOptions.hide();
+                },
+                error: function (err) {
+                    console.error("상태 목록 API 호출 오류:", err);
+                }
             });
+        }
 
-            dropdownOptions.on("click", ".dropdown-status-option", function () {
-                const selectedStatus = $(this).data("status-name");
-                const selectedStatusId = $(this).data("status-id");
 
-                dropdown.find(".selected-status").text(selectedStatus);
-                dropdownOptions.hide();
 
-                task.statusId = selectedStatusId;
 
-                // 상태 변경을 서버에 반영
-                $.ajax({
-                    url: `${API_URL}/tasks/update`,
-                    method: "PUT",
-                    contentType: "application/json",
-                    data: JSON.stringify({
-                        taskId: task.taskId,
-                        status: selectedStatusId,
-                        changedBy: sessionStorage.getItem("userIdx")
-                    }),
-                    success: function (response) {
-                        // 상태 변경 성공 시 추가 작업
-                        // 화면 새로고침
-                        fetchSprints();
-                    },
-                    error: function (err) {
-                        console.error(`작업 ID ${task.taskId} 상태 업데이트 중 오류 발생:`, err);
+        // 전역 이벤트 리스너 등록
+        $(document).off("change", ".task-status-dropdown").on("change", ".task-status-dropdown", function () {
+            const dropdown = $(this);
+            const newStatus = dropdown.val(); // 선택한 새로운 상태 값
+            const taskId = dropdown.data("task-id"); // 작업 ID
+            const changedBy = sessionStorage.getItem("userIdx"); // 변경한 사용자 ID (세션에서 가져옴)
+
+
+            if (!taskId || !newStatus) {
+                console.error("작업 ID 또는 새로운 상태 값이 유효하지 않습니다.");
+                return;
+            }
+
+            // 상태 업데이트 요청
+            $.ajax({
+                url: `${API_URL}/tasks/update`,
+                method: "PUT",
+                contentType: "application/json",
+                data: JSON.stringify({
+                    taskId: parseInt(taskId, 10), // 작업 ID를 숫자로 변환
+                    status: parseInt(newStatus, 10), // 상태 ID를 숫자로 변환
+                    changedBy: parseInt(changedBy, 10) // 변경한 사용자 ID를 숫자로 변환
+                }),
+                beforeSend: function () {
+                    if (!taskId || !newStatus || !changedBy) {
+                        console.error("필수 데이터 누락:", { taskId, newStatus, changedBy });
+                        alert("업데이트에 필요한 데이터가 누락되었습니다.");
+                        return false; // 요청 중단
+                    }
+                },
+                success: function (response) {
+
+                    // 화면 전체 새로고침 대신 필요한 부분만 갱신
+                    fetchSprints(); // 데이터 새로고침 함수 호출
+                },
+                error: function (err) {
+                    console.error(`작업 ID ${taskId} 상태 업데이트 중 오류 발생:`, {
+                        status: err.status,
+                        response: err.responseJSON || err.responseText
+                    });
+
+                    // 오류 시 사용자에게 알림
+                    if (err.status === 400) {
+                        alert("잘못된 요청입니다. 입력값을 확인해주세요.");
+                    } else if (err.status === 500) {
+                        alert("서버에서 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
+                    } else {
                         alert("상태 변경에 실패했습니다. 다시 시도해주세요.");
                     }
-                });
+                }
             });
-
-         
-
-            dropdownOptions.hide();
-        },
-        error: function (err) {
-            console.error("상태 목록 API 호출 오류:", err);
-        }
-    });
-}
-
-
-
-
-
-
+        });
 
 
 
@@ -1191,30 +1238,55 @@
                     }
 
                     // AJAX 요청
+                    // AJAX 요청
                     $.ajax({
                         url: `${API_URL}/tasks/update`,
                         method: "PUT",
                         contentType: "application/json",
                         data: JSON.stringify({
-                            taskId,
-                            taskName,
-                            description,
-                            startDate,
-                            dueDate,
-                            status: status || 1,
-                            changedBy: userIdx, // 변경한 사용자
-                            assignedTo // null 또는 선택된 사용자 ID 전달
+                            taskId: taskId || null, // 작업 ID, null일 경우 오류 방지
+                            taskName: taskName || null, // 작업 이름
+                            description: description || null, // 작업 설명
+                            startDate: startDate || null, // 시작 날짜
+                            dueDate: dueDate || null, // 종료 날짜
+                            status: status || 1, // 상태 ID, 기본값 1
+                            changedBy: userIdx || null, // 변경한 사용자 ID
+                            assignedTo: assignedTo || null // 담당자 ID
                         }),
+                        beforeSend: function () {
+                            // 필수 데이터 유효성 검사
+                            if (!taskId || !taskName || !changedBy) {
+                                console.error("필수 데이터 누락:", { taskId, taskName, changedBy });
+                                alert("작업 저장에 필요한 데이터가 누락되었습니다.");
+                                return false; // 요청 중단
+                            }
+                        },
                         success: function (response) {
+
+                            // 팝업 및 배경 숨기기
                             $("#editTaskPopup").fadeOut();
                             $(".popup-background").fadeOut();
-                            fetchSprints(); // 화면 새로고침
+
+                            // 화면 새로고침 또는 일부 업데이트
+                            fetchSprints();
                         },
                         error: function (err) {
-                            console.error("작업 저장 오류:", err);
-                            alert("작업 저장 중 오류가 발생했습니다.");
+                            console.error("작업 저장 오류:", {
+                                status: err.status,
+                                response: err.responseJSON || err.responseText
+                            });
+
+                            // 사용자 알림
+                            if (err.status === 400) {
+                                alert("잘못된 요청입니다. 입력값을 확인해주세요.");
+                            } else if (err.status === 500) {
+                                alert("서버에서 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
+                            } else {
+                                alert("작업 저장 중 오류가 발생했습니다. 다시 시도해주세요.");
+                            }
                         }
                     });
+
                 });
 
 

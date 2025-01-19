@@ -236,7 +236,6 @@ ORDER BY t.due_date ASC; -- 스프린트 이름별 정렬
 router.put('/update', async (req, res) => {
     const { taskId, taskName, description, assignedTo, status, priority, dueDate, startDate, changedBy } = req.body;
 
-
     if (!taskId || !changedBy) {
         console.error("필수 필드 누락: taskId 또는 changedBy");
         return res.status(400).json({ message: '작업 ID와 변경자 ID는 필수입니다.' });
@@ -288,9 +287,9 @@ router.put('/update', async (req, res) => {
         }
 
         // 작업 이름 변경
-        if (taskName && taskName !== oldData.task_name) {
+        if (taskName && taskName.trim() !== oldData.task_name) {
             fieldsToUpdate.push("task_name = ?");
-            updateValues.push(taskName);
+            updateValues.push(taskName.trim());
 
             historyRecords.push({
                 changed_field: "task_name",
@@ -302,9 +301,9 @@ router.put('/update', async (req, res) => {
         }
 
         // 작업 설명 변경
-        if (description !== undefined && description !== oldData.description) {
+        if (description !== undefined && description.trim() !== oldData.description) {
             fieldsToUpdate.push("description = ?");
-            updateValues.push(description);
+            updateValues.push(description.trim());
 
             historyRecords.push({
                 changed_field: "description",
@@ -405,6 +404,7 @@ router.put('/update', async (req, res) => {
         res.status(500).json({ message: '작업 수정 중 오류가 발생했습니다.' });
     }
 });
+
 
 
 

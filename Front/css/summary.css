@@ -43,8 +43,8 @@ body {
     font-weight: bold;
     color: #e91e63;
 }
-
 .content {
+    display: none;
     margin-top: 20px;
     padding: 20px;
     background-color: #fff;
@@ -52,21 +52,30 @@ body {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.hidden {
-    display: none;
+.content.active {
+    display: block;
 }
 
-/* .row에서 두 컬럼을 수평 배치 */
+.hidden {
+    display: none; /* 추가적인 숨김 처리 */
+}
+
+/* 전체 행 스타일 */
 .row {
     display: flex;
     justify-content: space-between;
-    gap: 20px; /* 두 열 사이에 간격 추가 */
+    gap: 20px;
+    /* 두 열 사이에 간격 */
     margin-top: 20px;
+    /* 행 간격 */
+    width: 100%;
+    /* 행이 화면 전체를 차지하도록 설정 */
 }
 
 /* 왼쪽 컬럼 스타일 */
 .left-column {
     flex: 1;
+    /* 동일한 비율로 좌우 공간 차지 */
     padding: 20px;
     background-color: #fff;
     border-radius: 8px;
@@ -76,6 +85,7 @@ body {
 /* 오른쪽 컬럼 스타일 */
 .right-column {
     flex: 1;
+    /* 동일한 비율로 좌우 공간 차지 */
     padding: 20px;
     background-color: #fff;
     border-radius: 8px;
@@ -88,7 +98,8 @@ body {
     border-collapse: collapse;
 }
 
-#task-table th, #task-table td {
+#task-table th,
+#task-table td {
     padding: 12px;
     text-align: left;
     border-bottom: 1px solid #ddd;
@@ -153,4 +164,439 @@ body {
 
 #team-member-list li:hover {
     background-color: #e6e6e6;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* 팀원별 작업 현황 요약 */
+
+/* 상태별 스타일 (th 전용) */
+.status-th {
+    font-weight: bold;
+    /* 글자 굵기 */
+    text-align: center;
+    padding: 10px;
+}
+
+.status-할일 {
+    background-color: #f0f9ff;
+    /* 파란색 톤 */
+    color: #007bff;
+}
+
+.status-진행중 {
+    background-color: #fff9e6;
+    /* 노란색 톤 */
+    color: #ffc107;
+}
+
+.status-완료 {
+    background-color: #e6ffe6;
+    /* 초록색 톤 */
+    color: #28a745;
+}
+
+/* 테이블 스타일 */
+#team-tasks-table {
+    width: 80%;
+    /* 테이블 너비 */
+    margin: 20px auto;
+    /* 중앙 정렬 */
+    border-collapse: collapse;
+    /* 테두리 겹침 제거 */
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    color: #333;
+    /* 기본 텍스트 색상 */
+    text-align: center;
+    /* 테이블 내부 텍스트 가운데 정렬 */
+}
+
+#team-tasks-table th,
+#team-tasks-table td {
+    border: 1px solid #ddd;
+    /* 셀 테두리 */
+    padding: 10px;
+    /* 셀 패딩 */
+    text-align: center;
+    /* 셀 텍스트 가운데 정렬 */
+}
+
+#team-tasks-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+    /* 짝수 행 배경색 */
+}
+
+#team-tasks-table tr:hover {
+    background-color: #f1f1f1;
+    /* 마우스 오버 시 배경색 */
+}
+
+/* 본인 강조 스타일 */
+.highlight-row {
+    background-color: #e3f2fd;
+    /* 연한 파란색 배경 */
+    font-weight: bold;
+    /* 글자 굵기 */
+    color: #007bff;
+    /* 파란색 글씨 */
+}
+
+.highlight-row td {
+    font-weight: bold;
+    /* 본인 줄 전체 굵은 글씨 */
+    color: #007bff;
+    /* 본인 줄 전체 파란 글씨 */
+}
+
+/* 테이블 컨테이너 */
+#team-tasks-container {
+    max-height: 300px;
+    /* 최대 높이 제한 */
+    overflow-y: auto;
+    /* 세로 스크롤 활성화 */
+    border: 1px solid #ddd;
+    /* 테두리 추가 */
+    border-radius: 8px;
+    /* 모서리 둥글게 */
+    padding: 10px;
+    /* 내부 여백 */
+    margin-top: 20px;
+    /* 상단 여백 */
+}
+
+/* 테이블을 화면 중앙에 정렬 */
+.content {
+    display: flex;
+    justify-content: center;
+    /* 가로 중앙 정렬 */
+    align-items: flex-start;
+    /* 세로는 상단 정렬 */
+    min-height: 100vh;
+    /* 화면 전체 높이 */
+    flex-direction: column;
+    padding: 20px;
+    /* 외부 여백 */
+}
+
+/* 푸터 스타일 */
+.team-tasks-table-footer {
+    background-color: #f9f9f9;
+    /* 푸터 배경 */
+    font-weight: bold;
+    /* 글자 굵게 */
+}
+
+
+
+
+
+
+/* 전체 프로젝트 진행률 */
+
+/* 원형 그래프 크기 조정 */
+#projectProgressChart {
+    max-width: 400px;
+    /* 최대 너비 설정 */
+    max-height: 400px;
+    /* 최대 높이 설정 */
+    width: 100%;
+    /* 부모 컨테이너의 너비에 맞춤 */
+    height: auto;
+    /* 비율을 유지하면서 높이 조정 */
+}
+
+
+
+
+
+
+
+
+/* 스프린트별 작업량 */
+
+#sprintTasksChart {
+    max-width: 100%;
+    /* 부모 컨테이너의 너비에 맞춤 */
+    max-height: 400px;
+    /* 최대 높이 설정 */
+    width: 100%;
+    /* 그래프가 부모 컨테이너를 채우도록 설정 */
+    height: auto;
+    /* 비율 유지 */
+    display: block;
+    /* 그래프를 블록 요소로 설정 */
+    margin: 0 auto;
+    /* 중앙 정렬 */
+}
+
+
+
+
+
+
+
+
+/* 마감 임박 프로젝트 */
+
+
+
+/* 리스트 */
+
+.urgent-tasks-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    max-height: 400px;
+    overflow-y: auto;
+    max-height: calc(7 * 60px);
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    padding: 10px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.urgent-task-item {
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #ffffff;
+    font-family: Arial, sans-serif;
+    font-size: 0.9rem;
+    color: #333;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.urgent-task-item:last-child {
+    margin-bottom: 0;
+}
+
+.urgent-task-item strong {
+    color: #007bff;
+}
+
+.urgent-task-item em {
+    font-style: italic;
+    margin-left: 5px;
+    color: #555;
+}
+
+.urgent-task-item span {
+    margin-left: 10px;
+    color: #666;
+}
+
+.urgent-task-item:hover {
+    transform: scale(1.02);
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+
+
+
+
+/* 카드 */
+
+/*
+#urgent-tasks-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 10px;
+    max-height: 600px;
+    overflow-y: auto;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.task-card {
+    width: 250px;
+    min-height: 150px;
+    max-height: 300px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #ffffff;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.task-card h4 {
+    margin: 0 0 10px 0;
+    font-size: 1.2rem;
+    color: #007bff;
+}
+
+.task-card p {
+    margin: 5px 0;
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.task-card:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.task-card.high-priority {
+    background-color: #ffe6e6;
+    border-color: #ff3333;
+}
+
+.task-card.medium-priority {
+    background-color: #fffbe6;
+    border-color: #ffc107;
+}
+
+.task-card.low-priority {
+    background-color: #e6ffe6;
+    border-color: #28a745;
+}
+
+@media (max-width: 768px) {
+    .task-card {
+        width: 200px;
+    }
+}
+
+@media (max-width: 480px) {
+    .task-card {
+        width: 100%;
+    }
+}
+
+*/
+
+
+
+
+
+
+
+/* 내 작업 리스트 */
+
+/* 작업 섹션 스타일 */
+#mytasks {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* 작업 리스트 스타일 */
+.mytasks-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 650px;
+    overflow-y: auto;
+}
+
+/* 스프린트 항목 스타일 */
+.mytasks-list li {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #ffffff;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    overflow: hidden;
+}
+
+/* 스프린트 제목 스타일 */
+.mytasks-list li h4 {
+    margin: 0 0 15px;
+    font-size: 1.4rem;
+    color: #0056b3;
+    border-bottom: 2px solid #0056b3;
+    padding-bottom: 5px;
+}
+
+/* 테이블 스타일 */
+.mytasks-list li table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.mytasks-list li table th,
+.mytasks-list li table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+
+.mytasks-list li table th {
+    background-color: #0056b3;
+    color: #fff;
+    font-weight: bold;
+    text-align: center;
+}
+
+.mytasks-list li table td {
+    text-align: center;
+}
+
+.mytasks-list li table tbody tr:nth-child(odd) {
+    background-color: #f9f9f9;
+}
+
+.mytasks-list li table tbody tr:nth-child(even) {
+    background-color: #ffffff;
+}
+
+.mytasks-list li table tbody tr:hover {
+    background-color: #e9f5ff;
+    transition: background-color 0.3s ease;
+}
+
+/* 스프린트 카드 hover 효과 */
+.mytasks-list li:hover {
+    transform: scale(1.02);
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* 반응형 테이블 */
+@media (max-width: 768px) {
+    .mytasks-list li table th,
+    .mytasks-list li table td {
+        font-size: 0.8rem;
+        padding: 6px;
+    }
+
+    .mytasks-list li h4 {
+        font-size: 1.2rem;
+    }
 }
