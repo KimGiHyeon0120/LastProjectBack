@@ -11,6 +11,7 @@
     <script src="../script/header.js"></script>
     <link rel="stylesheet" href="../css/board_main.css">
     <link rel="stylesheet" href="../css/form-control.css">
+    <link rel="stylesheet" href="../css/popup.css">
 </head>
 
 
@@ -47,77 +48,77 @@
 
 
 
+<!-- 팝업 배경 (오버레이) -->
+<div class="popup-background" id="popupBackground"></div>
 
-        <!-- 작업 편집 팝업 -->
-        <div class="popup" id="editTaskPopup" style="display: none;">
-            <div class="popup-header">작업 편집</div>
-            <form class="popup-form">
-                <label>작업 이름</label>
-                <input type="text" id="editTaskName" placeholder="작업 이름을 입력하세요" required />
+<!-- 작업 편집 팝업 -->
+<div class="popup" id="editTaskPopup" style="display: none;">
+    <div class="popup-header">
+        <div class="header-text">작업 편집</div>
+        <button type="button" class="delete-btn" id="deleteTaskBtn"></button>
+    </div>
+    <form class="popup-form">
+        <label>작업 이름</label>
+        <input type="text" id="editTaskName" placeholder="작업 이름을 입력하세요" required />
 
-                <label>작업 설명</label>
-                <textarea id="editTaskDescription" placeholder="작업 설명을 입력하세요"></textarea>
-
-                <label>시작 날짜</label>
-                <input type="date" id="editTaskStartDate" />
-
-                <label>마감 날짜</label>
-                <input type="date" id="editTaskDueDate" />
-
-                <label>작업 상태</label>
-                <select id="editTaskStatus"></select>
-
-                <label>담당자</label>
-                <select id="editTaskAssignedTo" required>
-                    <option value="">담당자를 선택하세요</option>
-                    <!-- JavaScript로 동적 추가 -->
-                </select>
-
-                <div class="popup-buttons">
-                    <button type="button" class="cancel-btn" id="cancelEditTaskBtn">취소</button>
-                    <button type="button" class="save-btn" id="saveEditTaskBtn">저장</button>
-                    <button type="button" class="delete-btn" id="deleteTaskBtn">삭제</button>
+        <label>작업 설명</label>
+        <textarea id="editTaskDescription" placeholder="작업 설명을 입력하세요"></textarea>
+        <div class="date-container">
+            <div class="date-field">
+        <label>시작 날짜</label>
+        <input type="date" id="editTaskStartDate" />
                 </div>
-            </form>
+                <div class="date-field">
+        <label>마감 날짜</label>
+        <input type="date" id="editTaskDueDate" />
         </div>
+    </div>
+  
 
+        <div class="popup-buttons">
+            <button type="button" class="cancel-btn" id="cancelEditTaskBtn">취소</button>
+            <button type="button" class="save-btn" id="saveEditTaskBtn">저장</button>
 
-        <!-- 작업 추가 팝업 -->
-        <div class="popup" id="addTaskPopup">
-            <div class="popup-header">작업 추가</div>
-            <form class="popup-form">
-                <label>작업 이름</label>
-                <input type="text" id="taskName" placeholder="작업 이름을 입력하세요" required />
-
-                <label>작업 설명</label>
-                <textarea id="taskDescription" placeholder="작업 설명을 입력하세요"></textarea>
-
-                <label>시작 날짜</label>
-                <input type="date" id="taskStartDate" required />
-
-                <label>마감 날짜</label>
-                <input type="date" id="taskDueDate" required />
-
-                <!-- 담당자 선택 추가 -->
-                <label>담당자</label>
-                <select id="taskAssignedTo" required>
-                    <option value="" selected>담당자 없음</option> <!-- 기본값 설정 -->
-                    <!-- 팀원 목록은 JavaScript로 동적 추가 -->
-                </select>
-
-                <div class="popup-buttons">
-                    <button type="button" class="cancel-btn" id="cancelTaskBtn">취소</button>
-                    <button type="button" class="create-btn" id="taskCreateBtn" data-sprint-id="">추가</button>
-                </div>
-            </form>
         </div>
+    </form>
+</div>
+
+<!-- 작업 추가 팝업 -->
+<div class="popup" id="addTaskPopup">
+    <div class="popup-header">작업 추가</div>
+    <form class="popup-form">
+        <label>작업 이름</label>
+        <input type="text" id="taskName" placeholder="작업 이름을 입력하세요" required />
+
+        <label>작업 설명</label>
+        <textarea id="taskDescription" placeholder="작업 설명을 입력하세요"></textarea>
+        <div class="date-container">
+            <div class="date-field">
+        <label>시작 날짜</label>
+        <input type="date" id="taskStartDate" required />
+    </div>
+    <div class="date-field">
+        <label>마감 날짜</label>
+        <input type="date" id="taskDueDate" required />
+    </div>
+</div>
+
+     
 
 
+        <!-- 담당자 선택 추가 -->
+        <label>담당자</label>
+        <select id="taskAssignedTo" required>
+            <option value="" selected>담당자 없음</option> <!-- 기본값 설정 -->
+            <!-- 팀원 목록은 JavaScript로 동적 추가 -->
+        </select>
 
-
-
-        <!-- 팝업 배경 -->
-        <div class="popup-background"></div>
+        <div class="popup-buttons">
+            <button type="button" class="cancel-btn" id="cancelTaskBtn">취소</button>
+            <button type="button" class="create-btn" id="taskCreateBtn" data-sprint-id="">추가</button>
+        </div>
+    </form>
+</div>
 
         <!-- 스프린트 생성 팝업 -->
         <div class="popup" id="sprintPopup">
