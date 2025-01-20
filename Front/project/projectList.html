@@ -190,8 +190,8 @@
                         <tr class="project-row" data-project-id="${project.project_id}">
                             <td><div class="project-name">${project.project_name}</div></td>
                             <td>${userRole}</td>
-                            <td class="leader-info">
-                                <img src="${project.leader_profile}" alt="${project.leader_name}'s Profile" class="leader-profile-img" width="27" height="27" style="border-radius: 50%;">
+                            <td class="leader-info" style="display: flex; align-items: center;">
+                                <img src="${project.leader_profile}" alt="${project.leader_name}'s Profile" class="leader-profile-img" width="27" height="27" style="border-radius: 50%; margin-right: 8px;">
                                 <span>${project.leader_name || "정보 없음"}</span>
                             </td>
                             <td class="text-right">
@@ -340,6 +340,8 @@
             
                         const teamMembersList = project.team_members.map(member => {
                             const isCurrentUser = parseInt(userIdx, 10) === parseInt(member.user_idx, 10);
+
+                            
             
                             const additionalControls = isCurrentUserLeader && member.role !== "팀장"
                                 ? ` 
@@ -402,6 +404,7 @@
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
+            
             // 자동완성 기능
             $(document).on("keyup", ".add-member-input", function () {
                 const query = $(this).val().trim();
@@ -431,8 +434,8 @@
                                 <div class="autocomplete-item" data-email="${user.user_email}">
                                     <img src="${user.user_profile_image || '../profile/default-profile.png'}" 
                                         alt="프로필" 
-                                        style="width:20px; height:20px; border-radius:50%; margin-right:10px;">
-                                    ${user.user_name} (${user.user_email})
+                                        style="width: 20px; height: 20px; border-radius: 50%; margin-right: 10px;">
+                                    <span>${user.user_name} (${user.user_email})</span>
                                 </div>
                             `);
                         });

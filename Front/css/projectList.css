@@ -301,7 +301,11 @@ body {
     color: #0056b3;
     /* 본인 강조 글자 색 */
 }
-
+.popup-project-settings-member-item span {
+    display: flex;
+    align-items: center; /* 이미지와 텍스트 수직 정렬 */
+    gap: 10px; /* 이미지와 텍스트 간격 추가 */
+}
 
 
 
@@ -421,3 +425,9 @@ body {
 .autocomplete-item:hover {
     background-color: #f7f7f7;
 }
+
+
+
+
+
+
