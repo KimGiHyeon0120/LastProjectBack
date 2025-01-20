@@ -7,41 +7,131 @@ body {
     text-align: center;
     width: 100%;
     max-width: 1000px;
-
     margin: 0 auto;
     overflow: hidden;
 }
-#calendar-container {
-    width: auto;
-    /* 원하는 가로 크기로 조정 */
-   height: auto;
-   margin: 0;
-    /* 가운데 정렬 */
-}
 
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.header button {
-    border: none;
-    background: none;
-    font-size: 20px;
-    cursor: pointer;
-}
-
-
-/* 툴바 버튼 숨기기 */
-.fc-header-toolbar .fc-prev-button,
-.fc-header-toolbar .fc-next-button,
-.fc-header-toolbar .fc-today-button,
+/* 위치 고정된 요소들 비활성화 */
 .fc-header-toolbar .fc-dayGridMonth-button,
 .fc-header-toolbar .fc-timeGridWeek-button,
 .fc-header-toolbar .fc-timeGridDay-button,
-.fc-header-toolbar .fc-listWeek-button {
-    display: none !important;
+.fc-header-toolbar .fc-listMonth-button,
+.fc-header-toolbar .fc-listWeek-button,
+.fc-header-toolbar .fc-listDay-button {
+    display: none !important; /* 다른 이동 버튼 숨기기 */
 }
+
+
+/* 캘린더 컨테이너 스타일 */
+#calendar-container {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 4px;
+}
+
+
+
+
+/* 년도/월을 왼쪽에 배치 */
+.fc-header-toolbar .fc-toolbar-title {
+
+    font-size: 20px !important; /* 년도/월 폰트 크기 조정 */
+    margin-left: 10px !important; /* 제목 왼쪽 여백 */
+}
+
+/* 캘린더 상단 헤더 */
+.fc-header-toolbar {
+  
+
+    width: 100% !important;
+    height: 50px !important;
+}
+
+
+
+
+
+
+.fc-prev-button {
+    background-color: transparent !important;
+    font-size: 16px !important;
+    font-weight: bold !important;
+    padding: 4px 6px !important;
+    color: #333 !important;
+    border: none !important;
+    border-radius: 4px !important;
+}
+
+.fc-today-button {
+    background-color: transparent !important;
+    font-size: 16px !important;
+    font-weight: bold !important;
+    padding: 4px 6px !important;
+    color: black !important;
+    border: none !important;
+    border-radius: 4px !important;
+}
+
+.fc-next-button {
+    background-color: transparent !important;
+    font-size: 16px !important;
+    font-weight: bold !important;
+    padding: 4px 6px !important;
+    color: #333 !important;
+    border: none !important;
+    border-radius: 4px !important;
+}
+
+/* Hover 및 클릭 시 배경색 */
+.fc-prev-button:hover,
+.fc-next-button:hover,
+.fc-today-button:hover {
+    background-color: #f0f0f0 !important;
+    border: none !important;
+}
+
+/* 활성화 상태 (클릭 시) */
+.fc-prev-button:active,
+.fc-next-button:active,
+.fc-today-button:active {
+    background-color: #dcdcdc !important;
+    border: none !important;
+}
+
+/* 포커스 상태 (키보드로 접근 시) */
+.fc-prev-button:focus,
+.fc-next-button:focus,
+.fc-today-button:focus {
+    box-shadow: none !important; /* 포커스 시 그림자 */
+}
+
+/* 요일 칸 스타일 */
+.fc-day {
+    background-color: #ffff !important;
+    color: #333;
+    font-size: 14px !important;
+    font-weight: bold !important;
+}
+
+/* 오늘 날짜가 포함된 날짜 셀 스타일 */
+.fc-day.fc-day-today {
+    color: #333 !important;
+    position: relative;
+}
+
+/* 날짜 숫자에 빨간색 동그라미 추가 */
+.fc-day.fc-day-today::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 3px !important;
+    left: 85% !important;
+    transform: translateX(-50%) !important;
+    width: 30px !important;
+    height: 30px !important;
+    background-color: red !important;
+    border-radius: 50% !important;
+    z-index: 1 !important;
+}
+
+
 
