@@ -309,11 +309,6 @@ body {
     color: #666;
 }
 
-.urgent-task-item:hover {
-
-}
-
-
 
 
 
@@ -481,8 +476,71 @@ body {
     transition: background-color 0.3s ease;
 }
 
-/* 스프린트 카드 hover 효과 */
-.mytasks-list li:hover {
 
+
+/* 드롭다운 컨테이너 */
+.dropdown-container {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 20px;
 }
 
+/* 드롭다운 버튼 스타일 */
+.sprint-dropdown-button {
+    background-color: #fff;
+    color: #333;
+    padding: 10px 15px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: left;
+    width: 150px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sprint-dropdown-button::after {
+    content: '▼';
+    font-size: 10px;
+    margin-left: 10px;
+    color: #666;
+}
+
+.sprint-dropdown-button:hover {
+    background-color: #f9f9f9;
+}
+
+/* 드롭다운 콘텐츠 */
+.sprint-dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #fff;
+    min-width: 150px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    z-index: 1;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid #ccc;
+}
+
+/* 드롭다운 항목 */
+.sprint-dropdown-content a {
+    color: #333;
+    padding: 10px 15px;
+    text-decoration: none;
+    display: block;
+    font-size: 14px;
+    transition: background-color 0.2s ease;
+}
+
+.sprint-dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+
+/* 드롭다운 활성화 시 콘텐츠 표시 */
+.dropdown-container:hover .sprint-dropdown-content {
+    display: block;
+}

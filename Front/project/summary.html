@@ -28,7 +28,7 @@
                     <h2>내 할일</h2>
                 </div>
             </div>
-            
+
 
             <div class="content" id="team">
                 <div class="row">
@@ -54,12 +54,21 @@
                     </div>
                 </div>
 
+
                 <div class="row">
                     <div class="left-column section-bottom-left">
                         <h3>스프린트별 작업량</h3>
+
                         <label for="sprint-select"><strong>스프린트를 선택하세요:</strong></label>
                         <select id="sprint-select"></select>
-                        <canvas id="sprintTasksChart" width="400" height="300"></canvas>
+
+                        <div class="title-container">
+                            <span class="title">담당자</span>
+                            <span class="title">업무 배분</span>
+                        </div>
+                        <div id="sprintTasksChart">
+                            <!-- 작업량 바가 여기에 동적으로 렌더링 됩니다. -->
+                        </div>
                     </div>
 
                     <div class="right-column section-bottom-right">
@@ -121,8 +130,11 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            showContent('team', document.querySelector('.card')); // 초기 상태: team 활성화
+            // 초기 상태: team 활성화
+            showContent('team', document.querySelector('.card'));
+
         });
+
 
 
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -132,597 +144,6 @@
 
 
         $(document).ready(function () {
-
-
-
-
-
-            /* 팀원별 작업 현황 요약 */
-
-            // 팀원별 작업 현황 데이터를 가져오는 함수
-            function fetchTeamTasks() {
-                $.ajax({
-                    url: `${API_URL}/summary/team/tasks`, // API URL
-                    type: "GET",
-                    data: { projectId: projectId }, // 쿼리 파라미터로 projectId 전달
-                    success: function (data) {
-                        renderTeamTasks(data); // 데이터를 렌더링 함수로 전달
-                    },
-                    error: function (xhr, status, error) {
-                        console.error(error);
-                        alert('팀원별 작업 데이터를 가져오는 중 오류가 발생했습니다.');
-                    },
-                });
-            }
-
-
-            // 팀원별 작업 현황 요약 렌더링
-            function renderTeamTasks(tasks) {
-                const tableBody = $("#team-tasks-table-body");
-                const tableFooter = $("#team-tasks-table-footer"); // 테이블 푸터 영역
-                tableBody.empty();
-                tableFooter.empty();
-
-                let totalCompleted = 0;
-                let totalInProgress = 0;
-                let totalToDo = 0;
-
-                tasks.forEach((task, index) => {
-                    // 본인 여부 확인
-                    const isCurrentUser = Number(task.userIdx) === Number(userIdx);
-
-                    // 작업 상태 합계 계산
-                    totalCompleted += Number(task.completed);
-                    totalInProgress += Number(task.inProgress);
-                    totalToDo += Number(task.toDo);
-
-                    // 테이블 행 생성
-                    const tableRow = `
-            <tr id="task-row-${index}" class="task-row ${isCurrentUser ? 'highlight-row' : ''}">
-                <td id="member-name-${index}">${task.memberName}</td>
-                <td id="to-do-${index}">${task.toDo}</td>
-                <td id="in-progress-${index}">${task.inProgress}</td>
-                <td id="completed-${index}">${task.completed}</td>
-            </tr>
-        `;
-                    tableBody.append(tableRow);
-                });
-
-                // 총 작업량 표시
-                const totalRow = `
-        <tr class="total-row">
-            <td><strong>총 작업량</strong></td>
-            <td><strong>${totalToDo}</strong></td>
-            <td><strong>${totalInProgress}</strong></td>
-            <td><strong>${totalCompleted}</strong></td>
-        </tr>
-    `;
-                tableFooter.append(totalRow);
-            }
-
-
-            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-
-            /* 전체 프로젝트 진행률 */
-
-            // Chart.js 플러그인 등록
-            Chart.register(ChartDataLabels);
-
-
-            // 전체 프로젝트 진행률 데이터를 가져오는 함수
-            async function fetchProjectProgress() {
-                try {
-                    const response = await fetch(`${API_URL}/summary/all/tasks?projectId=${projectId}`);
-                    const data = await response.json();
-                    renderProjectProgressChart(data); // 그래프에 데이터 전달
-                } catch (error) {
-                    console.error("Fetch error:", error);
-                }
-            }
-
-
-            // Chart.js를 사용하여 원형 그래프 렌더링
-            function renderProjectProgressChart(data) {
-                const ctx = document.getElementById("projectProgressChart").getContext("2d");
-
-                // 상태별 데이터
-                const toDo = parseInt(data.toDo) || 0; // 할 일
-                const inProgress = parseInt(data.inProgress) || 0; // 진행 중
-                const completed = parseInt(data.completed) || 0; // 완료
-                const totalTasks = toDo + inProgress + completed;
-
-                if (totalTasks === 0) {
-                    console.error("작업 데이터가 없습니다.");
-                    alert("작업 데이터가 없습니다.");
-                    return;
-                }
-
-                // Chart.js 데이터
-                const chartData = {
-                    labels: ["할 일", "진행 중", "완료"], // 순서 변경
-                    datasets: [
-                        {
-                            data: [toDo, inProgress, completed], // 순서 변경
-                            backgroundColor: ["#007bff", "#ffc107", "#28a745"], // 색상 순서 변경
-                            hoverBackgroundColor: ["#0056b3", "#e0a800", "#218838"], // 호버 색상 순서 변경
-                        },
-                    ],
-                };
-
-                // Chart.js 옵션
-                const options = {
-                    responsive: true,
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function (context) {
-                                    const value = context.raw;
-                                    const percentage = ((value / totalTasks) * 100).toFixed(2);
-                                    return `${context.label}: ${value}개 (${percentage}%)`;
-                                },
-                            },
-                        },
-                        datalabels: {
-                            color: "#fff", // 글자 색상
-                            font: {
-                                size: 14, // 글자 크기
-                                weight: "bold", // 글자 굵기
-                            },
-                            formatter: function (value) {
-                                return value; // 각 섹션의 값 표시
-                            },
-                        },
-                    },
-                };
-
-                // 원형 그래프 생성
-                new Chart(ctx, {
-                    type: "pie",
-                    data: chartData,
-                    options: options,
-                });
-            }
-
-
-            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-
-
-            /* 스프린트별 작업량 */
-
-
-            // 그래프 인스턴스 저장 변수
-            let sprintChart = null;
-
-
-            // 프로젝트별 스프린트 목록 가져오기
-            async function fetchProjectSprints(projectId) {
-                try {
-                    if (!projectId) {
-                        throw new Error("프로젝트 ID가 세션 스토리지에 없습니다.");
-                    }
-
-                    const response = await fetch(`${API_URL}/summary/projects/${projectId}/sprints`);
-                    if (!response.ok) throw new Error("Failed to fetch project sprints");
-
-                    const sprints = await response.json();
-
-                    const sprintSelect = document.getElementById("sprint-select");
-                    sprintSelect.innerHTML = ""; // 기존 옵션 초기화
-
-                    const allOption = document.createElement("option");
-                    allOption.value = "all";
-                    allOption.textContent = "전체";
-                    sprintSelect.appendChild(allOption);
-
-                    sprints.forEach((sprint) => {
-                        const option = document.createElement("option");
-                        option.value = sprint.sprintId;
-                        option.textContent = sprint.sprintName;
-                        sprintSelect.appendChild(option);
-                    });
-
-                    fetchSprintTasks("all");
-                } catch (error) {
-                    console.error("스프린트 목록 가져오기 오류:", error);
-                    alert("스프린트 목록을 가져오는 중 오류가 발생했습니다.");
-                }
-            }
-
-
-            // 특정 스프린트의 작업량 데이터를 가져오는 함수
-            async function fetchSprintTasks(sprintId) {
-                try {
-                    let url;
-                    const projectId = sessionStorage.getItem("projectId");
-                    if (!projectId) {
-                        throw new Error("프로젝트 ID가 세션 스토리지에 없습니다.");
-                    }
-
-                    if (sprintId === "all") {
-                        url = `${API_URL}/summary/alltasks/all?projectId=${projectId}`;
-                    } else {
-                        url = `${API_URL}/summary/sprints/${sprintId}/team/tasks`;
-                    }
-
-
-                    const response = await fetch(url);
-                    if (!response.ok) {
-                        throw new Error(`Failed to fetch sprint tasks. Status: ${response.status}`);
-                    }
-
-                    const data = await response.json();
-
-                    renderSprintTasksChart(data);
-                } catch (error) {
-                    console.error("스프린트 작업 데이터 가져오기 오류:", error);
-                    alert("스프린트 작업 데이터를 가져오는 중 오류가 발생했습니다.");
-                }
-            }
-
-
-            // 모든 작업량 데이터 가져오는 함수
-            async function fetchAllTasks(projectId) {
-                try {
-                    if (!projectId) {
-                        throw new Error("프로젝트 ID가 세션 스토리지에 없습니다.");
-                    }
-
-                    const url = `${API_URL}/summary/alltasks/all?projectId=${projectId}`;
-
-                    const response = await fetch(url);
-                    if (!response.ok) {
-                        throw new Error(`Failed to fetch all tasks. Status: ${response.status}`);
-                    }
-
-                    const data = await response.json();
-
-                    renderSprintTasksChart(data);
-                } catch (error) {
-                    console.error("모든 작업 데이터 가져오기 오류:", error);
-                    alert("모든 작업 데이터를 가져오는 중 오류가 발생했습니다.");
-                }
-            }
-
-
-            // 스프린트 작업량 데이터를 막대그래프로 렌더링하는 함수
-            function renderSprintTasksChart(data) {
-                const ctx = document.getElementById("sprintTasksChart").getContext("2d");
-
-                // 기존 그래프 제거
-                if (sprintChart) {
-                    sprintChart.destroy();
-                }
-
-                if (!data || data.length === 0) {
-                    console.warn("스프린트 작업 데이터가 비어 있습니다. 수신된 데이터:", data);
-                    return; // 데이터가 없으면 함수 종료
-                }
-
-                // 데이터 처리
-                const labels = data.map((task) => task.memberName); // 팀원 이름
-                const taskCounts = data.map((task) => task.taskCount); // 작업량
-                const maxValue = Math.max(...taskCounts); // 작업량 중 최대값 계산
-                const yMax = maxValue < 5 ? 5 : Math.ceil(maxValue / 5) * 5; // 최대값이 5 미만일 경우 최소 5로 설정, 5의 배수로 맞춤
-
-                // 고정된 색상 배열 (팀원별 고유 색상)
-                const fixedColors = [
-                    "#FF5733", // 빨강
-                    "#33FF57", // 초록
-                    "#3357FF", // 파랑
-                    "#FF33A1", // 분홍
-                    "#FFC300", // 노랑
-                    "#33FFF5", // 민트
-                    "#A833FF", // 보라
-                ];
-
-                // 팀원별 색상 할당
-                const backgroundColors = labels.map((_, index) => fixedColors[index % fixedColors.length]);
-                const hoverColors = backgroundColors.map((color) => `${color}CC`); // 약간 투명도를 추가하여 어둡게 표현 (CSS rgba 방식)
-
-                // Chart.js 데이터
-                const chartData = {
-                    labels: labels,
-                    datasets: [
-                        {
-                            data: taskCounts,
-                            backgroundColor: backgroundColors, // 팀원별 고유 색상 적용
-                            hoverBackgroundColor: hoverColors, // 호버 시 약간 어두운 색상
-                            barThickness: 20, // 막대 두께 설정
-                        },
-                    ],
-                };
-
-                // Chart.js 옵션
-                const options = {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            display: false, // 범례 숨기기
-                        },
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            min: 0, // Y축 최솟값 설정
-                            max: yMax, // 동적으로 최대값 설정
-                            ticks: {
-                                stepSize: 5, // 눈금 간격
-                            },
-                            title: {
-                                display: true,
-                                text: "작업량 (개)",
-                            },
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: "팀원",
-                            },
-                        },
-                    },
-                };
-
-                // 새로운 그래프 생성
-                sprintChart = new Chart(ctx, {
-                    type: "bar",
-                    data: chartData,
-                    options: options,
-                });
-            }
-
-            // 드롭다운 변경 이벤트 핸들러
-            document.getElementById("sprint-select").addEventListener("change", (event) => {
-                const selectedSprintId = event.target.value;
-                if (selectedSprintId === "all") {
-                    const projectId = sessionStorage.getItem("projectId");
-                    fetchAllTasks(projectId);
-                } else {
-                    fetchSprintTasks(selectedSprintId); // 선택된 스프린트 데이터 가져오기
-                }
-            });
-
-
-            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-
-
-
-
-            /* 마감 임박 프로젝트 */
-
-            // 마감 기한이 하루 남은 작업 가져오기
-            async function fetchUrgentTasks() {
-                try {
-                    // sessionStorage에서 projectId 가져오기
-                    const projectId = sessionStorage.getItem("projectId");
-                    if (!projectId) {
-                        console.error("프로젝트 ID를 찾을 수 없습니다.");
-                        return;
-                    }
-
-                    // API 요청에 projectId 포함
-                    const response = await fetch(`${API_URL}/summary/tasks/urgent?projectId=${projectId}`);
-                    if (!response.ok) throw new Error(`Failed to fetch urgent tasks. Status: ${response.status}`);
-
-                    const tasks = await response.json();
-
-                    // 모든 작업의 dueDate를 UTC 기준으로 변환
-                    const adjustedTasks = tasks.map(task => {
-                        const utcDueDate = new Date(task.dueDate); // 서버에서 받은 UTC 날짜
-                        utcDueDate.setHours(utcDueDate.getHours() + 9); // 한국 시간(UTC+9)으로 조정
-                        return { ...task, dueDate: utcDueDate.toISOString() };
-                    });
-
-                    renderUrgentTasks(adjustedTasks);
-                } catch (error) {
-                    console.error("Error fetching urgent tasks:", error);
-                    alert("마감 기한이 하루 남은 작업 데이터를 가져오는 중 오류가 발생했습니다.");
-                }
-            }
-
-
-
-            // 리스트 형식
-            // 작업 데이터를 리스트에 렌더링 
-            function renderUrgentTasks(tasks) {
-                const taskList = document.getElementById("urgent-tasks-list");
-                if (!taskList) {
-                    console.error("urgent-tasks-list 요소를 찾을 수 없습니다.");
-                    return;
-                }
-
-                taskList.innerHTML = ""; // 기존 내용을 초기화
-
-                // 긴급 작업만 필터링
-                const urgentTasks = tasks.filter(task => task.calculatedPriority === "긴급");
-
-
-                if (urgentTasks.length === 0) {
-                    taskList.innerHTML = "<li>긴급 작업이 없습니다.</li>";
-                    return;
-                }
-
-                // 긴급 작업 렌더링
-                urgentTasks.forEach(task => {
-                    const dueDate = new Date(task.dueDate);
-                    const formattedDate = `${dueDate.getUTCFullYear()}년 ${String(dueDate.getUTCMonth() + 1).padStart(2, "0")}월 ${String(dueDate.getUTCDate()).padStart(2, "0")}일`;
-
-                    const listItem = document.createElement("li");
-                    listItem.className = "urgent-task-item";
-
-                    listItem.innerHTML = `
-                        <strong>${task.taskName}</strong>
-                        : <em>마감일: ${formattedDate}</em>
-                        <span>우선순위: ${task.calculatedPriority}</span>
-                        <span>담당자: ${task.assignedTo || "미정"}</span>
-                    `;
-                    taskList.appendChild(listItem);
-                });
-            }
-
-
-            // 카드 형식
-            // 작업 데이터를 카드에 렌더링 
-            /*function renderUrgentTasks(tasks) {
-    const container = document.getElementById("urgent-tasks-container");
-    if (!container) {
-        console.error("urgent-tasks-container 요소를 찾을 수 없습니다.");
-        return;
-    }
-
-    container.innerHTML = ""; // 기존 내용 초기화
-
-    // 긴급 작업 필터링
-    const urgentTasks = tasks.filter(task => task.calculatedPriority === "긴급");
-
-    if (urgentTasks.length === 0) {
-        container.innerHTML = "<p>긴급 작업이 없습니다.</p>";
-        return;
-    }
-
-    urgentTasks.forEach((task) => {
-        const dueDate = new Date(task.dueDate);
-        const formattedDate = `${dueDate.getFullYear()}년 ${String(dueDate.getMonth() + 1).padStart(2, "0")}월 ${String(dueDate.getDate()).padStart(2, "0")}일`;
-
-        const card = document.createElement("div");
-        card.className = "task-card";
-
-        card.innerHTML = `
-            <h4>${task.taskName}</h4>
-            <p><strong>마감일:</strong> ${formattedDate}</p>
-            <p><strong>우선순위:</strong> ${task.calculatedPriority}</p>
-            <p><strong>담당자:</strong> ${task.assignedTo || "미정"}</p>
-        `;
-
-        container.appendChild(card);
-    });
-
-    container.scrollTop = 0; // 처음 카드로 스크롤 위치 초기화
-}*/
-
-
-            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-
-            /* 내 작업 리스트 */
-
-
-            // API 호출 후 데이터 렌더링
-            async function fetchAndRenderMyTasks() {
-                try {
-
-                    // API 요청
-                    const response = await fetch(`${API_URL}/summary/tasks/mytasks?userId=${userIdx}&projectId=${projectId}`, {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`Failed to fetch tasks. Status: ${response.status}`);
-                    }
-
-                    const data = await response.json();
-                    renderMyTasks(data);
-                } catch (error) {
-                    console.error("작업 데이터를 가져오는 중 오류가 발생했습니다:", error);
-                }
-            }
-
-
-            // 작업 데이터 렌더링
-            function renderMyTasks(data) {
-
-                const processedTasks = processTaskData(data);
-
-                const taskListContainer = document.getElementById("mytasks-list");
-                if (!taskListContainer) {
-                    return;
-                }
-
-                taskListContainer.innerHTML = "";
-
-                if (processedTasks.length === 0) {
-                    taskListContainer.innerHTML = "<li>현재 할당된 작업이 없습니다.</li>";
-                    return;
-                }
-
-                const groupedBySprint = processedTasks.reduce((acc, task) => {
-                    if (!acc[task.sprintName]) {
-                        acc[task.sprintName] = [];
-                    }
-                    acc[task.sprintName].push(task);
-                    return acc;
-                }, {});
-
-
-                for (const [sprintName, tasks] of Object.entries(groupedBySprint)) {
-                    const sprintSection = document.createElement("li");
-
-                    const sprintTitle = document.createElement("h4");
-                    sprintTitle.textContent = sprintName || "기타 작업";
-                    sprintSection.appendChild(sprintTitle);
-
-                    const table = document.createElement("table");
-                    const thead = document.createElement("thead");
-                    thead.innerHTML = `
-                        <tr>
-                            <th>작업 이름</th>
-                            <th>상태</th>
-                            <th>우선순위</th>
-                            <th>시작일</th>
-                            <th>마감일</th>
-                        </tr>
-                    `;
-                    table.appendChild(thead);
-
-                    const tbody = document.createElement("tbody");
-                    tasks.forEach((task) => {
-                        const row = document.createElement("tr");
-                        row.innerHTML = `
-                            <td>${task.taskName}</td>
-                            <td>${task.taskStatus}</td>
-                            <td>${task.priority}</td>
-                            <td>${task.startDate}</td>
-                            <td>${task.dueDate}</td>
-                        `;
-                        tbody.appendChild(row);
-                    });
-                    table.appendChild(tbody);
-
-                    sprintSection.appendChild(table);
-                    taskListContainer.appendChild(sprintSection);
-                }
-            }
-
-
-            // 우선순위 날짜별로 수정, 완료
-            function processTaskData(tasks) {
-
-                return tasks.map((task) => {
-                    let updatedTask = { ...task };
-
-                    if (updatedTask.taskStatus === "완료") {
-                        updatedTask.priority = "완료";
-                    } else if (new Date(updatedTask.dueDate.replace("년 ", "-").replace("월 ", "-").replace("일", "")) < new Date()) {
-                        updatedTask.priority = "기한지남";
-                    }
-
-                    return updatedTask;
-                });
-            }
-
-
-            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-            // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
 
             // 페이지 로드 시 데이터 가져오기
             fetchTeamTasks();
@@ -781,6 +202,586 @@
         }
 
 
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+        /* 팀원별 작업 현황 요약 */
+
+        // 팀원별 작업 현황 데이터를 가져오는 함수
+        function fetchTeamTasks() {
+            $.ajax({
+                url: `${API_URL}/summary/team/tasks`, // API URL
+                type: "GET",
+                data: { projectId: projectId }, // 쿼리 파라미터로 projectId 전달
+                success: function (data) {
+                    renderTeamTasks(data); // 데이터를 렌더링 함수로 전달
+                },
+                error: function (xhr, status, error) {
+                    console.error(error);
+                    alert('팀원별 작업 데이터를 가져오는 중 오류가 발생했습니다.');
+                },
+            });
+        }
+
+
+        // 팀원별 작업 현황 요약 렌더링
+        function renderTeamTasks(tasks) {
+            const tableBody = $("#team-tasks-table-body");
+            const tableFooter = $("#team-tasks-table-footer"); // 테이블 푸터 영역
+            tableBody.empty();
+            tableFooter.empty();
+
+            let totalCompleted = 0;
+            let totalInProgress = 0;
+            let totalToDo = 0;
+
+            tasks.forEach((task, index) => {
+                // 본인 여부 확인
+                const isCurrentUser = Number(task.userIdx) === Number(userIdx);
+
+                // 작업 상태 합계 계산
+                totalCompleted += Number(task.completed);
+                totalInProgress += Number(task.inProgress);
+                totalToDo += Number(task.toDo);
+
+                // 테이블 행 생성
+                const tableRow = `
+            <tr id="task-row-${index}" class="task-row ${isCurrentUser ? 'highlight-row' : ''}">
+                <td id="member-name-${index}">${task.memberName}</td>
+                <td id="to-do-${index}">${task.toDo}</td>
+                <td id="in-progress-${index}">${task.inProgress}</td>
+                <td id="completed-${index}">${task.completed}</td>
+            </tr>
+        `;
+                tableBody.append(tableRow);
+            });
+
+            // 총 작업량 표시
+            const totalRow = `
+        <tr class="total-row">
+            <td><strong>총 작업량</strong></td>
+            <td><strong>${totalToDo}</strong></td>
+            <td><strong>${totalInProgress}</strong></td>
+            <td><strong>${totalCompleted}</strong></td>
+        </tr>
+    `;
+            tableFooter.append(totalRow);
+        }
+
+
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+        /* 전체 프로젝트 진행률 */
+
+        // Chart.js 플러그인 등록
+        Chart.register(ChartDataLabels);
+
+
+        // 전체 프로젝트 진행률 데이터를 가져오는 함수
+        async function fetchProjectProgress() {
+            try {
+                const response = await fetch(`${API_URL}/summary/all/tasks?projectId=${projectId}`);
+                const data = await response.json();
+                renderProjectProgressChart(data); // 그래프에 데이터 전달
+            } catch (error) {
+                console.error("Fetch error:", error);
+            }
+        }
+
+
+        // Chart.js를 사용하여 원형 그래프 렌더링
+        function renderProjectProgressChart(data) {
+            const ctx = document.getElementById("projectProgressChart").getContext("2d");
+
+            // 상태별 데이터
+            const toDo = parseInt(data.toDo) || 0; // 할 일
+            const inProgress = parseInt(data.inProgress) || 0; // 진행 중
+            const completed = parseInt(data.completed) || 0; // 완료
+            const totalTasks = toDo + inProgress + completed;
+
+            if (totalTasks === 0) {
+                console.error("작업 데이터가 없습니다.");
+                alert("작업 데이터가 없습니다.");
+                return;
+            }
+
+            // Chart.js 데이터
+            const chartData = {
+                labels: ["할 일", "진행 중", "완료"], // 순서 변경
+                datasets: [
+                    {
+                        data: [toDo, inProgress, completed], // 순서 변경
+                        backgroundColor: ["#007bff", "#ffc107", "#28a745"], // 색상 순서 변경
+                        hoverBackgroundColor: ["#0056b3", "#e0a800", "#218838"], // 호버 색상 순서 변경
+                    },
+                ],
+            };
+
+            // Chart.js 옵션
+            const options = {
+                responsive: true,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                const value = context.raw;
+                                const percentage = ((value / totalTasks) * 100).toFixed(2);
+                                return `${context.label}: ${value}개 (${percentage}%)`;
+                            },
+                        },
+                    },
+                    datalabels: {
+                        color: "#fff", // 글자 색상
+                        font: {
+                            size: 14, // 글자 크기
+                            weight: "bold", // 글자 굵기
+                        },
+                        formatter: function (value) {
+                            return value; // 각 섹션의 값 표시
+                        },
+                    },
+                },
+            };
+
+            // 원형 그래프 생성
+            new Chart(ctx, {
+                type: "pie",
+                data: chartData,
+                options: options,
+            });
+        }
+
+
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+
+
+
+        /* 스프린트별 작업량 */
+
+
+        // 그래프 인스턴스 저장 변수
+        let sprintChart = null;
+
+
+        // 프로젝트별 스프린트 목록 가져오기
+        async function fetchProjectSprints(projectId) {
+            try {
+                if (!projectId) {
+                    throw new Error("프로젝트 ID가 세션 스토리지에 없습니다.");
+                }
+
+                const response = await fetch(`${API_URL}/summary/projects/${projectId}/sprints`);
+                if (!response.ok) throw new Error("Failed to fetch project sprints");
+
+                const sprints = await response.json();
+
+                const sprintSelect = document.getElementById("sprint-select");
+                sprintSelect.innerHTML = ""; // 기존 옵션 초기화
+
+                const allOption = document.createElement("option");
+                allOption.value = "all";
+                allOption.textContent = "전체";
+                sprintSelect.appendChild(allOption);
+
+                sprints.forEach((sprint) => {
+                    const option = document.createElement("option");
+                    option.value = sprint.sprintId;
+                    option.textContent = sprint.sprintName;
+                    sprintSelect.appendChild(option);
+                });
+
+                fetchSprintTasks("all");
+            } catch (error) {
+                console.error("스프린트 목록 가져오기 오류:", error);
+                alert("스프린트 목록을 가져오는 중 오류가 발생했습니다.");
+            }
+        }
+
+
+        // 특정 스프린트의 작업량 데이터를 가져오는 함수
+        async function fetchSprintTasks(sprintId) {
+            try {
+                let url;
+                const projectId = sessionStorage.getItem("projectId");
+                if (!projectId) {
+                    throw new Error("프로젝트 ID가 세션 스토리지에 없습니다.");
+                }
+
+                if (sprintId === "all") {
+                    url = `${API_URL}/summary/alltasks/all?projectId=${projectId}`;
+                } else {
+                    url = `${API_URL}/summary/sprints/${sprintId}/team/tasks`;
+                }
+
+
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch sprint tasks. Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                renderSprintTasksChart(data);
+            } catch (error) {
+                console.error("스프린트 작업 데이터 가져오기 오류:", error);
+                alert("스프린트 작업 데이터를 가져오는 중 오류가 발생했습니다.");
+            }
+        }
+
+
+        // 모든 작업량 데이터 가져오는 함수
+        async function fetchAllTasks(projectId) {
+            try {
+                if (!projectId) {
+                    throw new Error("프로젝트 ID가 세션 스토리지에 없습니다.");
+                }
+
+                const url = `${API_URL}/summary/alltasks/all?projectId=${projectId}`;
+
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch all tasks. Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                renderSprintTasksChart(data);
+            } catch (error) {
+                console.error("모든 작업 데이터 가져오기 오류:", error);
+                alert("모든 작업 데이터를 가져오는 중 오류가 발생했습니다.");
+            }
+        }
+
+
+        // 스프린트 작업량 데이터를 막대그래프로 렌더링하는 함수
+        function renderSprintTasksChart(data) {
+            const container = document.getElementById("sprintTasksChart"); // 그래프를 렌더링할 컨테이너
+            console.log(data);
+            // 기존 그래프 제거
+            container.innerHTML = ''; // 기존 내용 지우기
+
+            if (!data || data.length === 0) {
+                console.warn("스프린트 작업 데이터가 비어 있습니다. 수신된 데이터:", data);
+                return; // 데이터가 없으면 함수 종료
+            }
+
+            // 전체 작업량 합산
+            const totalTaskCount = data.reduce((sum, task) => sum + task.taskCount, 0);
+
+            // 고정된 색상으로 설정 (예시로 초록색 사용)
+            const fixedColor = "#4caf50"; // 예: 초록색
+
+            // 데이터 처리
+            data.forEach((task, index) => {
+                const taskBar = document.createElement("div");
+                taskBar.classList.add("task-bar");
+
+                const taskNameContainer = document.createElement("div");
+                taskNameContainer.classList.add("task-name-container");
+
+                const taskName = document.createElement("span");
+                taskName.classList.add("task-name");
+                taskName.textContent = task.memberName;
+
+                const profileImage = document.createElement("img");
+                profileImage.classList.add("profile-image");
+                   // 프로필 이미지가 없을 경우 기본 이미지 설정
+    profileImage.src = task.memberProfile ? task.memberProfile : '../profile/default-profile.png'; // 기본 이미지 경로
+
+
+                // 프로필 이미지와 이름을 한 컨테이너에 배치
+                taskNameContainer.appendChild(profileImage);
+                taskNameContainer.appendChild(taskName);
+
+                const taskGauge = document.createElement("div");
+                taskGauge.classList.add("task-gauge");
+
+                const taskProgress = document.createElement("div");
+                taskProgress.classList.add("task-progress");
+                const taskEmpty = document.createElement("div");
+                taskEmpty.classList.add("task-empty");
+
+                // 작업량 비율 계산 (소수점 없이 반올림)
+                const taskPercentageValue = totalTaskCount > 0 ? Math.round((task.taskCount / totalTaskCount) * 100) : 0;
+
+                // 스타일 적용
+                taskProgress.style.width = `${taskPercentageValue}%`; // 실제 작업량 표시
+                taskEmpty.style.width = `${100 - taskPercentageValue}%`; // 안차지 않은 부분 표시
+                taskProgress.style.backgroundColor = fixedColor; // 고정된 색상으로 설정
+                taskEmpty.style.backgroundColor = "#d3d3d3"; // 회색 (남은 부분)
+
+                // 백분율 표시 (소수점 없이 표시)
+                const taskPercentage = document.createElement("span");
+                taskPercentage.classList.add("task-percentage");
+                taskPercentage.textContent = `${taskPercentageValue}%`;
+
+                // 구성 요소를 적절하게 배치
+                taskGauge.appendChild(taskProgress);
+                taskGauge.appendChild(taskEmpty);
+                taskBar.appendChild(taskNameContainer);
+                taskBar.appendChild(taskGauge);
+                taskBar.appendChild(taskPercentage);
+
+                container.appendChild(taskBar);
+            });
+        }
+        
+        
+        // 드롭다운 변경 이벤트 핸들러
+        document.getElementById("sprint-select").addEventListener("change", (event) => {
+            const selectedSprintId = event.target.value;
+            if (selectedSprintId === "all") {
+                const projectId = sessionStorage.getItem("projectId");
+                fetchAllTasks(projectId);
+            } else {
+                fetchSprintTasks(selectedSprintId); // 선택된 스프린트 데이터 가져오기
+            }
+        });
+
+        
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+        /* 마감 임박 프로젝트 */
+
+        // 마감 기한이 하루 남은 작업 가져오기
+        async function fetchUrgentTasks() {
+            try {
+                // sessionStorage에서 projectId 가져오기
+                const projectId = sessionStorage.getItem("projectId");
+                if (!projectId) {
+                    console.error("프로젝트 ID를 찾을 수 없습니다.");
+                    return;
+                }
+
+                // API 요청에 projectId 포함
+                const response = await fetch(`${API_URL}/summary/tasks/urgent?projectId=${projectId}`);
+                if (!response.ok) throw new Error(`Failed to fetch urgent tasks. Status: ${response.status}`);
+
+                const tasks = await response.json();
+
+                // 모든 작업의 dueDate를 UTC 기준으로 변환
+                const adjustedTasks = tasks.map(task => {
+                    const utcDueDate = new Date(task.dueDate); // 서버에서 받은 UTC 날짜
+                    utcDueDate.setHours(utcDueDate.getHours() + 9); // 한국 시간(UTC+9)으로 조정
+                    return { ...task, dueDate: utcDueDate.toISOString() };
+                });
+
+                renderUrgentTasks(adjustedTasks);
+            } catch (error) {
+                console.error("Error fetching urgent tasks:", error);
+                alert("마감 기한이 하루 남은 작업 데이터를 가져오는 중 오류가 발생했습니다.");
+            }
+        }
+
+
+
+        // 리스트 형식
+        // 작업 데이터를 리스트에 렌더링 
+        function renderUrgentTasks(tasks) {
+            const taskList = document.getElementById("urgent-tasks-list");
+            if (!taskList) {
+                console.error("urgent-tasks-list 요소를 찾을 수 없습니다.");
+                return;
+            }
+
+            taskList.innerHTML = ""; // 기존 내용을 초기화
+
+            // 긴급 작업만 필터링
+            const urgentTasks = tasks.filter(task => task.calculatedPriority === "긴급");
+
+
+            if (urgentTasks.length === 0) {
+                taskList.innerHTML = "<li>긴급 작업이 없습니다.</li>";
+                return;
+            }
+
+            // 긴급 작업 렌더링
+            urgentTasks.forEach(task => {
+                const dueDate = new Date(task.dueDate);
+                const formattedDate = `${dueDate.getUTCFullYear()}년 ${String(dueDate.getUTCMonth() + 1).padStart(2, "0")}월 ${String(dueDate.getUTCDate()).padStart(2, "0")}일`;
+
+                const listItem = document.createElement("li");
+                listItem.className = "urgent-task-item";
+
+                listItem.innerHTML = `
+                        <strong>${task.taskName}</strong>
+                        : <em>마감일: ${formattedDate}</em>
+                        <span>우선순위: ${task.calculatedPriority}</span>
+                        <span>담당자: ${task.assignedTo || "미정"}</span>
+                    `;
+                taskList.appendChild(listItem);
+            });
+        }
+
+
+        // 카드 형식
+        // 작업 데이터를 카드에 렌더링 
+        /*function renderUrgentTasks(tasks) {
+const container = document.getElementById("urgent-tasks-container");
+if (!container) {
+    console.error("urgent-tasks-container 요소를 찾을 수 없습니다.");
+    return;
+}
+
+container.innerHTML = ""; // 기존 내용 초기화
+
+// 긴급 작업 필터링
+const urgentTasks = tasks.filter(task => task.calculatedPriority === "긴급");
+
+if (urgentTasks.length === 0) {
+    container.innerHTML = "<p>긴급 작업이 없습니다.</p>";
+    return;
+}
+
+urgentTasks.forEach((task) => {
+    const dueDate = new Date(task.dueDate);
+    const formattedDate = `${dueDate.getFullYear()}년 ${String(dueDate.getMonth() + 1).padStart(2, "0")}월 ${String(dueDate.getDate()).padStart(2, "0")}일`;
+
+    const card = document.createElement("div");
+    card.className = "task-card";
+
+    card.innerHTML = `
+        <h4>${task.taskName}</h4>
+        <p><strong>마감일:</strong> ${formattedDate}</p>
+        <p><strong>우선순위:</strong> ${task.calculatedPriority}</p>
+        <p><strong>담당자:</strong> ${task.assignedTo || "미정"}</p>
+    `;
+
+    container.appendChild(card);
+});
+
+container.scrollTop = 0; // 처음 카드로 스크롤 위치 초기화
+}*/
+
+
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+        /* 내 작업 리스트 */
+
+
+        // API 호출 후 데이터 렌더링
+        async function fetchAndRenderMyTasks() {
+            try {
+
+                // API 요청
+                const response = await fetch(`${API_URL}/summary/tasks/mytasks?userId=${userIdx}&projectId=${projectId}`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch tasks. Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                renderMyTasks(data);
+            } catch (error) {
+                console.error("작업 데이터를 가져오는 중 오류가 발생했습니다:", error);
+            }
+        }
+
+
+        // 작업 데이터 렌더링
+        function renderMyTasks(data) {
+
+            const processedTasks = processTaskData(data);
+
+            const taskListContainer = document.getElementById("mytasks-list");
+            if (!taskListContainer) {
+                return;
+            }
+
+            taskListContainer.innerHTML = "";
+
+            if (processedTasks.length === 0) {
+                taskListContainer.innerHTML = "<li>현재 할당된 작업이 없습니다.</li>";
+                return;
+            }
+
+            const groupedBySprint = processedTasks.reduce((acc, task) => {
+                if (!acc[task.sprintName]) {
+                    acc[task.sprintName] = [];
+                }
+                acc[task.sprintName].push(task);
+                return acc;
+            }, {});
+
+
+            for (const [sprintName, tasks] of Object.entries(groupedBySprint)) {
+                const sprintSection = document.createElement("li");
+
+                const sprintTitle = document.createElement("h4");
+                sprintTitle.textContent = sprintName || "기타 작업";
+                sprintSection.appendChild(sprintTitle);
+
+                const table = document.createElement("table");
+                const thead = document.createElement("thead");
+                thead.innerHTML = `
+                        <tr>
+                            <th>작업 이름</th>
+                            <th>상태</th>
+                            <th>우선순위</th>
+                            <th>시작일</th>
+                            <th>마감일</th>
+                        </tr>
+                    `;
+                table.appendChild(thead);
+
+                const tbody = document.createElement("tbody");
+                tasks.forEach((task) => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                            <td>${task.taskName}</td>
+                            <td>${task.taskStatus}</td>
+                            <td>${task.priority}</td>
+                            <td>${task.startDate}</td>
+                            <td>${task.dueDate}</td>
+                        `;
+                    tbody.appendChild(row);
+                });
+                table.appendChild(tbody);
+
+                sprintSection.appendChild(table);
+                taskListContainer.appendChild(sprintSection);
+            }
+        }
+
+
+        // 우선순위 날짜별로 수정, 완료
+        function processTaskData(tasks) {
+
+            return tasks.map((task) => {
+                let updatedTask = { ...task };
+
+                if (updatedTask.taskStatus === "완료") {
+                    updatedTask.priority = "완료";
+                } else if (new Date(updatedTask.dueDate.replace("년 ", "-").replace("월 ", "-").replace("일", "")) < new Date()) {
+                    updatedTask.priority = "기한지남";
+                }
+
+                return updatedTask;
+            });
+        }
+
+
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
 
