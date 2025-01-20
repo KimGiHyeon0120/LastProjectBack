@@ -76,7 +76,7 @@
                         <div class="dropdown-container" style="position: relative;">
 
                             <h3>스프린트별 작업량 </h3>
-                            <span class="descriptionTwo">이 그래프는 스프린트별 팀원 작업량을 시각적으로 보여주며, 특정 스프린트의 작업량과 진행 상태를 확인할 수
+                            <span class="description">이 그래프는 스프린트별 팀원 작업량을 시각적으로 보여주며, 특정 스프린트의 작업량과 진행 상태를 확인할 수
                                 있습니다.</span>
                             <button id="sprintDropdownButton" class="sprint-dropdown-button">전체</button>
                             <div id="sprint-select" class="sprint-dropdown-content">
@@ -97,23 +97,32 @@
                             <!-- 작업량 바가 여기에 동적으로 렌더링 됩니다. -->
                         </div>
                     </div>
+                    <div class="right-column section-bottom-right">
+                        <div>
+                            <h3>마감 임박 작업</h3>
+                            <span class="description">마감 임박 작업은 마감일과 담당자, 우선순위를 함께 보여주며, 중요한 작업의 상태를 확인할 수
+                                있습니다.</span>
+                        </div>
 
-
-                </div>
-                <div class="right-column section-bottom-right">
-                    <div>
-                        <h3>마감 임박 작업</h3>
-                        <span class="descriptionTwo">마감 임박 작업은 마감일과 담당자, 우선순위를 함께 보여주며, 중요한 작업의 상태를 확인할 수
-                            있습니다.</span>
+                        <!-- 테이블 구조 (헤더 없이) -->
+                        <table id="urgent-tasks-table">
+                            <thead>
+                                <tr>
+                                    <th>스프린트</th>
+                                    <th>프로젝트</th>
+                                    <th>우선도</th>
+                                    <th>마감 일</th>
+                                    <th>담당자</th>
+                                </tr>
+                            </thead>
+                            <tbody id="urgent-tasks-list">
+                                <!-- 여기에 작업 데이터가 동적으로 추가됩니다 -->
+                            </tbody>
+                        </table>
                     </div>
 
-                    <!-- 테이블 구조 (헤더 없이) -->
-                    <table id="urgent-tasks-table">
-                        <tbody id="urgent-tasks-list">
-                            <!-- 여기에 작업 데이터가 동적으로 추가됩니다 -->
-                        </tbody>
-                    </table>
                 </div>
+
             </div>
         </div>
 
@@ -386,7 +395,7 @@
                     } else {
                         // 기본 텍스트 표시 (호버 안 했을 때)
                         ctx.fillText(`총 작업`, centerX + xOffset, centerY + yOffsetLine1);
-                        ctx.fillText(`${totalTasks}`, centerX + xOffset, centerY + yOffsetLine2);
+                        ctx.fillText(`${totalTasks}개`, centerX + xOffset, centerY + yOffsetLine2);
                     }
 
                     ctx.restore();
@@ -407,7 +416,7 @@
                         legend: {
                             position: 'right', // 범례를 오른쪽에 배치
                             labels: {
-                                boxWidth: 15,
+                                boxWidth: 13,
                                 padding: 40, // 범례 항목과의 간격 설정
                             },
                         },
@@ -717,15 +726,21 @@
             urgentTasks.forEach(task => {
                 const dueDate = new Date(task.dueDate);
                 const formattedDate = `${dueDate.getUTCFullYear()}년 ${String(dueDate.getUTCMonth() + 1).padStart(2, "0")}월 ${String(dueDate.getUTCDate()).padStart(2, "0")}일`;
-
+                console.log(task);
                 const row = document.createElement("tr");
                 row.classList.add("urgent-task-item");  // 클래스 추가
 
                 // 작업 이름, 마감일, 담당자 표시
                 row.innerHTML = `
-                    <td><strong>${task.taskName}</strong></td>
-                    <td><em>${formattedDate}</em></td>
-                    <td>${task.assignedTo || "담당자 없음"}</td>
+       
+            <td>${task.sprintName}</td>
+            <td>${task.taskName}</td>
+      <td><span class="readonly-priority priority-${task.calculatedPriority}">${task.calculatedPriority}</span></td>
+            <td>${formattedDate}</td>
+                    <td><span class="assignee-image-container">
+                <img class="assignee-image" src="${task.userProfile|| "../profile/default-profile.png"}" alt="User Profile">
+                <span class="assignee-name">${task.assignedTo || "담당자 없음"}<</span>
+            </span></td>
                 `;
                 taskListContainer.appendChild(row);
             });
