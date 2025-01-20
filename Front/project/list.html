@@ -60,11 +60,21 @@
             <div class="popup-header">작업 확인 및 수정</div>
         </div>
         <form class="popup-form">
-            <label>작업 이름</label>
-            <input type="text" id="editTaskName" placeholder="작업 이름을 입력하세요" />
 
-            <label>작업 설명</label>
-            <textarea id="editTaskDescription" placeholder="작업 설명을 입력하세요"></textarea>
+
+            <div class="form-group">
+                <input type="text" id="editTaskName" placeholder=" " />
+                <label for="editTaskName">작업 이름</label>
+                <span class="span-text">작업 이름을 입력하세요</span> <!-- 오류 메시지 -->
+            </div>
+
+
+            <div class="form-group">
+                <textarea id="editTaskDescription" placeholder=" "></textarea>
+                <label for="editTaskDescription">작업 설명</label>
+                <span class="span-text">작업 설명을 입력하세요</span> <!-- 오류 메시지 -->
+            </div>
+
 
             <!-- 시작 날짜와 마감 날짜를 좌우로 배치 -->
             <div class="date-container">
@@ -78,9 +88,17 @@
                 </div>
             </div>
 
+
             <label>맨션 추가</label>
             <div style="position: relative;">
-                <textarea id="mentionMessage" placeholder="맨션 내용을 입력하세요"></textarea>
+
+                <div class="form-group">
+                    <textarea id="mentionMessage" placeholder=" "></textarea>
+                    <label for="mentionMessage">맨션 내용</label>
+                    <span class="span-text">맨션 내용을 입력하세요</span> <!-- 오류 메시지 -->
+                </div>
+
+
                 <div id="autocompleteBox"
                     style="display: none; position: absolute; top: 100%; left: 0; width: 100%; background: white; border: 1px solid #ddd; z-index: 1000;">
                     <!-- 자동완성 리스트가 동적으로 추가됩니다 -->
@@ -111,6 +129,40 @@
 
     <script>
 
+        // 유효성 검사 실패 시 스타일 적용
+        function setInvalid(input, message) {
+            let span = document.querySelector('.span-text'); // 오류 메시지를 표시할 span을 선택
+
+            input.classList.add('invalid');
+            input.classList.remove('valid');
+
+            input.style.border = '2px solid lightcoral'; // 테두리 두께 2px로 설정
+            input.style.backgroundColor = '#fdd'; // 배경 색상 변경
+
+            if (span) {
+                span.style.color = 'lightcoral';
+                span.textContent = message; // 오류 메시지 설정
+                span.style.display = 'block'; // 오류 메시지 표시
+            }
+        }
+
+
+
+        function setValid(input) {
+            let parent = input.parentElement;
+            let span = parent.querySelector('.span-text');
+
+            input.classList.add('valid');
+            input.classList.remove('invalid');
+
+            input.style.border = '';
+            input.style.backgroundColor = '';
+
+            span.style.color = '';
+            span.textContent = '';
+            span.style.display = 'none';
+        }
+
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
         const projectId = sessionStorage.getItem("projectId");
         const userIdx = sessionStorage.getItem("userIdx"); // 로그인된 사용자 ID
@@ -118,6 +170,7 @@
         const projectIdh = localStorage.getItem("projectId"); // 프로젝트 ID
         const API_URL = "http://192.168.20.37:3000/api";
         //192.168.20.37
+
 
         let userRole = null;
         let teamMembers = []; // 전역 변수로 선언
@@ -133,7 +186,7 @@
                 const statuses = await response.json();
                 return statuses;  // 상태 목록 반환
             } catch (err) {
-                
+
             }
         }
 
@@ -610,17 +663,24 @@
 
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-            // 작업 저장
             // 작업 저장 및 맨션 보내기 버튼 클릭
             $("#saveTaskBtn").click(function () {
                 const taskId = $(this).data("task-id");
-                const taskName = $("#editTaskName").val().trim();
+                const taskNameInput = document.getElementById("editTaskName");
+                const taskName = taskNameInput.value.trim();
                 const description = $("#editTaskDescription").val().trim();
                 const startDate = $("#editTaskStartDate").val();
                 const dueDate = $("#editTaskDueDate").val();
                 const mentionMessage = $("#mentionMessage").val().trim();
 
-                // 작업 저장 조건
+                // 유효성 검사: taskName만 체크
+                if (!taskName) {
+                    setInvalid(taskNameInput, "작업 이름을 입력하세요");
+                    return;
+                } else {
+                    setValid(taskNameInput);
+                }
+
                 if (mentionMessage === "") {
                     // 작업 저장
                     const updatedTask = {
@@ -632,15 +692,6 @@
                         changedBy: userIdx,
                     };
 
-                    // 유효성 체크
-                    if (!taskName || !startDate || !dueDate) {
-                        return;
-                    }
-
-                    if (new Date(startDate) > new Date(dueDate)) {
-                        return;
-                    }
-
                     $.ajax({
                         url: `${API_URL}/tasks/update`,
                         method: "PUT",
@@ -651,17 +702,15 @@
                             $("#editTaskPopup").fadeOut();
                         },
                         error: function (err) {
+                            console.error("작업 업데이트 중 오류 발생:", err);
                         },
                     });
                 } else {
                     // 맨션 보내기
-                    if (!mentionMessage) {
-                        return;
-                    }
-
                     const mentionedUsers = extractMentionedUsers(mentionMessage);
 
                     if (mentionedUsers.length === 0) {
+                        console.error("맨션할 사용자가 없습니다.");
                         return;
                     }
 
@@ -682,10 +731,12 @@
                             $(".tab-button[data-tab='all']").addClass("active");
                         },
                         error: function (err) {
+                            console.error("맨션 전송 중 오류 발생:", err);
                         },
                     });
                 }
             });
+
 
 
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -1138,7 +1189,7 @@
                     // 필터링된 작업 렌더링
                     renderTasks(statuses, filteredTasks, teamMembers);
                 } catch (err) {
-                    
+
                 }
             }
 
