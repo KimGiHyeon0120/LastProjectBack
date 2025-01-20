@@ -1,5 +1,6 @@
 <head>
     <link rel="stylesheet" href="../css/header.css">
+    <link rel="stylesheet" href="../css/form-group.css">
 </head>
 
 <body>
@@ -53,33 +54,41 @@
                 <h1>프로필 수정</h1>
                 <form class="profile-popup-edit-form">
                     <div class="profile-popup-form-group">
+                        <!-- 이미지 미리보기 -->
                         <div class="profile-popup-profile-preview">
-                            <img src="../profile/default-profile.png" alt="프로필 이미지 미리보기" id="profile-popup-profile-preview-img" onclick="changeProfileImage()"/>
+                            <img src="../profile/default-profile.png" alt="프로필 이미지 미리보기"
+                                id="profile-popup-profile-preview-img" onclick="changeProfileImage()" />
                         </div>
-                        <input type="file" id="profile-popup-profile-image-input" accept="image/*" style="display: none;" />
+                        <!-- 숨겨진 파일 입력 필드 -->
+                        <input type="file" id="profile-popup-profile-image-input" accept="image/*"
+                            style="display: none;" onchange="updateProfilePreview()" />
                     </div>
-                    <div class="profile-popup-form-group">
+    
+                    <div class="form-group">
+                        <input type="text" id="profile-popup-user-name" name="user_name" placeholder=" " oninput="enableSaveButton()" />
                         <label for="profile-popup-user-name">이름</label>
-                        <input type="text" id="profile-popup-user-name" name="user_name" placeholder="이름을 입력하세요" />
+                        <span class="span-text">이름을 입력해주세요.</span> <!-- 오류 메시지 -->
                     </div>
                 </form>
             </div>
-        <div>
-            <!-- 비밀번호 확인 섹션 -->
-            <div id="profile-popup-password-section" class="hidden">
-                <h1>비밀번호 확인</h1>
-                <form id="profile-popup-password-verify-form">
-                    <div class="profile-popup-form-group">
-                        <input type="password" id="password-input" placeholder="비밀번호를 입력하세요" required />
-                        <label for="password-input">비밀번호를 입력하세요</label>
-                    </div>
-                    <div class="profile-popup-form-actions">
-                        <button type="button" class="profile-popup-login-btn" onclick="checkingPassword()">확인</button>
-                    </div>
-                </form>
+            <div>
+                <!-- 비밀번호 확인 섹션 -->
+                <div id="profile-popup-password-section" class="hidden">
+                    <h1>비밀번호 확인</h1>
+                    <form id="profile-popup-password-verify-form">
+                        <div class="form-group">
+                            <input type="password" id="password-input" placeholder=" " />
+                            <label for="password-input">비밀번호</label>
+                            <span class="span-text">비밀번호를  입력하세요.</span> <!-- 오류 메시지 -->
+                        </div>
+                        <div class="profile-popup-form-actions">
+                            <button type="button" class="profile-popup-login-btn"
+                                onclick="checkingPassword()">확인</button>
+                        </div>
+                    </form>
+                </div>
+                <br>
             </div>
-            <br>
-        </div>
             <!-- 저장 버튼 -->
             <div class="profile-popup-form-actions">
                 <button type="button" class="profile-popup-save-button" id="profile-popup-save-button"
@@ -87,6 +96,7 @@
             </div>
         </div>
     </div>
+    
 
 
     <div id="mySidebar">

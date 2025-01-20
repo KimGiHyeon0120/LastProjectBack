@@ -385,7 +385,6 @@
                     $("#editSprintPopup").fadeIn();
                 },
                 error: function (err) {
-                    console.error(err);
                 }
             });
         }
@@ -418,7 +417,6 @@
                     updateSprintDropdownButton(); // 스프린트 드롭다운 버튼 텍스트 업데이트
                 },
                 error: function (err) {
-                    console.error("스프린트 조회 오류:", err);
                 }
             });
         }
@@ -456,7 +454,6 @@
                 // 스프린트 드롭다운 버튼 텍스트 업데이트
                 updateSprintDropdownButton();
             } catch (err) {
-                console.error('필터링 오류:', err);
             }
         }
 
@@ -504,7 +501,6 @@
                 method: "GET",
                 success: function (statuses) {
                     if (!Array.isArray(statuses) || statuses.length === 0) {
-                        console.error("상태 목록 데이터가 비어 있습니다.");
                         return;
                     }
 
@@ -529,7 +525,6 @@
                     const dropdownOptions = $(`#dropdown-options-${task.taskId}`);
 
                     if (!dropdown.length) {
-                        console.error(`드롭다운 요소를 찾을 수 없습니다. 작업 ID: ${task.taskId}`);
                         return;
                     }
 
@@ -542,7 +537,6 @@
                         dropdown.addClass(selectedClass);
                         dropdown.find(".selected-status").text(selectedStatus.name);
                     } else {
-                        console.warn(`선택된 상태를 찾을 수 없습니다. 작업 ID: ${task.taskId}`);
                     }
 
                     dropdown.on("click", function () {
@@ -572,8 +566,6 @@
                                 fetchSprints();
                             },
                             error: function (err) {
-                                console.error(`작업 ID ${task.taskId} 상태 업데이트 중 오류 발생:`, err);
-                                alert("상태 변경에 실패했습니다. 다시 시도해주세요.");
                             },
                         });
                     });
@@ -581,7 +573,6 @@
                     dropdownOptions.hide();
                 },
                 error: function (err) {
-                    console.error("상태 목록 API 호출 오류:", err);
                 }
             });
         }
@@ -598,7 +589,6 @@
 
 
             if (!taskId || !newStatus) {
-                console.error("작업 ID 또는 새로운 상태 값이 유효하지 않습니다.");
                 return;
             }
 
@@ -614,8 +604,6 @@
                 }),
                 beforeSend: function () {
                     if (!taskId || !newStatus || !changedBy) {
-                        console.error("필수 데이터 누락:", { taskId, newStatus, changedBy });
-                        alert("업데이트에 필요한 데이터가 누락되었습니다.");
                         return false; // 요청 중단
                     }
                 },
@@ -625,18 +613,11 @@
                     fetchSprints(); // 데이터 새로고침 함수 호출
                 },
                 error: function (err) {
-                    console.error(`작업 ID ${taskId} 상태 업데이트 중 오류 발생:`, {
-                        status: err.status,
-                        response: err.responseJSON || err.responseText
-                    });
 
                     // 오류 시 사용자에게 알림
                     if (err.status === 400) {
-                        alert("잘못된 요청입니다. 입력값을 확인해주세요.");
                     } else if (err.status === 500) {
-                        alert("서버에서 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
                     } else {
-                        alert("상태 변경에 실패했습니다. 다시 시도해주세요.");
                     }
                 }
             });
@@ -736,7 +717,6 @@
 
             // projectId와 userIdx 유효성 검증
             if (!projectId || !userIdx) {
-                console.error("프로젝트 ID 또는 사용자 ID가 유효하지 않습니다.");
                 return;
             }
 
@@ -751,11 +731,9 @@
                         updateUIBasedOnRole();
                         fetchSprints(); // 역할 정보를 기반으로 스프린트 렌더링
                     } else {
-                        console.error("역할 정보가 유효하지 않습니다.", roleInfo);
                     }
                 },
                 error: function (err) {
-                    console.error("역할 정보 로드 오류:", err);
                 }
             });
 
@@ -809,7 +787,6 @@
                 const taskId = event.dataTransfer.getData("text");
 
                 if (!taskId || !sprintId) {
-                    console.error("유효하지 않은 작업 ID 또는 스프린트 ID입니다.");
                     return;
                 }
 
@@ -826,7 +803,6 @@
                         fetchSprints();
                     },
                     error: function (err) {
-                        console.error("작업 이동 오류:", err);
                     }
                 });
             };
@@ -834,7 +810,6 @@
             // 드래그 및 드롭 작업이 허용되는지 확인
             function isDragAllowed() {
                 if (userRole === "팀원") {
-                    console.warn("팀원은 드래그 및 드롭 작업을 수행할 수 없습니다.");
                     return false;
                 }
                 return true;
@@ -894,7 +869,6 @@
                     // 드롭다운 요소 찾기
                     const dropdown = document.getElementById(`dropdown_${taskId}`);
                     if (!dropdown) {
-                        console.error(`[오류] 작업 ID ${taskId}에 대한 드롭다운을 찾을 수 없습니다.`);
                         return;
                     }
 
@@ -913,7 +887,7 @@
                         </div>
                     `;
                 } catch (err) {
-                    console.error('[오류] 팀원 목록 가져오기 중 오류 발생:', err);
+                    
                 }
             }
 
@@ -926,7 +900,6 @@
             window.toggleAssigneeDropdown = async function (taskId) {
                 const currentDropdown = document.getElementById(`dropdown_${taskId}`);
                 if (!currentDropdown) {
-                    console.error(`Dropdown not found for Task ID ${taskId}`);
                     return;
                 }
 
@@ -971,7 +944,6 @@
                         }
                     },
                     error: function (err) {
-                        console.error(`[오류] 작업 ID ${taskId}의 담당자 변경 중 오류 발생:`, err);
                     }
                 });
             };
@@ -1010,7 +982,6 @@
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
             $("#addSprintBtn").click(function () {
-                console.log("스프린트 추가 버튼 클릭"); // 클릭 이벤트 테스트
                 $("#sprintName").val(""); // 스프린트 이름 초기화
                 $(".popup-background").fadeIn();
                 $("#sprintPopup").fadeIn();
@@ -1057,7 +1028,6 @@
                         fetchSprints(); // 스프린트 목록 새로고침
                     },
                     error: function (err) {
-                        console.error(err);
                     }
                 });
             });
@@ -1074,7 +1044,6 @@
                         renderSprints(sprints);
                     },
                     error: function (err) {
-                        console.error("스프린트 조회 오류:", err);
                     }
                 });
             }
@@ -1124,13 +1093,11 @@
 
                 // 필수 필드 확인
                 if (!taskName || !startDate || !dueDate) {
-                    alert("모든 필드를 입력해주세요.");
                     return;
                 }
 
                 // 날짜 유효성 검증
                 if (new Date(startDate) > new Date(dueDate)) {
-                    alert("시작 날짜는 마감 날짜보다 앞서야 합니다.");
                     return;
                 }
 
@@ -1149,14 +1116,11 @@
                         assignedTo: assignedTo || null, // 선택한 담당자 ID 또는 null
                     }),
                     success: function () {
-                        alert("작업이 성공적으로 추가되었습니다.");
                         $("#addTaskPopup").fadeOut();
                         $(".popup-background").fadeOut();
                         fetchSprints(); // 스프린트 새로고침
                     },
                     error: function (err) {
-                        console.error("작업 추가 오류:", err);
-                        alert("작업 추가 중 오류가 발생했습니다.");
                     }
                 });
             });
@@ -1171,7 +1135,6 @@
                     // 드롭다운 요소 찾기
                     const dropdown = document.getElementById("taskAssignedTo");
                     if (!dropdown) {
-                        console.error("[오류] 'taskAssignedTo' 드롭다운을 찾을 수 없습니다.");
                         return;
                     }
 
@@ -1189,7 +1152,6 @@
                     });
 
                 } catch (err) {
-                    console.error("[오류] 담당자 목록 가져오기 중 오류 발생:", err);
                 }
             }
 
@@ -1246,19 +1208,16 @@
 
                     // **작업 ID 확인**
                     if (!taskId) {
-                        alert("작업 ID가 설정되지 않았습니다.");
                         return;
                     }
 
                     // 필수 필드 확인
                     if (!taskName || !startDate || !dueDate) {
-                        alert("모든 필드를 입력해주세요.");
                         return;
                     }
 
                     // 날짜 유효성 확인
                     if (new Date(startDate) > new Date(dueDate)) {
-                        alert("시작 날짜는 마감 날짜보다 앞서야 합니다.");
                         return;
                     }
 
@@ -1266,7 +1225,6 @@
                     const isEditable = userRole === "팀장" || userIdx == assignedTo || assignedTo === null;
 
                     if (!isEditable) {
-                        alert("작업을 저장할 권한이 없습니다.");
                         return;
                     }
 
@@ -1289,9 +1247,7 @@
                         beforeSend: function () {
                             // 필수 데이터 유효성 검사
                             if (!taskId || !taskName || !userIdx) { // changedBy -> userIdx로 변경
-                                console.error("필수 데이터 누락:", { taskId, taskName, userIdx });
 
-                                alert("작업 저장에 필요한 데이터가 누락되었습니다.");
                                 return false; // 요청 중단
                             }
                         },
@@ -1305,18 +1261,12 @@
                             fetchSprints();
                         },
                         error: function (err) {
-                            console.error("작업 저장 오류:", {
-                                status: err.status,
-                                response: err.responseJSON || err.responseText
-                            });
+                            
 
                             // 사용자 알림
                             if (err.status === 400) {
-                                alert("잘못된 요청입니다. 입력값을 확인해주세요.");
                             } else if (err.status === 500) {
-                                alert("서버에서 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
                             } else {
-                                alert("작업 저장 중 오류가 발생했습니다. 다시 시도해주세요.");
                             }
                         }
                     });
@@ -1328,7 +1278,6 @@
                     const taskId = $(this).data("task-id"); // 삭제할 taskId 가져오기
 
                     if (!taskId) {
-                        alert("삭제할 작업 ID가 설정되지 않았습니다.");
                         return;
                     }
 
@@ -1344,7 +1293,6 @@
                             contentType: "application/json", // JSON 형식으로 요청 보냄
                             data: JSON.stringify({ taskId: taskId }), // taskId를 JSON 형식으로 전달
                             success: function (response) {
-                                alert("작업이 삭제되었습니다.");
                                 $(".delete-popup-background").fadeOut(); // 팝업 닫기
                                 $("#popup-delete-task").fadeOut();
                                 $("#editTaskPopup").fadeOut();
@@ -1354,8 +1302,7 @@
                                 fetchSprints(); // 스프린트 새로고침
                             },
                             error: function (err) {
-                                console.error("작업 삭제 실패:", err); // 실패 시 로그
-                                alert("작업 삭제 중 오류가 발생했습니다.");
+                                
                             }
                         });
                     });
@@ -1397,10 +1344,8 @@
 
         // 함수 정의
         function openAddTaskPopup(sprintId, sprintName) {
-            console.log("sprintId : ", sprintId)
-            console.log("sprintName : ", sprintName)
+           
             if (!sprintId || !sprintName) {
-                alert("스프린트 정보를 확인해주세요.");
                 return;
             }
 
@@ -1422,7 +1367,6 @@
             // 프로젝트 ID 가져오기
             const projectId = sessionStorage.getItem("projectId");
             if (!projectId) {
-                alert("프로젝트 ID를 확인할 수 없습니다.");
                 return;
             }
 
@@ -1487,8 +1431,7 @@
         function openEditTaskPopup(taskId) {
             // taskId가 전달되지 않은 경우
             if (!taskId) {
-                console.error("작업 ID가 전달되지 않았습니다.");
-                alert("작업 ID가 유효하지 않습니다. 페이지를 새로고침합니다.");
+               
                 window.location.reload(); // 작업 ID가 없으면 새로고침
                 return;
             }
@@ -1517,8 +1460,7 @@
                     $("#editTaskPopup").fadeIn();
                 },
                 error: function (err) {
-                    console.error("작업 편집 로드 오류:", err);
-                    alert("작업 정보를 불러오는 중 오류가 발생했습니다. 페이지를 새로고침합니다.");
+                    
                     window.location.reload();
                 }
             });
@@ -1586,7 +1528,6 @@
                     }
                 },
                 error: function (err) {
-                    console.error("작업 상태 로드 오류:", err);
                 }
             });
         }
@@ -1602,7 +1543,6 @@
 
                 const dropdown = document.getElementById("taskAssignedTo");
                 if (!dropdown) {
-                    console.error("[오류] 'taskAssignedTo' 드롭다운을 찾을 수 없습니다.");
                     return;
                 }
 
@@ -1621,7 +1561,6 @@
                 dropdown.appendChild(noAssigneeOption);
 
             } catch (err) {
-                console.error("[오류] 담당자 목록 가져오기 중 오류 발생:", err);
             }
         }
 
@@ -1689,7 +1628,6 @@
                 success: function () {
                 },
                 error: function (err) {
-                    console.error("스프린트 순서 저장 실패", err);
                 },
             });
         }
@@ -1716,7 +1654,6 @@
             let statuses = [];
 
             if (!sprintDropdownButton || !sprintDropdownContent) {
-                console.error('스프린트 드롭다운 요소를 찾을 수 없습니다.');
                 return;
             }
 
@@ -1754,7 +1691,6 @@
                     // 필터링 이벤트 연결
                     sprintDropdownContent.addEventListener('change', applyFilters);
                 } catch (err) {
-                    console.error('스프린트 필터 로드 오류:', err);
                 }
             }
 
@@ -1773,7 +1709,6 @@
                     filteredTasks = allTasks; // 초기에는 모든 작업 표시
                     renderTasks(statuses, filteredTasks, teamMembers);
                 } catch (err) {
-                    console.error("Error fetching tasks and members:", err);
                 }
             }
 

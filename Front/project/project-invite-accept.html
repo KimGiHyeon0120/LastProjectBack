@@ -33,7 +33,6 @@
           document.querySelector('header').outerHTML = html; // 현재 페이지의 <header>를 대체
         })
         .catch(error => {
-          console.error("Error loading header:", error);
         });
     }
 
@@ -68,16 +67,12 @@
             }),
           });
 
-          alert('초대가 수락되었습니다.');
           sessionStorage.setItem('userIdx', userIdxx);
           localStorage.setItem('userIdx', userIdxx);
           window.location.href = './projectList.html';
         } else {
-          alert(data.error);
         }
       } catch (error) {
-        console.error('초대 수락 오류:', error);
-        alert('초대 수락에 실패했습니다.');
       }
     };
 
@@ -92,15 +87,11 @@
         const data = await response.json();
 
         if (response.ok) {
-          alert(data.message);
           // 초대 거절 후 projectList.html로 이동
           window.location.href = './projectList.html';
         } else {
-          alert(data.error);
         }
       } catch (error) {
-        console.error('초대 거절 오류:', error);
-        alert('초대 거절에 실패했습니다.');
       }
     };
   </script>

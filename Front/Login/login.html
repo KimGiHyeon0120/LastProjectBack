@@ -184,10 +184,9 @@
                     if (data.redirectUrl) {
                         window.location.href = data.redirectUrl; // 서버가 반환한 Google 인증 URL로 이동
                     } else {
-                        alert('An error occurred while processing Google login');
                     }
                 })
-                .catch(error => console.error('Error:', error));
+                .catch();
         }
     </script>
 
