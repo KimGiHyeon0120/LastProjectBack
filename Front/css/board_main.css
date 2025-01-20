@@ -453,13 +453,7 @@ body {
     color: #333;
 }
 
-/* 드롭다운 옵션의 프로필 이미지 */
-.dropdown-image {
-    width: 24px; /* 드롭다운 이미지 너비 */
-    height: 24px; /* 드롭다운 이미지 높이 */
-    border-radius: 50%; /* 원형으로 표시 */
-    object-fit: cover; /* 이미지 비율 유지 */
-}
+
 
 /* 작업 카드 내 프로필 컨테이너 */
 .profile-container img {
