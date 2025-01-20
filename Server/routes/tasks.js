@@ -511,38 +511,45 @@ router.delete('/delete', async (req, res) => {
         return res.status(400).json({ message: '작업 ID는 필수입니다.' });
     }
 
-    // MySQL 연결 설정
-    const connection = mysql.createConnection({
-        host: 'localhost',
-        port: 3306,
-        user: 'root',
-        password: '1234',
-        database: 'project',
-    });
-
     try {
-        // 1. task_history에서 해당 task_id를 참조하는 모든 레코드 삭제
-        await connection.promise().query(
-            `DELETE FROM task_history WHERE task_id = ?`,
+        // 1. task_history에서 해당 task_id를 참조하는 모든 레코드 조회
+        const [taskHistoryRows] = await connection.promise().query(
+            `SELECT * FROM task_history WHERE task_id = ?`,
             [taskId]
         );
 
-        // 2. Tasks 테이블에서 해당 task_id 삭제
-        const [result] = await connection.promise().query(
-            `DELETE FROM Tasks WHERE task_id = ?`,
-            [taskId]
-        );
-
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ message: '삭제할 작업을 찾을 수 없습니다.' });
+        // task_history에 데이터가 있을 경우 삭제
+        if (taskHistoryRows.length > 0) {
+            const [taskHistoryDeleteResult] = await connection.promise().query(
+                `DELETE FROM task_history WHERE task_id = ?`,
+                [taskId]
+            );
+        } else {
         }
 
+        // 2. Tasks 테이블에서 해당 task_id 조회
+        const [taskRows] = await connection.promise().query(
+            `SELECT * FROM Tasks WHERE task_id = ?`,
+            [taskId]
+        );
+
+        // task_id가 존재하면 삭제
+        if (taskRows.length > 0) {
+            const [taskDeleteResult] = await connection.promise().query(
+                `DELETE FROM Tasks WHERE task_id = ?`,
+                [taskId]
+            );
+        } else {
+        }
+
+        // 한 번만 응답을 보냄
         res.status(200).json({ message: '작업(Task)이 성공적으로 삭제되었습니다.' });
     } catch (err) {
+        // 예외 발생 시 한 번만 응답을 보냄
         console.error('작업 삭제 오류:', err);
-        res.status(500).json({ message: '작업 삭제 중 오류가 발생했습니다.' });
-    } finally {
-        connection.end();  // 연결 종료
+        if (!res.headersSent) {  // 응답이 이미 보내지지 않았으면
+            res.status(500).json({ message: '작업 삭제 중 오류가 발생했습니다.' });
+        }
     }
 });
 

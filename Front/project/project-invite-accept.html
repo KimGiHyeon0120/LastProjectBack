@@ -69,7 +69,9 @@
           });
 
           alert('초대가 수락되었습니다.');
-          window.location.href = 'projectList.html';
+          sessionStorage.setItem('userIdx', userIdxx);
+          localStorage.setItem('userIdx', userIdxx);
+          window.location.href = './projectList.html';
         } else {
           alert(data.error);
         }

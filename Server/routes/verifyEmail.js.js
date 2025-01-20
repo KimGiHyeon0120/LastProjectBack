@@ -61,7 +61,7 @@ router.post("/invite", async (req, res) => {
     }
 
     // 초대 이메일 링크 생성
-    const inviteLink = `http://127.0.0.1:5501/Front/project/project-invite-accept.html?invitation_id=${result.insertId}&inviter_id=${invitee.user_idx}`;
+    const inviteLink = `http://192.168.20.37:5500/Front/project/project-invite-accept.html?invitation_id=${result.insertId}&inviter_id=${invitee.user_idx}`;
 
     // 이메일 전송
     await transporter.sendMail({
