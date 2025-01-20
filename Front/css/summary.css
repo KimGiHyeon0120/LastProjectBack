@@ -153,15 +153,7 @@ body {
     /* 마우스 오버 시 배경색 */
 }
 
-/* 본인 강조 스타일 */
-.highlight-row {
-    background-color: #e3f2fd;
-    /* 연한 파란색 배경 */
-    font-weight: bold;
-    /* 글자 굵기 */
-    color: #333;
-    /* 파란색 글씨 */
-}
+
 
 /* 테이블 컨테이너 */
 #team-tasks-container {
@@ -301,7 +293,7 @@ body {
     color: #fff; /* 글자색 */
     padding: 5px 10px; /* 여백 */
     border-radius: 4px; /* 모서리 둥글게 */
-    font-size: 12px;
+    font-size: 14px;
     white-space: nowrap; /* 텍스트 줄바꿈 방지 */
     z-index: 10;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* 살짝 그림자 */
@@ -431,7 +423,7 @@ body {
 
 
 
-/* 내 작업 리스트 */
+
 
 /* 작업 리스트 스타일 */
 .mytasks-list {
@@ -446,25 +438,20 @@ body {
 .mytasks-list li {
     margin-bottom: 20px;
     padding: 20px;
-    border: 1px solid #ddd; /* li 항목에만 하단 선 추가 */
-    border-bottom: 2px solid #ddd; /* li 항목에만 하단 선 추가 */
+    border: 1px solid #ddd;
+    border-bottom: 2px solid #ddd;
     border-right: 2px solid #ddd;
-    border-radius: 8px;
+    border-radius: 4px;
     background-color: #F9F9F9;
     overflow: hidden;
 }
 
 /* 스프린트 제목 스타일 */
-.mytasks-list li h4 {
-    margin: 0 0 15px;
-    font-size: 1.4rem;
-    color: #333;
-}
 
 /* 테이블 스타일 */
 .mytasks-list li table {
     width: 100%;
-    border-collapse: collapse;
+    table-layout: fixed; /* 고정된 테이블 레이아웃 */
     margin-top: 10px;
     font-size: 0.9rem;
     color: #333;
@@ -477,18 +464,15 @@ body {
     padding: 12px 15px;
     font-weight: bold;
     text-align: center;
-    
 }
 
 /* td 스타일: 셀 간 간격을 넓히고, 텍스트 가운데 정렬 */
 .mytasks-list li table td {
+    min-width: 120px; /* 최소 너비 설정 */
     padding: 12px 15px;
     text-align: center;
-    
-
+    vertical-align: middle; /* 세로 가운데 정렬 */
 }
-
-
 
 /* 작업 항목 스타일 */
 .mytasks-list li table tbody tr:nth-child(odd) {
@@ -498,6 +482,135 @@ body {
 .mytasks-list li table tbody tr:nth-child(even) {
     background-color: #ffffff;
 }
+
+/* 스프린트 제목 스타일 */
+.sprint-header {
+    display: flex;
+    justify-content: space-between; /* 왼쪽과 오른쪽에 배치 */
+    align-items: center;
+    padding: 10px;
+}
+
+
+
+/* 상태 항목 스타일 */
+.status-item {
+    padding: 4px 10px;
+    font-size: 16px;
+    border-radius: 4px;
+    margin-right: 15px;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    color: #333; /* 텍스트 색상 */
+}
+
+/* 상태 아이콘 스타일 */
+.status-icon {
+    font-size: 14px; /* 아이콘 크기 */
+    margin-right: 8px; /* 텍스트와 간격 */
+}
+
+/* 할 일 상태 스타일 */
+.status-item.todo {
+    background-color: #E3E2E0;
+
+}
+
+/* 진행 중 상태 스타일 */
+.status-item.in-progress {
+    background-color: #D3E5EF;
+
+}
+
+/* 완료 상태 스타일 */
+.status-item.completed {
+    background-color: #DBEDDB;
+
+}
+
+/* 아이콘 색상 변경 */
+.status-item .status-icon {
+    color: inherit; /* 부모 요소 색상에 따라 자동으로 아이콘 색상 적용 */
+}
+
+/* 진행 중 아이콘 색상 */
+.status-item.in-progress .status-icon {
+    color: #5B97BD; /* 진행 중 아이콘 색상 */
+}
+
+/* 완료 상태 아이콘 색상 */
+.status-item.completed .status-icon {
+    color: #6C9B7D; /* 완료 아이콘 색상 */
+}
+
+
+.sprint-name {
+    font-size: 20px !important;
+    font-weight: bold;
+    color: #333;
+}
+
+/* 상태 카운트 스타일 */
+.status-counts {
+    display: flex;
+    justify-content: space-between;
+    margin-left: 15px;
+}
+/* 기본 디자인 */
+.priority-low, .priority-medium, .priority-high, .priority-urgent {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+/* 낮음 */
+.priority-low {
+    background-color: #d4f4dd; /* 연한 초록 */
+    color: #2c662d; /* 진한 초록 */
+}
+
+/* 중간 */
+.priority-medium {
+    background-color: #fff5cc; /* 연한 노랑 */
+    color: #806600; /* 진한 노랑 */
+}
+
+/* 높음 */
+.priority-high {
+    background-color: #ffe6e6; /* 연한 빨강 */
+    color: #cc0000; /* 진한 빨강 */
+}
+
+/* 긴급 */
+.priority-urgent {
+    background-color: #ffcccc; /* 매우 연한 빨강 */
+    color: #800000; /* 어두운 빨강 */
+    animation: blink-red-blue 0.5s infinite; /* 깜박임 효과 */
+}
+
+/* 긴급용 애니메이션 */
+@keyframes blink-red-blue {
+    0% {
+        background-color: #ffcccc;
+        color: #800000;
+    }
+    50% {
+        background-color: #cce5ff;
+        color: #003366;
+    }
+    100% {
+        background-color: #ffcccc;
+        color: #800000;
+    }
+}
+
 
 
 
@@ -685,8 +798,9 @@ body {
 
 /* 드롭다운 제목 (h3) */
 h3 {
-    margin: 0; /* 기본 마진 제거 */
-    font-size: 16px; /* 글자 크기 */
+    margin: 0;
+    margin-bottom: 20px; /* 기본 마진 제거 */
+    font-size: 24px; /* 글자 크기 */
     color: #333; /* 글자 색상 */
     flex-grow: 1; /* 버튼과 공간을 차지하게 하기 위해 추가 */
 }
@@ -701,3 +815,30 @@ h3 {
     margin-top: 5px; /* 제목과 간격 추가 */
 }
 
+/* td 내부의 상태 항목 기본 스타일 */
+td .status-item {
+    padding: 6px 8px;
+    font-size: 14px;
+    border-radius: 4px;
+    margin-right: 15px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+/* 할 일 상태 스타일 */
+td .status-item.todo {
+    background-color: #E3E2E0;
+
+}
+
+/* 진행 중 상태 스타일 */
+td .status-item.in-progress {
+    background-color: #D3E5EF;
+ 
+}
+
+/* 완료 상태 스타일 */
+td .status-item.completed {
+    background-color: #DBEDDB;
+ 
+}
