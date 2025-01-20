@@ -47,6 +47,7 @@
 
         </div>
         <div class="delete-popup-background" style="display: none;"></div>
+
         <!-- 작업 삭제 팝업 -->
         <div id="popup-delete-task" class="delete-popup" style="display: none;">
             <div class="delete-popup-header">
@@ -97,6 +98,12 @@
             </form>
         </div>
 
+
+
+
+
+
+
         <!-- 작업 추가 팝업 -->
         <div class="popup" id="addTaskPopup">
             <div class="popup-header">작업 추가</div>
@@ -116,10 +123,6 @@
                         <input type="date" id="taskDueDate" required />
                     </div>
                 </div>
-
-
-
-
                 <!-- 담당자 선택 추가 -->
                 <label>담당자</label>
                 <select id="taskAssignedTo" required>
@@ -234,7 +237,6 @@
 
 
                 const tasksHTML = sprint.tasks.map(task => {
-                    console.log("Rendering task with ID:", task.taskId); // taskId 콘솔 출력
                     return `
                         <div class="task-card" 
                             ${userRole === "팀원" ? '' : `draggable="true" ondragstart="dragTask(event)"`} 
@@ -326,10 +328,10 @@
                       
                         ${sprint.sprintName !== "임시저장" && userRole !== "팀원" // 팀원이 아닌 경우만 추가 버튼을 렌더링
                         ? `
-                                    <button class="add-task-btn" 
-                                            onclick="openAddTaskPopup(${sprint.sprintId}, '${sprint.endDate || ""}', '${sprint.sprintName}')">
-                                        + 추가
-                                    </button>
+<button class="add-task-btn" 
+        onclick="openAddTaskPopup(${sprint.sprintId}, '${sprint.sprintName}')">
+    + 추가
+</button>
                                 
                                   </div>`
 
@@ -1203,7 +1205,25 @@
 
 
 
-            //편집 팝업
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            // 편집 팝업
             $(document).ready(function () {
                 // 편집 팝업 닫기
                 $("#cancelEditTaskBtn").click(function () {
@@ -1219,10 +1239,11 @@
                     const startDate = $("#editTaskStartDate").val();
                     const dueDate = $("#editTaskDueDate").val();
                     const status = $("#editTaskStatus").val();
-                    let assignedTo = $("#editTaskAssignedTo").val();
+                    // 담당자 관련 코드 주석 처리
+                    // let assignedTo = $("#editTaskAssignedTo").val();
 
                     // "담당자 없음" 처리: 빈 값일 경우 null로 설정
-                    assignedTo = assignedTo === "" ? null : assignedTo;
+                    // assignedTo = assignedTo === "" ? null : assignedTo;
 
                     // **작업 ID 확인**
                     if (!taskId) {
@@ -1251,7 +1272,6 @@
                     }
 
                     // AJAX 요청
-                    // AJAX 요청
                     $.ajax({
                         url: `${API_URL}/tasks/update`,
                         method: "PUT",
@@ -1263,19 +1283,19 @@
                             startDate: startDate || null, // 시작 날짜
                             dueDate: dueDate || null, // 종료 날짜
                             status: status || 1, // 상태 ID, 기본값 1
-                            changedBy: userIdx || null, // 변경한 사용자 ID
-                            assignedTo: assignedTo || null // 담당자 ID
+                            changedBy: userIdx || null, // 변경한 사용자 ID (이 부분 수정)
+                            // 담당자 관련 데이터 제거
+                            // assignedTo: assignedTo || null // 담당자 ID
                         }),
                         beforeSend: function () {
                             // 필수 데이터 유효성 검사
-                            if (!taskId || !taskName || !changedBy) {
-                                console.error("필수 데이터 누락:", { taskId, taskName, changedBy });
+                            if (!taskId || !taskName || !userIdx) { // changedBy -> userIdx로 변경
+                                console.error("필수 데이터 누락:", { taskId, taskName, userIdx });
                                 alert("작업 저장에 필요한 데이터가 누락되었습니다.");
                                 return false; // 요청 중단
                             }
                         },
                         success: function (response) {
-
                             // 팝업 및 배경 숨기기
                             $("#editTaskPopup").fadeOut();
                             $(".popup-background").fadeOut();
@@ -1302,33 +1322,41 @@
 
                 });
 
-
-
                 // 작업 삭제 버튼 클릭 시 팝업 열기
                 $("#deleteTaskBtn").click(function () {
-                    // 팝업 배경과 삭제 팝업 보이기
+                    const taskId = $(this).data("task-id"); // 삭제할 taskId 가져오기
+                
+                    if (!taskId) {
+                        alert("삭제할 작업 ID가 설정되지 않았습니다.");
+                        return;
+                    }
+                
+                    // 삭제 확인 팝업 열기
                     $(".delete-popup-background").fadeIn();
                     $("#popup-delete-task").fadeIn();
-
-                    // 삭제 버튼 클릭 시 실제 삭제 진행
+                
+                    // 실제 삭제 버튼 클릭 시 작업 삭제 요청
                     $("#popup-delete-task .delete-btn").click(function () {
-                        const taskId = $(this).data("task-id"); // 삭제할 작업 ID (필요시 전달)
-
                         $.ajax({
-                            url: `${API_URL}/tasks/delete`,
+                            url: `${API_URL}/tasks/delete`, // URL
                             method: "DELETE",
-                            contentType: "application/json",
-                            data: JSON.stringify({ taskId }),
+                            contentType: "application/json", // JSON 형식으로 요청 보냄
+                            data: JSON.stringify({ taskId: taskId }), // taskId를 JSON 형식으로 전달
                             success: function () {
-                                $(".delete-popup-background").fadeOut(); // 배경 닫기
-                                $("#popup-delete-task").fadeOut(); // 삭제 팝업 닫기
+                                alert("작업이 삭제되었습니다.");
+                                $(".delete-popup-background").fadeOut(); // 팝업 닫기
+                                $("#popup-delete-task").fadeOut();
+                                $("#editTaskPopup").fadeOut();
+                                $(".popup-background").fadeOut();
                                 fetchSprints(); // 스프린트 새로고침
                             },
                             error: function (err) {
                                 console.error("작업 삭제 실패:", err);
-                            },
+                                alert("작업 삭제 중 오류가 발생했습니다.");
+                            }
                         });
                     });
+            
 
                     // 취소 버튼 클릭 시 팝업 닫기
                     $("#popup-delete-task .cancel-btn").click(function () {
@@ -1345,6 +1373,13 @@
 
             });
 
+
+
+
+
+
+
+
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
@@ -1358,8 +1393,10 @@
 
 
         // 함수 정의
-        function openAddTaskPopup(sprintId, sprintEndDate, sprintName) {
-            if (!sprintId || !sprintEndDate || !sprintName) {
+        function openAddTaskPopup(sprintId, sprintName) {
+            console.log("sprintId : ", sprintId)
+            console.log("sprintName : ", sprintName)
+            if (!sprintId || !sprintName) {
                 alert("스프린트 정보를 확인해주세요.");
                 return;
             }
@@ -1369,7 +1406,6 @@
 
             // 스프린트 ID와 종료 날짜를 팝업에 설정
             $("#taskCreateBtn").data("sprint-id", sprintId);
-            $("#taskDueDate").attr("max", sprintEndDate); // 마감 날짜의 최대값 설정
 
             // 시작 날짜와 마감 날짜 기본값 설정
             const today = new Date().toISOString().split("T")[0];
@@ -1408,6 +1444,42 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         // 작업 편집 팝업 열기
         function openEditTaskPopup(taskId) {
             // taskId가 전달되지 않은 경우
@@ -1417,37 +1489,27 @@
                 window.location.reload(); // 작업 ID가 없으면 새로고침
                 return;
             }
-        
-            // taskId를 콘솔에 출력
-            console.log("넘겨받은 작업 ID:", taskId);
-        
+
             $.ajax({
                 url: `${API_URL}/tasks/${taskId}`,
                 method: "GET",
                 success: async function (task) {
-                    console.log("로드된 작업 ID:", taskId); // 확인용 추가 로그
-        
+
                     $("#saveEditTaskBtn").data("task-id", taskId);
-        
+
                     $("#editTaskName").val(task.taskName || "");
                     $("#editTaskDescription").val(task.description || "");
                     $("#editTaskStartDate").val(task.startDate ? task.startDate.split("T")[0] : "");
                     $("#editTaskDueDate").val(task.dueDate ? task.dueDate.split("T")[0] : "");
-        
+                    // 삭제 버튼에 taskId 설정
+                    $("#deleteTaskBtn").data("task-id", taskId);
                     const isEditable = userRole === "팀장" || userIdx == task.assignedTo;
-                    $("#editTaskName, #editTaskDescription, #editTaskStartDate, #editTaskDueDate, #editTaskStatus, #editTaskAssignedTo")
+                    $("#editTaskName, #editTaskDescription, #editTaskStartDate, #editTaskDueDate, #editTaskStatus")
                         .prop("disabled", !isEditable);
                     $("#saveEditTaskBtn, #deleteTaskBtn").toggle(isEditable);
-        
+
                     loadTaskStatus(task.statusId, isEditable);
-        
-                    const projectId = sessionStorage.getItem("projectId");
-                    if (projectId) {
-                        await renderEditAssigneeDropdown(projectId, task.assignedTo);
-                    } else {
-                        console.error("프로젝트 ID를 찾을 수 없습니다.");
-                    }
-        
+
                     $(".popup-background").fadeIn();
                     $("#editTaskPopup").fadeIn();
                 },
@@ -1459,48 +1521,43 @@
             });
         }
 
+        // renderEditAssigneeDropdown 함수 삭제
+        // async function renderEditAssigneeDropdown(projectId, selectedAssigneeId) {
+        //     try {
+        //         const response = await $.get(`${API_URL}/project/members`, { projectId });
+        //         const teamMembers = response;
 
+        //         const dropdown = document.getElementById("editTaskAssignedTo");
+        //         if (!dropdown) {
+        //             console.error("[오류] 'editTaskAssignedTo' 드롭다운을 찾을 수 없습니다.");
+        //             return;
+        //         }
 
-        async function renderEditAssigneeDropdown(projectId, selectedAssigneeId) {
-            try {
-                const response = await $.get(`${API_URL}/project/members`, { projectId });
-                const teamMembers = response;
+        //         dropdown.innerHTML = `<option value="">담당자를 선택하세요</option>`;
 
-                const dropdown = document.getElementById("editTaskAssignedTo");
-                if (!dropdown) {
-                    console.error("[오류] 'editTaskAssignedTo' 드롭다운을 찾을 수 없습니다.");
-                    return;
-                }
+        //         teamMembers.forEach(member => {
+        //             const option = document.createElement("option");
+        //             option.value = member.userId;
+        //             option.textContent = member.userName;
+        //             if (member.userId === selectedAssigneeId) {
+        //                 option.selected = true;
+        //             }
+        //             dropdown.appendChild(option);
+        //         });
 
-                // 드롭다운 초기화
-                dropdown.innerHTML = `
-                    <option value="">담당자를 선택하세요</option>
-                `;
+        //         const noAssigneeOption = document.createElement("option");
+        //         noAssigneeOption.value = "";
+        //         noAssigneeOption.textContent = "담당자 없음";
+        //         if (!selectedAssigneeId) {
+        //             noAssigneeOption.selected = true;
+        //         }
+        //         dropdown.appendChild(noAssigneeOption);
 
-                // 팀원 목록 추가
-                teamMembers.forEach(member => {
-                    const option = document.createElement("option");
-                    option.value = member.userId;
-                    option.textContent = member.userName;
-                    if (member.userId === selectedAssigneeId) {
-                        option.selected = true; // 기본값 설정
-                    }
-                    dropdown.appendChild(option);
-                });
+        //     } catch (err) {
+        //         console.error("[오류] 담당자 목록 가져오기 중 오류 발생:", err);
+        //     }
+        // }
 
-                // '담당자 없음' 옵션 추가
-                const noAssigneeOption = document.createElement("option");
-                noAssigneeOption.value = "";
-                noAssigneeOption.textContent = "담당자 없음";
-                if (!selectedAssigneeId) {
-                    noAssigneeOption.selected = true;
-                }
-                dropdown.appendChild(noAssigneeOption);
-
-            } catch (err) {
-                console.error("[오류] 담당자 목록 가져오기 중 오류 발생:", err);
-            }
-        }
 
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
