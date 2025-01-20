@@ -21,13 +21,14 @@
     <div class="main">
         <div class="container">
             <div class="header">
-                <div class="card" onclick="showContent('team')">
+                <div class="card" onclick="showContent('team', this)">
                     <h2>팀 프로젝트 현황</h2>
                 </div>
-                <div class="card" onclick="showContent('tasks')">
+                <div class="card" onclick="showContent('tasks', this)">
                     <h2>내 할일</h2>
                 </div>
             </div>
+            
 
             <div class="content" id="team">
                 <div class="row">
@@ -94,7 +95,7 @@
         //192.168.20.37
 
 
-        function showContent(sectionId) {
+        function showContent(sectionId, clickedCard) {
             // 모든 콘텐츠 섹션 숨기기
             const contents = document.querySelectorAll('.content');
             contents.forEach((content) => {
@@ -108,10 +109,19 @@
             } else {
                 console.error(`섹션 ID를 찾을 수 없습니다: ${sectionId}`);
             }
+
+            // 모든 카드에서 'active' 클래스 제거
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card) => {
+                card.classList.remove('active');
+            });
+
+            // 클릭된 카드에 'active' 클래스 추가
+            clickedCard.classList.add('active');
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            showContent('team'); // 초기 상태: team 활성화
+            showContent('team', document.querySelector('.card')); // 초기 상태: team 활성화
         });
 
 
