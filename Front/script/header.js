@@ -1,6 +1,6 @@
 
 // HTML 로딩 후 초기화 함수
-function loadHTML(url) {
+function loadHTML(url, callback) {
     fetch(url)
         .then(response => response.text())
         .then(html => {
@@ -16,6 +16,7 @@ function loadHTML(url) {
             loadSidebarState();
             highlightActiveLink();
 
+            if (callback) callback();
             // 햄버거 메뉴 이벤트 등록
             const hamburger = document.querySelector('.hamburger');
             if (hamburger) {
@@ -107,22 +108,41 @@ function highlightActiveLink() {
 
 // 문서 로딩 후 HTML 로드
 document.addEventListener('DOMContentLoaded', function () {
-    loadHTML("./header.html");  // header.html 파일 로드
+    loadHTML("./header.html", () => {
+        updateProfileImage(); // HTML 로드 후 프로필 이미지 업데이트
+    });  // header.html 파일 로드
     loadUserProfile();
     // 페이지 로드 시 "알림이 없습니다." 기본 문구를 표시
     const notificationDropdown = document.getElementById("notificationDropdown");
     if (notificationDropdown) {
         notificationDropdown.innerHTML = `<p class="no-notifications">알림이 없습니다.</p>`;
     }
-
     // 알림 데이터 초기화
     fetchNotifications();
 });
 
 
 
-
-
+// 프로필 사진 업데이트
+function updateProfileImage() {
+    const profileIcon = $("#profile-icon"); // jQuery 객체로 가져오기
+    $.ajax({
+        url: `${API_URL}/users/profile/${userIdx}`,
+        type: "GET",
+        success: (response) => {
+            if (response.message === "프로필 로드 성공") {
+                // jQuery의 .attr() 메서드를 사용해 src 속성 변경
+                profileIcon.attr("src", response.data.user_profile_image || "../profile/default-profile.png");
+            } else {
+                alert("프로필 데이터를 불러오는데 실패했습니다.");
+            }
+        },
+        error: (error) => {
+            console.error("Error loading profile:", error);
+            alert("서버 통신 오류로 프로필을 불러올 수 없습니다.");
+        },
+    });
+}
 
 
 
@@ -479,6 +499,9 @@ function loadUserProfile() {
         }
     });
 }
+
+
+
 
 
 function saveProfilePopup() {
