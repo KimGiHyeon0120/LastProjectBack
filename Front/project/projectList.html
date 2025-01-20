@@ -340,6 +340,8 @@
             
                         const teamMembersList = project.team_members.map(member => {
                             const isCurrentUser = parseInt(userIdx, 10) === parseInt(member.user_idx, 10);
+
+                            
             
                             const additionalControls = isCurrentUserLeader && member.role !== "팀장"
                                 ? ` 
