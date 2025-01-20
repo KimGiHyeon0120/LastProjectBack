@@ -199,26 +199,30 @@ router.get('/alltasks/all', async (req, res) => {
 
 // 4. 마감 임박 프로젝트
 router.get('/tasks/urgent', async (req, res) => {
+    const { projectId } = req.query; // 요청에서 projectId를 받아옴
     const query = `
-        SELECT 
-            t.task_id AS taskId,
-            t.task_name AS taskName,
-            t.due_date AS dueDate,
-            CASE 
-                WHEN t.due_date = CURDATE() OR t.due_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY) THEN '긴급'
-                WHEN DATEDIFF(t.due_date, CURDATE()) <= 3 THEN '높음'
-                WHEN DATEDIFF(t.due_date, CURDATE()) <= 5 THEN '중간'
-                ELSE '낮음'
-            END AS priority,
-            u.user_name AS assignedTo
-        FROM Tasks t
-        LEFT JOIN Users u ON t.assigned_to = u.user_idx
-        WHERE (t.due_date = CURDATE() OR t.due_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY)) -- 오늘 또는 내일인 작업만
-        AND t.Tasks_status_id != 3; -- 상태가 '완료'가 아닌 작업만
+SELECT 
+    t.task_id AS taskId,
+    t.task_name AS taskName,
+    t.due_date AS dueDate,
+    CASE
+        WHEN t.due_date = CURDATE() OR t.due_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY) THEN '긴급' -- 오늘 또는 내일 마감
+        WHEN DATEDIFF(t.due_date, CURDATE()) <= 3 THEN '높음' -- 3일 이내 마감
+        WHEN DATEDIFF(t.due_date, CURDATE()) <= 5 THEN '중간' -- 5일 이내 마감
+        ELSE '낮음' -- 그 외
+    END AS calculatedPriority,
+    COALESCE(u.user_name, '담당자 없음') AS assignedTo
+FROM Tasks t
+LEFT JOIN Users u ON t.assigned_to = u.user_idx
+WHERE t.project_id = ? -- 특정 프로젝트 ID
+  AND t.due_date <= DATE_ADD(CURDATE(), INTERVAL 5 DAY) -- 5일 이내 마감 작업
+ORDER BY t.due_date ASC;
     `;
 
     try {
-        const [results] = await connection.promise().query(query);
+        console.log("Project ID:", projectId); // 요청에서 전달된 프로젝트 ID 확인
+        console.log("Executing query:", query); // SQL 쿼리 로그 출력
+        const [results] = await connection.promise().query(query, [projectId]);
         res.json(results);
     } catch (error) {
         console.error("Error fetching urgent tasks:", error);
