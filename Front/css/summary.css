@@ -61,7 +61,9 @@ body {
 .left-column {
     flex: 1;
     /* 동일한 비율로 좌우 공간 차지 */
-    padding: 20px;
+    padding: 0px 20px;
+    width: auto;
+    height: auto;
     background-color: #fff;
     border-radius: 4px;
     border: 1px solid #ddd;
@@ -73,7 +75,7 @@ body {
 .right-column {
     flex: 1;
     /* 동일한 비율로 좌우 공간 차지 */
-    padding: 20px;
+    padding: 0px 20px;
     background-color: #fff;
     border-radius: 4px;
     border: 1px solid #ddd;
@@ -91,34 +93,37 @@ body {
 /* 팀원별 작업 현황 요약 */
 
 /* 상태별 스타일 (th 전용) */
-.status-th {
-    font-weight: bold;
-    /* 글자 굵기 */
-    text-align: center;
-    padding: 10px;
-}
 
+
+
+
+
+/* 할 일 상태 */
 .status-할일 {
-    background-color: #f0f9ff;
-    /* 파란색 톤 */
-    color: #007bff;
+    background-color: #E3E2E0;  /* 회색 톤 */
+    color: #333;
 }
 
+
+
+/* 진행 중 상태 */
 .status-진행중 {
-    background-color: #fff9e6;
-    /* 노란색 톤 */
-    color: #ffc107;
+    background-color: #D3E5EF;  /* 파란색 톤 */
+    color: #333;
 }
 
+
+/* 완료 상태 */
 .status-완료 {
-    background-color: #e6ffe6;
-    /* 초록색 톤 */
-    color: #28a745;
+    background-color: #DBEDDB;  /* 초록색 톤 */
+    color: #333;
 }
+
+
 
 /* 테이블 스타일 */
 #team-tasks-table {
-    width: 80%;
+    width: 100%;
     /* 테이블 너비 */
     margin: 20px auto;
     /* 중앙 정렬 */
@@ -142,13 +147,9 @@ body {
     /* 셀 텍스트 가운데 정렬 */
 }
 
-#team-tasks-table tr:nth-child(even) {
-    background-color: #f9f9f9;
-    /* 짝수 행 배경색 */
-}
 
 #team-tasks-table tr:hover {
-    background-color: #f1f1f1;
+    background-color: #f2f2f2;
     /* 마우스 오버 시 배경색 */
 }
 
@@ -158,15 +159,8 @@ body {
     /* 연한 파란색 배경 */
     font-weight: bold;
     /* 글자 굵기 */
-    color: #007bff;
+    color: #333;
     /* 파란색 글씨 */
-}
-
-.highlight-row td {
-    font-weight: bold;
-    /* 본인 줄 전체 굵은 글씨 */
-    color: #007bff;
-    /* 본인 줄 전체 파란 글씨 */
 }
 
 /* 테이블 컨테이너 */
@@ -212,21 +206,17 @@ body {
 
 
 
+
 /* 전체 프로젝트 진행률 */
 
-/* 원형 그래프 크기 조정 */
+/* 차트 크기 */
 #projectProgressChart {
     max-width: 400px;
-    /* 최대 너비 설정 */
     max-height: 400px;
-    /* 최대 높이 설정 */
     width: 100%;
-    /* 부모 컨테이너의 너비에 맞춤 */
     height: auto;
-    /* 비율을 유지하면서 높이 조정 */
+    margin-left: 50px;
 }
-
-
 
 
 
@@ -475,11 +465,11 @@ body {
 
 #sprintTasksChart {
     width: 100%;
-    max-width: 600px;
+    
 }
 
 .task-bar:hover {
-    background-color: #ddd;
+    background-color: #f2f2f2;
 }
 
 .task-bar {
@@ -510,24 +500,21 @@ body {
 
 .task-gauge {
     height: 20px;
-    background-color: #e0e0e0; /* 회색 배경 (안차지하는 부분) */
+    background-color: #DCDFE4; /* 밝은 회색 배경 */
+
     position: relative;
     margin: 0 10px;
     flex: 1;
-    border-radius: 4px;
+    border-radius: 1px;
     overflow: hidden;
 }
 
 .task-progress {
     height: 100%;
     transition: width 0.3s ease; /* 변화 시 애니메이션 */
-    background-color: #4caf50; /* 고정된 색상 */
+    background-color: #8590A2; /* 고정된 색상 */
 }
 
-.task-empty {
-    height: 100%;
-    background-color: #d3d3d3; /* 회색 (남은 부분) */
-}
 
 .task-percentage {
     width: 50px;
