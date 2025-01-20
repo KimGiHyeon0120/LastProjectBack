@@ -107,7 +107,5 @@ document.addEventListener("DOMContentLoaded", function () {
    \\_______\\/
 `;
 
-    console.clear();
-    console.log('Team_6pm_escaper' + clockArtSix);
 
 });

@@ -78,7 +78,6 @@
                             <h3>스프린트별 작업량 </h3>
                             <span class="description">이 그래프는 스프린트별 팀원 작업량을 시각적으로 보여주며, 특정 스프린트의 작업량과 진행 상태를 확인할 수
                                 있습니다.</span>
-                            <button id="sprintDropdownButton" class="sprint-dropdown-button">전체</button>
                             <div id="sprint-select" class="sprint-dropdown-content">
                                 <!-- 스프린트 항목이 여기에 동적으로 추가됩니다 -->
                             </div>
@@ -109,7 +108,7 @@
                             <thead>
                                 <tr>
                                     <th>스프린트</th>
-                                    <th>프로젝트</th>
+                                    <th>작업 이름</th>
                                     <th>우선도</th>
                                     <th>마감 일</th>
                                     <th>담당자</th>
@@ -711,12 +710,12 @@
                 console.error("urgent-tasks-list 요소를 찾을 수 없습니다.");
                 return;
             }
-
+            console.log(tasks);
             taskListContainer.innerHTML = ""; // 기존 내용을 초기화
 
             // 긴급 작업만 필터링
             const urgentTasks = tasks.filter(task => task.calculatedPriority === "긴급");
-
+            console.log(urgentTasks.length);
             if (urgentTasks.length === 0) {
                 taskListContainer.innerHTML = "<tr><td colspan='4'>긴급 작업이 없습니다.</td></tr>";
                 return;
@@ -738,13 +737,15 @@
       <td><span class="readonly-priority priority-${task.calculatedPriority}">${task.calculatedPriority}</span></td>
             <td>${formattedDate}</td>
                     <td><span class="assignee-image-container">
-                <img class="assignee-image" src="${task.userProfile|| "../profile/default-profile.png"}" alt="User Profile">
+                <img class="assignee-image" src="${task.userProfile || "../profile/default-profile.png"}" alt="User Profile">
                 <span class="assignee-name">${task.assignedTo || "담당자 없음"}<</span>
             </span></td>
                 `;
                 taskListContainer.appendChild(row);
             });
         }
+
+    
 
         // 카드 형식
         // 작업 데이터를 카드에 렌더링 
@@ -821,7 +822,6 @@ container.scrollTop = 0; // 처음 카드로 스크롤 위치 초기화
 
         // 작업 데이터 렌더링
         function renderMyTasks(data) {
-
             const processedTasks = processTaskData(data);
 
             const taskListContainer = document.getElementById("mytasks-list");
@@ -844,35 +844,69 @@ container.scrollTop = 0; // 처음 카드로 스크롤 위치 초기화
                 return acc;
             }, {});
 
-
             for (const [sprintName, tasks] of Object.entries(groupedBySprint)) {
                 const sprintSection = document.createElement("li");
 
-                const sprintTitle = document.createElement("h4");
-                sprintTitle.textContent = sprintName || "기타 작업";
+                // Sprint 상태 카운트
+                const todoCount = tasks.filter(task => task.taskStatus === "할 일").length;
+                const inProgressCount = tasks.filter(task => task.taskStatus === "진행 중").length;
+                const completedCount = tasks.filter(task => task.taskStatus === "완료").length;
+
+
+                // Sprint 제목에 상태 카운트 추가
+                // Sprint 제목에 상태 카운트 추가
+                const sprintTitle = document.createElement("div"); // div로 변경
+                sprintTitle.innerHTML = `
+<div class="sprint-header">
+    <div class="sprint-name">${sprintName || "기타 작업"}</div>
+    <div class="status-counts">
+<div class="status-item todo">
+    <span class="status-icon">●</span> ${todoCount}
+</div>
+<div class="status-item in-progress">
+    <span class="status-icon">●</span> ${inProgressCount}
+</div>
+<div class="status-item completed">
+    <span class="status-icon">●</span> ${completedCount}
+</div>
+
+    </div>
+</div>
+<div style="clear: both;"></div>
+`;
                 sprintSection.appendChild(sprintTitle);
+
+
+
+
 
                 const table = document.createElement("table");
                 const thead = document.createElement("thead");
                 thead.innerHTML = `
-                        <tr>
-                            <th>작업 이름</th>
-                            <th>상태</th>
-                            <th>우선순위</th>
-                            <th>마감일</th>
-                        </tr>
-                    `;
+                <tr>
+                    <th>작업 이름</th>
+                    <th>상태</th>
+                    <th>우선순위</th>
+                    <th>마감일</th>
+                </tr>
+            `;
                 table.appendChild(thead);
 
                 const tbody = document.createElement("tbody");
                 tasks.forEach((task) => {
                     const row = document.createElement("tr");
                     row.innerHTML = `
-                            <td>${task.taskName}</td>
-                            <td>${task.taskStatus}</td>
-                            <td>${task.priority}</td>
-                            <td>${task.dueDate}</td>
-                        `;
+                    <td>${task.taskName}</td>
+                    <td>
+    <span class="status-item ${getStatusClass(task.taskStatus)}">
+        ${task.taskStatus}
+    </span>
+</td>
+
+                    <td><span class="${getPriorityClass(task.priority)}">${task.priority}</span></td>
+
+                    <td>${task.dueDate}</td>
+                `;
                     tbody.appendChild(row);
                 });
                 table.appendChild(tbody);
@@ -882,22 +916,47 @@ container.scrollTop = 0; // 처음 카드로 스크롤 위치 초기화
             }
         }
 
-
         // 우선순위 날짜별로 수정, 완료
         function processTaskData(tasks) {
-
             return tasks.map((task) => {
                 let updatedTask = { ...task };
 
                 if (updatedTask.taskStatus === "완료") {
                     updatedTask.priority = "완료";
                 } else if (new Date(updatedTask.dueDate.replace("년 ", "-").replace("월 ", "-").replace("일", "")) < new Date()) {
-                    updatedTask.priority = "기한지남";
+                    updatedTask.priority = "긴급";
                 }
 
                 return updatedTask;
             });
         }
+        function getStatusClass(status) {
+    if (status === "할 일") {
+        return "todo";
+    } else if (status === "진행 중") {
+        return "in-progress";
+    } else if (status === "완료") {
+        return "completed";
+    }
+    return ""; // 기본값은 빈 문자열
+}
+
+        // 우선순위에 맞는 클래스 반환
+        function getPriorityClass(priority) {
+            switch (priority) {
+                case "낮음":
+                    return "priority-low";
+                case "중간":
+                    return "priority-medium";
+                case "높음":
+                    return "priority-high";
+                case "긴급":
+                    return "priority-urgent";
+                default:
+                    return "";
+            }
+        }
+
 
 
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────

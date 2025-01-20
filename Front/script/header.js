@@ -25,7 +25,7 @@ function loadHTML(url, callback) {
                 });
             }
         })
-        .catch(error => console.error("HTML 로드 실패:", error));
+        .catch( );
 }
 
 let isSidebarToggled = false;
@@ -121,39 +121,28 @@ document.addEventListener('DOMContentLoaded', function () {
     fetchNotifications();
 });
 
-// 프로필 이미지를 선택했을 때 미리보기 갱신
-function updateProfilePreview() {
-    const fileInput = document.getElementById('profile-popup-profile-image-input');
-    const previewImage = document.getElementById('profile-popup-profile-preview-img');
-    const file = fileInput.files[0];
 
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            previewImage.src = e.target.result; // 미리보기 이미지 업데이트
-            enableSaveButton(); // 저장 버튼 활성화
-        };
-        reader.readAsDataURL(file);
-    }
-}
+
+
+
+
 
 // 프로필 사진 업데이트
 function updateProfileImage() {
     const profileIcon = $("#profile-icon"); // jQuery 객체로 가져오기
+
+    // Ajax 요청으로 프로필 이미지 로드
     $.ajax({
-        url: `${API_URL}/users/profile/${userIdx}`,
+        url: `${API_URL}/users/profile/${userIdx}`, // 유저 아이디로 프로필 이미지 요청
         type: "GET",
         success: (response) => {
             if (response.message === "프로필 로드 성공") {
-                // jQuery의 .attr() 메서드를 사용해 src 속성 변경
+                // 프로필 아이콘 업데이트
                 profileIcon.attr("src", response.data.user_profile_image || "../profile/default-profile.png");
             } else {
-                alert("프로필 데이터를 불러오는데 실패했습니다.");
             }
         },
         error: (error) => {
-            console.error("Error loading profile:", error);
-            alert("서버 통신 오류로 프로필을 불러올 수 없습니다.");
         },
     });
 }
@@ -173,7 +162,6 @@ function initializeNotificationHandlers() {
     const notificationBadge = document.getElementById("notificationBadge");
 
     if (!notificationIcon || !notificationDropdown || !notificationBadge) {
-        console.error("알림 관련 요소를 찾을 수 없습니다.");
         return;
     }
 
@@ -192,7 +180,6 @@ function initializeNotificationHandlers() {
 // 알림 데이터 로드
 async function fetchNotifications() {
     if (!userIdxh || !projectIdh) {
-        console.error("User ID 또는 Project ID가 설정되지 않았습니다.");
         return;
     }
 
@@ -204,7 +191,6 @@ async function fetchNotifications() {
         const { notifications } = data;
         renderNotifications(notifications);
     } catch (err) {
-        console.error("알림 데이터를 가져오는 중 오류 발생:", err);
     }
 }
 
@@ -214,7 +200,6 @@ function renderNotifications(notifications) {
     const notificationBadge = document.getElementById("notificationBadge");
 
     if (!notificationDropdown || !notificationBadge) {
-        console.error("알림 관련 요소를 찾을 수 없습니다.");
         return;
     }
 
@@ -270,7 +255,6 @@ function addNotificationItemClickEvent() {
             const role = "assignee"; // 담당자 역할
 
             if (!notificationId) {
-                console.error("알림 ID를 찾을 수 없습니다.");
                 return;
             }
 
@@ -303,7 +287,6 @@ function addNotificationItemClickEvent() {
                     notificationDropdown.innerHTML = `<p class="no-notifications">알림이 없습니다.</p>`;
                 }
             } catch (error) {
-                console.error("알림 읽음 처리 중 오류 발생:", error);
             }
         });
     });
@@ -323,7 +306,6 @@ function togglePopup() {
     if (popup) {
         popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
     } else {
-        console.error('Header profile popup element not found!');
     }
 }
 
@@ -359,15 +341,12 @@ function openProfilePopup() {
     const saveButton = document.getElementById('profile-popup-save-button');
 
     if (!popup) {
-        console.error('Profile popup container not found!');
         return;
     }
     if (!passwordSection) {
-        console.error('Password section not found!');
         return;
     }
     if (!profileSection) {
-        console.error('Profile section not found!');
         return;
     }
 
@@ -391,12 +370,10 @@ function openProfilePopup() {
     if (passwordInput) {
         passwordInput.value = ''; // 입력 값 초기화
     } else {
-        console.error('Password input field not found!');
     }
     if (errorMessage) {
         errorMessage.classList.add('hidden'); // 에러 메시지 숨기기
     } else {
-        console.error('Error message element not found!');
     }
 
     // 사용자 프로필 데이터 로드
@@ -411,14 +388,44 @@ function closeProfilePopup() {
     if (popup) {
         popup.style.display = 'none'; // 팝업 숨기기
     } else {
-        console.error('Profile popup container not found!');
     }
 }
 
 
 
+// 유효성 검사 실패 시 스타일 적용
+function setInvalid(input, message) {
+    let span = document.querySelector('.span-text'); // 오류 메시지를 표시할 span을 선택
+
+    input.classList.add('invalid');
+    input.classList.remove('valid');
+
+    input.style.border = '2px solid lightcoral'; // 테두리 두께 2px로 설정
+    input.style.backgroundColor = '#fdd'; // 배경 색상 변경
+
+    if (span) {
+        span.style.color = 'lightcoral';
+        span.textContent = message; // 오류 메시지 설정
+        span.style.display = 'block'; // 오류 메시지 표시
+    }
+}
 
 
+
+function setValid(input) {
+    let parent = input.parentElement;
+    let span = parent.querySelector('.span-text');
+
+    input.classList.add('valid');
+    input.classList.remove('invalid');
+
+    input.style.border = '';
+    input.style.backgroundColor = '';
+
+    span.style.color = '';
+    span.textContent = '';
+    span.style.display = 'none';
+}
 
 
 
@@ -430,7 +437,7 @@ function closeProfilePopup() {
 // 프로필 이미지 선택창 열기
 function changeProfileImage() {
     const fileInput = document.getElementById('profile-popup-profile-image-input');
-    fileInput.click(); // 숨겨진 파일 입력 필드 클릭
+    fileInput.click(); // 숨겨진 파일 입력 필드를 클릭하여 이미지 선택 창을 엽니다
 }
 
 // 선택된 파일로 프로필 이미지 미리보기 업데이트
@@ -443,7 +450,6 @@ function updateProfilePreview() {
 
         // 파일 형식 검증
         if (!file.type.startsWith('image/')) {
-            alert('이미지 파일만 선택 가능합니다.');
             fileInput.value = ''; // 잘못된 파일 초기화
             return;
         }
@@ -451,18 +457,24 @@ function updateProfilePreview() {
         const reader = new FileReader();
         reader.onload = function (e) {
             previewImg.src = e.target.result; // 이미지 미리보기 업데이트
+            enableSaveButton(); // 저장 버튼 활성화
         };
 
         reader.readAsDataURL(file);
     }
 }
 
+// 저장 버튼 활성화
+function enableSaveButton() {
+    const saveButton = document.getElementById('profile-popup-save-button');
+    const userName = document.getElementById('profile-popup-user-name').value;
 
-
-
-
-
-
+    if (userName.trim() !== "") {
+        saveButton.disabled = false; // 이름이 비어 있지 않으면 저장 버튼 활성화
+    } else {
+        saveButton.disabled = true; // 이름이 비어 있으면 저장 버튼 비활성화
+    }
+}
 
 
 
@@ -472,7 +484,6 @@ function loadUserProfile() {
     const userIdx = sessionStorage.getItem("userIdx");
 
     if (!userIdx) {
-        alert("로그인 정보가 유효하지 않습니다. 다시 로그인해주세요.");
         window.location.href = "../users/login.html";
         return;
     }
@@ -494,22 +505,17 @@ function loadUserProfile() {
                 if (nameField) {
                     nameField.value = user_name;
                 } else {
-                    console.error('Name field element not found!');
                 }
 
                 if (previewImg) {
                     previewImg.src = user_profile_image;
                 } else {
-                    console.error('Profile image element not found!');
                 }
 
             } else {
-                alert('프로필 데이터를 불러오는데 실패했습니다.');
             }
         },
         error: (error) => {
-            console.error("Error loading profile:", error);
-            alert('서버 통신 오류로 프로필을 불러올 수 없습니다.');
         }
     });
 }
@@ -525,25 +531,19 @@ function saveProfilePopup() {
 
 
     if (!userIdx) {
-        alert("로그인 정보가 유효하지 않습니다. 다시 로그인해주세요.");
         window.location.href = "../users/login.html";
         return;
     }
 
     if (!userName) {
-        console.error("User name input field not found!");
-        alert("사용자 이름 필드를 찾을 수 없습니다.");
         return;
     }
 
     if (!fileInput) {
-        console.error("File input field not found!");
-        alert("프로필 이미지 업로드 필드를 찾을 수 없습니다.");
         return;
     }
 
     if (!userName.value.trim()) {
-        alert("사용자 이름을 입력해주세요.");
         userName.focus();
         return;
     }
@@ -558,7 +558,6 @@ function saveProfilePopup() {
 
         // 파일 형식 확인
         if (!file.type.startsWith('image/')) {
-            alert('이미지 파일만 업로드할 수 있습니다.');
             return;
         }
 
@@ -575,8 +574,6 @@ function saveProfilePopup() {
         success: (response) => {
 
             if (response.message === '프로필이 성공적으로 수정되었습니다.') {
-                alert('변경사항이 저장되었습니다.');
-
                 // 프로필 이미지 미리보기 업데이트
                 if (response.data?.user_profile_image) {
                     const previewImg = document.getElementById('profile-popup-profile-preview-img');
@@ -588,12 +585,9 @@ function saveProfilePopup() {
                 // 페이지 리디렉션 또는 팝업 닫기
                 window.location.href = '../users/profile-main.html';
             } else {
-                alert(response.message || '프로필 수정에 실패했습니다.');
             }
         },
         error: (error) => {
-            console.error("Error updating profile:", error);
-            alert('서버 통신 오류로 프로필을 수정할 수 없습니다.');
         }
     });
 }
@@ -606,7 +600,6 @@ function checkingPassword() {
     const errorMessage = document.getElementById('profile-popup-error-message');
 
     if (!userIdx) {
-        alert("로그인 정보가 유효하지 않습니다. 다시 로그인해주세요.");
         window.location.href = "../users/login.html";
         return;
     }
@@ -646,7 +639,7 @@ function checkingPassword() {
                     passwordSection.style.display = 'none';
                 }
 
-                alert('비밀번호 확인이 완료되었습니다.');
+                setValid(userPassword)
             } else if (response.message === '비밀번호가 잘못되었습니다.') {
                 // 에러 메시지 표시 및 입력 필드 초기화
                 errorMessage.classList.remove('hidden');
@@ -655,8 +648,7 @@ function checkingPassword() {
             }
         },
         error: function (error) {
-            console.log('오류: ', error);
-            alert('서버와 통신 중 오류가 발생했습니다.');
+            setInvalid(userPassword, "비밀번호가 틀렸습니다");
         }
     });
 }
