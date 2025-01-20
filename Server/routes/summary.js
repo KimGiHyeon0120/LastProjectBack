@@ -215,9 +215,11 @@ SELECT
         WHEN DATEDIFF(t.due_date, CURDATE()) <= 5 THEN '중간' -- 5일 이내 마감
         ELSE '낮음' -- 그 외
     END AS calculatedPriority,
-    COALESCE(u.user_name, '담당자 없음') AS assignedTo
+    COALESCE(u.user_name, '담당자 없음') AS assignedTo,
+    COALESCE(s.sprint_name, '스프린트 없음') AS sprintName -- 스프린트 이름 추가
 FROM Tasks t
 LEFT JOIN Users u ON t.assigned_to = u.user_idx
+LEFT JOIN Sprints s ON t.sprint_id = s.sprint_id -- Tasks 테이블과 Sprints 테이블을 JOIN하여 스프린트 이름을 가져옴
 WHERE t.project_id = ? -- 특정 프로젝트 ID
   AND t.due_date <= DATE_ADD(CURDATE(), INTERVAL 5 DAY) -- 5일 이내 마감 작업
 ORDER BY t.due_date ASC;

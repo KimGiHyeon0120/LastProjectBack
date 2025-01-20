@@ -33,7 +33,10 @@
             <div class="content" id="team">
                 <div class="row">
                     <div class="left-column section-top-left">
-                        <h3>팀원별 작업 현황 요약</h3>
+                        <div>
+                            <h3>팀원별 작업 현황 요약</h3>
+                            <span class="description">팀원별 작업 현황을 보여주는 표로, 각 팀원의 할 일, 진행 중, 완료된 작업 상태를 나타냅니다.</span><br>
+                        </div>
                         <table id="team-tasks-table" class="team-tasks-table">
                             <thead>
                                 <tr>
@@ -49,7 +52,11 @@
                     </div>
 
                     <div class="right-column section-top-right">
-                        <h3>전체 프로젝트 진행률</h3>
+                        <div>
+                            <h3>전체 프로젝트 진행률</h3>
+                            <span class="description">전체 프로젝트의 진행 상태를 나타내는 파이 차트로, 할 일, 진행 중, 완료된 작업의 비율을 시각적으로
+                                보여줍니다.</span><br>
+                        </div>
                         <canvas id="projectProgressChart" width="400" height="400">
 
                         </canvas>
@@ -59,10 +66,21 @@
 
                 <div class="row">
                     <div class="left-column section-bottom-left">
-                        <h3>스프린트별 작업량</h3>
 
-                        <label for="sprint-select"><strong>스프린트를 선택하세요:</strong></label>
-                        <select id="sprint-select"></select>
+                        <!-- 스프린트 필터 -->
+                        <div class="dropdown-container" style="position: relative;">
+
+                            <h3>스프린트별 작업량 </h3>
+                            <span class="descriptionTwo">이 그래프는 스프린트별 팀원 작업량을 시각적으로 보여주며, 특정 스프린트의 작업량과 진행 상태를 확인할 수
+                                있습니다.</span>
+                            <button id="sprintDropdownButton" class="sprint-dropdown-button">전체</button>
+                            <div id="sprint-select" class="sprint-dropdown-content">
+                                <!-- 스프린트 항목이 여기에 동적으로 추가됩니다 -->
+                            </div>
+                        </div>
+
+                        <label for="sprint-select"><strong></strong></label>
+
 
 
                         <div class="title-container">
@@ -75,10 +93,19 @@
                         <canvas id="sprintTasksChart" width="400" height="400"></canvas>
 
                     </div>
-
                     <div class="right-column section-bottom-right">
-                        <h3>마감 임박 프로젝트</h3>
-                        <ul id="urgent-tasks-list"></ul>
+                        <div>
+                            <h3>마감 임박 작업</h3>
+                            <span class="descriptionTwo">마감 임박 작업은 마감일과 담당자, 우선순위를 함께 보여주며, 중요한 작업의 상태를 확인할 수
+                                있습니다.</span>
+                        </div>
+
+                        <!-- 테이블 구조 (헤더 없이) -->
+                        <table id="urgent-tasks-table">
+                            <tbody id="urgent-tasks-list">
+                                <!-- 여기에 작업 데이터가 동적으로 추가됩니다 -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -380,22 +407,33 @@
 
                 const sprints = await response.json();
 
-                const sprintSelect = document.getElementById("sprint-select");
-                sprintSelect.innerHTML = ""; // 기존 옵션 초기화
+                const sprintSelect = $('#sprint-select'); // jQuery로 선택
+                sprintSelect.empty(); // 기존 옵션 초기화
 
-                const allOption = document.createElement("option");
-                allOption.value = "all";
-                allOption.textContent = "전체";
-                sprintSelect.appendChild(allOption);
+                // "전체" 항목을 기본으로 설정
+                const allOption = $('<div id="sprintOption" class="sprint-option">전체</div>');
+                allOption.on('click', function () {
+                    $('#sprintDropdownButton').text('전체');
+                    sprintSelect[0].hidden = true; // 드롭다운 숨기기
+                    fetchSprintTasks("all");
+                });
+                sprintSelect.append(allOption);
+                $('#sprintDropdownButton').text('전체'); // 기본 텍스트 "전체"로 설정
 
+                // 스프린트 목록 추가
                 sprints.forEach((sprint) => {
-                    const option = document.createElement("option");
-                    option.value = sprint.sprintId;
-                    option.textContent = sprint.sprintName;
-                    sprintSelect.appendChild(option);
+                    const option = $('<div class="sprint-option"></div>').text(sprint.sprintName);
+                    option.on('click', function () {
+                        $('#sprintDropdownButton').text(sprint.sprintName);
+                        sprintSelect[0].hidden = true; // 드롭다운 숨기기
+                        fetchSprintTasks(sprint.sprintId);
+                    });
+                    sprintSelect.append(option);
                 });
 
+                // 기본적으로 "전체" 항목을 선택한 상태로 작업량 데이터 가져오기
                 fetchSprintTasks("all");
+
             } catch (error) {
                 console.error("스프린트 목록 가져오기 오류:", error);
                 alert("스프린트 목록을 가져오는 중 오류가 발생했습니다.");
@@ -490,8 +528,8 @@
 
                 const profileImage = document.createElement("img");
                 profileImage.classList.add("profile-image");
-                   // 프로필 이미지가 없을 경우 기본 이미지 설정
-    profileImage.src = task.memberProfile ? task.memberProfile : '../profile/default-profile.png'; // 기본 이미지 경로
+                // 프로필 이미지가 없을 경우 기본 이미지 설정
+                profileImage.src = task.memberProfile ? task.memberProfile : '../profile/default-profile.png'; // 기본 이미지 경로
 
 
                 // 프로필 이미지와 이름을 한 컨테이너에 배치
@@ -530,20 +568,38 @@
                 container.appendChild(taskBar);
             });
         }
-        
-        
-        // 드롭다운 변경 이벤트 핸들러
-        document.getElementById("sprint-select").addEventListener("change", (event) => {
-            const selectedSprintId = event.target.value;
-            if (selectedSprintId === "all") {
-                const projectId = sessionStorage.getItem("projectId");
-                fetchAllTasks(projectId);
-            } else {
-                fetchSprintTasks(selectedSprintId); // 선택된 스프린트 데이터 가져오기
-            }
+
+
+        // 마우스를 드롭다운 버튼 위에 올렸을 때 드롭다운 열기
+        document.getElementById("sprintDropdownButton").addEventListener("mouseenter", function () {
+            const dropdownContent = document.getElementById("sprint-select");
+            dropdownContent.classList.add('show');  // show 클래스를 추가하여 드롭다운 열기
         });
 
-        
+
+        // 마우스가 드롭다운 항목들에서 벗어났을 때 드롭다운 닫기
+        document.getElementById("sprint-select").addEventListener("mouseleave", function () {
+            const dropdownContent = document.getElementById("sprint-select");
+            dropdownContent.classList.remove('show');  // show 클래스 제거하여 드롭다운 닫기
+        });
+
+
+        // 드롭다운 항목을 클릭했을 때 드롭다운을 닫기
+        document.querySelectorAll('.sprint-option').forEach(function (option) {
+            option.addEventListener('click', function () {
+                // 드롭다운 버튼 텍스트 변경
+                document.getElementById("sprintDropdownButton").textContent = option.textContent;
+
+                // 드롭다운 닫기
+                document.getElementById("sprint-select").classList.remove('show');  // show 클래스 제거
+
+                // 선택된 스프린트의 작업 데이터 가져오기
+                const sprintId = option.textContent === "전체" ? "all" : option.dataset.sprintId;
+                fetchSprintTasks(sprintId);
+            });
+        });
+
+
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -582,45 +638,42 @@
         }
 
 
-
         // 리스트 형식
         // 작업 데이터를 리스트에 렌더링 
         function renderUrgentTasks(tasks) {
-            const taskList = document.getElementById("urgent-tasks-list");
-            if (!taskList) {
+            const taskListContainer = document.getElementById("urgent-tasks-list");
+            if (!taskListContainer) {
                 console.error("urgent-tasks-list 요소를 찾을 수 없습니다.");
                 return;
             }
-
-            taskList.innerHTML = ""; // 기존 내용을 초기화
-
+        
+            taskListContainer.innerHTML = ""; // 기존 내용을 초기화
+        
             // 긴급 작업만 필터링
             const urgentTasks = tasks.filter(task => task.calculatedPriority === "긴급");
-
-
+        
             if (urgentTasks.length === 0) {
-                taskList.innerHTML = "<li>긴급 작업이 없습니다.</li>";
+                taskListContainer.innerHTML = "<tr><td colspan='4'>긴급 작업이 없습니다.</td></tr>";
                 return;
             }
-
+        
             // 긴급 작업 렌더링
             urgentTasks.forEach(task => {
                 const dueDate = new Date(task.dueDate);
                 const formattedDate = `${dueDate.getUTCFullYear()}년 ${String(dueDate.getUTCMonth() + 1).padStart(2, "0")}월 ${String(dueDate.getUTCDate()).padStart(2, "0")}일`;
-
-                const listItem = document.createElement("li");
-                listItem.className = "urgent-task-item";
-
-                listItem.innerHTML = `
-                        <strong>${task.taskName}</strong>
-                        : <em>마감일: ${formattedDate}</em>
-                        <span>우선순위: ${task.calculatedPriority}</span>
-                        <span>담당자: ${task.assignedTo || "미정"}</span>
-                    `;
-                taskList.appendChild(listItem);
+        
+                const row = document.createElement("tr");
+                row.classList.add("urgent-task-item");  // 클래스 추가
+        
+                // 작업 이름, 마감일, 담당자 표시
+                row.innerHTML = `
+                    <td><strong>${task.taskName}</strong></td>
+                    <td><em>${formattedDate}</em></td>
+                    <td>${task.assignedTo || "담당자 없음"}</td>
+                `;
+                taskListContainer.appendChild(row);
             });
         }
-
 
         // 카드 형식
         // 작업 데이터를 카드에 렌더링 
@@ -630,34 +683,34 @@ if (!container) {
     console.error("urgent-tasks-container 요소를 찾을 수 없습니다.");
     return;
 }
-
+ 
 container.innerHTML = ""; // 기존 내용 초기화
-
+ 
 // 긴급 작업 필터링
 const urgentTasks = tasks.filter(task => task.calculatedPriority === "긴급");
-
+ 
 if (urgentTasks.length === 0) {
     container.innerHTML = "<p>긴급 작업이 없습니다.</p>";
     return;
 }
-
+ 
 urgentTasks.forEach((task) => {
     const dueDate = new Date(task.dueDate);
     const formattedDate = `${dueDate.getFullYear()}년 ${String(dueDate.getMonth() + 1).padStart(2, "0")}월 ${String(dueDate.getDate()).padStart(2, "0")}일`;
-
+ 
     const card = document.createElement("div");
     card.className = "task-card";
-
+ 
     card.innerHTML = `
         <h4>${task.taskName}</h4>
         <p><strong>마감일:</strong> ${formattedDate}</p>
         <p><strong>우선순위:</strong> ${task.calculatedPriority}</p>
         <p><strong>담당자:</strong> ${task.assignedTo || "미정"}</p>
     `;
-
+ 
     container.appendChild(card);
 });
-
+ 
 container.scrollTop = 0; // 처음 카드로 스크롤 위치 초기화
 }*/
 
@@ -735,7 +788,6 @@ container.scrollTop = 0; // 처음 카드로 스크롤 위치 초기화
                             <th>작업 이름</th>
                             <th>상태</th>
                             <th>우선순위</th>
-                            <th>시작일</th>
                             <th>마감일</th>
                         </tr>
                     `;
@@ -748,7 +800,6 @@ container.scrollTop = 0; // 처음 카드로 스크롤 위치 초기화
                             <td>${task.taskName}</td>
                             <td>${task.taskStatus}</td>
                             <td>${task.priority}</td>
-                            <td>${task.startDate}</td>
                             <td>${task.dueDate}</td>
                         `;
                     tbody.appendChild(row);
