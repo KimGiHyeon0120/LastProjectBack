@@ -33,6 +33,23 @@
             <div class="content" id="team">
                 <div class="row">
                     <div class="left-column section-top-left">
+
+                        <div>
+                            <h3>전체 프로젝트 진행률</h3>
+                            <span class="description">전체 프로젝트의 진행 상태를 나타내는 파이 차트로, 할 일, 진행 중, 완료된 작업의 비율을 시각적으로
+                                보여줍니다.</span><br>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="projectProgressChart"></canvas> <!-- 차트 -->
+                        </div>
+
+                        </canvas>
+
+
+                    </div>
+
+                    <div class="right-column section-top-right">
+
                         <div>
                             <h3>팀원별 작업 현황 요약</h3>
                             <span class="description">팀원별 작업 현황을 보여주는 표로, 각 팀원의 할 일, 진행 중, 완료된 작업 상태를 나타냅니다.</span><br>
@@ -40,7 +57,7 @@
                         <table id="team-tasks-table" class="team-tasks-table">
                             <thead>
                                 <tr>
-                                    <th class="status-th">팀원 이름</th>
+                                    <th class="status-th"> 팀원 이름</th>
                                     <th class="status-th status-할일">할 일</th>
                                     <th class="status-th status-진행중">진행 중</th>
                                     <th class="status-th status-완료">완료</th>
@@ -50,19 +67,7 @@
                             <tfoot id="team-tasks-table-footer" class="team-tasks-table-footer"></tfoot>
                         </table>
                     </div>
-
-                    <div class="right-column section-top-right">
-                        <div>
-                            <h3>전체 프로젝트 진행률</h3>
-                            <span class="description">전체 프로젝트의 진행 상태를 나타내는 파이 차트로, 할 일, 진행 중, 완료된 작업의 비율을 시각적으로
-                                보여줍니다.</span><br>
-                        </div>
-                        <canvas id="projectProgressChart" width="400" height="400">
-
-                        </canvas>
-                    </div>
                 </div>
-
 
                 <div class="row">
                     <div class="left-column section-bottom-left">
@@ -83,6 +88,7 @@
 
 
 
+
                         <div class="title-container">
                             <span class="title">담당자</span>
                             <span class="title">업무 배분</span>
@@ -90,38 +96,39 @@
                         <div id="sprintTasksChart">
                             <!-- 작업량 바가 여기에 동적으로 렌더링 됩니다. -->
                         </div>
-                        <canvas id="sprintTasksChart" width="400" height="400"></canvas>
-
                     </div>
-                    <div class="right-column section-bottom-right">
-                        <div>
-                            <h3>마감 임박 작업</h3>
-                            <span class="descriptionTwo">마감 임박 작업은 마감일과 담당자, 우선순위를 함께 보여주며, 중요한 작업의 상태를 확인할 수
-                                있습니다.</span>
-                        </div>
 
-                        <!-- 테이블 구조 (헤더 없이) -->
-                        <table id="urgent-tasks-table">
-                            <tbody id="urgent-tasks-list">
-                                <!-- 여기에 작업 데이터가 동적으로 추가됩니다 -->
-                            </tbody>
-                        </table>
+
+                </div>
+                <div class="right-column section-bottom-right">
+                    <div>
+                        <h3>마감 임박 작업</h3>
+                        <span class="descriptionTwo">마감 임박 작업은 마감일과 담당자, 우선순위를 함께 보여주며, 중요한 작업의 상태를 확인할 수
+                            있습니다.</span>
                     </div>
+
+                    <!-- 테이블 구조 (헤더 없이) -->
+                    <table id="urgent-tasks-table">
+                        <tbody id="urgent-tasks-list">
+                            <!-- 여기에 작업 데이터가 동적으로 추가됩니다 -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
-
-
-
-
-            <div class="content hidden" id="tasks">
-                <h3>작업 및 할 일</h3>
-                <ul id="mytasks-list" class="mytasks-list"></ul>
-            </div>
-
-
-
-
         </div>
+
+
+
+
+        <div class="content hidden" id="tasks">
+            <h3>작업 및 할 일</h3>
+            <ul id="mytasks-list" class="mytasks-list"></ul>
+        </div>
+
+
+
+
+    </div>
     </div>
 
 
@@ -303,7 +310,6 @@
         // Chart.js 플러그인 등록
         Chart.register(ChartDataLabels);
 
-
         // 전체 프로젝트 진행률 데이터를 가져오는 함수
         async function fetchProjectProgress() {
             try {
@@ -315,8 +321,7 @@
             }
         }
 
-
-        // Chart.js를 사용하여 원형 그래프 렌더링
+        // 차트 렌더링 함수
         function renderProjectProgressChart(data) {
             const ctx = document.getElementById("projectProgressChart").getContext("2d");
 
@@ -338,43 +343,95 @@
                 datasets: [
                     {
                         data: [toDo, inProgress, completed], // 순서 변경
-                        backgroundColor: ["#007bff", "#ffc107", "#28a745"], // 색상 순서 변경
-                        hoverBackgroundColor: ["#0056b3", "#e0a800", "#218838"], // 호버 색상 순서 변경
+                        backgroundColor: ["#E3E2E0", "#D3E5EF", "#DBEDDB"], // 색상 순서 변경
+                        hoverBackgroundColor: ["#91918E", "#5B97BD", "#6C9B7D"], // 호버 색상 순서 변경
                     },
                 ],
             };
 
-            // Chart.js 옵션
-            const options = {
-                responsive: true,
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function (context) {
-                                const value = context.raw;
-                                const percentage = ((value / totalTasks) * 100).toFixed(2);
-                                return `${context.label}: ${value}개 (${percentage}%)`;
-                            },
-                        },
-                    },
-                    datalabels: {
-                        color: "#fff", // 글자 색상
-                        font: {
-                            size: 14, // 글자 크기
-                            weight: "bold", // 글자 굵기
-                        },
-                        formatter: function (value) {
-                            return value; // 각 섹션의 값 표시
-                        },
-                    },
+            // 총 작업량 텍스트를 도넛 그래프 중심에 표시하는 플러그인
+            const centerTextPlugin = {
+                id: 'centerText',
+                beforeDraw(chart) {
+                    const { chartArea: { left, right, top, bottom }, ctx, tooltip } = chart;
+
+                    // 차트 본체 중심 계산
+                    const centerX = (left + right) / 2;
+                    const centerY = (top + bottom) / 2;
+
+                    // 텍스트 위치 조정 (마진 값)
+                    const xOffset = 0; // X축 이동 (양수: 오른쪽, 음수: 왼쪽)
+                    const yOffsetLine1 = -15; // 첫 번째 줄 Y축 조정 (위쪽)
+                    const yOffsetLine2 = 15;  // 두 번째 줄 Y축 조정 (아래쪽)
+
+                    ctx.save();
+
+                    // 텍스트 스타일 설정
+                    ctx.font = 'bold 24px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = '#333';
+
+                    if (tooltip && tooltip.opacity === 1) {
+                        const activeLabel = tooltip.dataPoints[0].label; // 툴팁에서 현재 호버된 항목의 레이블
+                        const activeIndex = chartData.labels.indexOf(activeLabel);
+                        const activeValue = chartData.datasets[0].data[activeIndex];
+                        const percentage = ((activeValue / totalTasks) * 100);
+
+                        // 첫 번째 줄: 항목 이름 (예: '할 일', '진행 중', '완료')
+                        ctx.fillText(`${activeLabel}`, centerX + xOffset, centerY + yOffsetLine1);
+
+                        // 두 번째 줄: 항목 개수와 백분율 (예: '5개 (62%)')
+                        ctx.fillText(`${activeValue}개 (${percentage}%)`, centerX + xOffset, centerY + yOffsetLine2);
+                    } else {
+                        // 기본 텍스트 표시 (호버 안 했을 때)
+                        ctx.fillText(`총 작업`, centerX + xOffset, centerY + yOffsetLine1);
+                        ctx.fillText(`${totalTasks}`, centerX + xOffset, centerY + yOffsetLine2);
+                    }
+
+                    ctx.restore();
                 },
             };
 
-            // 원형 그래프 생성
+            // 플러그인 등록
+            Chart.register(centerTextPlugin);
+
+            // 차트 생성
             new Chart(ctx, {
-                type: "pie",
+                type: "doughnut",
                 data: chartData,
-                options: options,
+                options: {
+                    responsive: true,
+                    cutout: '55%', // 가운데 비우기 (비율을 조정하여 크기 변경 가능)
+                    plugins: {
+                        legend: {
+                            position: 'right', // 범례를 오른쪽에 배치
+                            labels: {
+                                boxWidth: 15,
+                                padding: 40, // 범례 항목과의 간격 설정
+                            },
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    const value = context.raw;
+                                    const percentage = ((value / totalTasks) * 100);
+                                    return `${context.label}: ${value}개 (${percentage}%)`;
+                                },
+                            },
+                        },
+                        datalabels: {
+                            formatter: function () {
+                                return ""; // 데이터 레이블을 빈 문자열로 설정하여 숨김
+                            },
+                            color: "#333", // 숨기더라도 스타일은 유지 가능
+                            font: {
+                                size: 14,
+                                weight: "bold",
+                            },
+                        },
+                    },
+                },
             });
         }
 
@@ -512,7 +569,7 @@
             const totalTaskCount = data.reduce((sum, task) => sum + task.taskCount, 0);
 
             // 고정된 색상으로 설정 (예시로 초록색 사용)
-            const fixedColor = "#4caf50"; // 예: 초록색
+            const fixedColor = "#8590A2"; // 예: 초록색
 
             // 데이터 처리
             data.forEach((task, index) => {
@@ -551,7 +608,7 @@
                 taskProgress.style.width = `${taskPercentageValue}%`; // 실제 작업량 표시
                 taskEmpty.style.width = `${100 - taskPercentageValue}%`; // 안차지 않은 부분 표시
                 taskProgress.style.backgroundColor = fixedColor; // 고정된 색상으로 설정
-                taskEmpty.style.backgroundColor = "#d3d3d3"; // 회색 (남은 부분)
+
 
                 // 백분율 표시 (소수점 없이 표시)
                 const taskPercentage = document.createElement("span");
@@ -568,7 +625,6 @@
                 container.appendChild(taskBar);
             });
         }
-
 
         // 마우스를 드롭다운 버튼 위에 올렸을 때 드롭다운 열기
         document.getElementById("sprintDropdownButton").addEventListener("mouseenter", function () {
@@ -646,25 +702,25 @@
                 console.error("urgent-tasks-list 요소를 찾을 수 없습니다.");
                 return;
             }
-        
+
             taskListContainer.innerHTML = ""; // 기존 내용을 초기화
-        
+
             // 긴급 작업만 필터링
             const urgentTasks = tasks.filter(task => task.calculatedPriority === "긴급");
-        
+
             if (urgentTasks.length === 0) {
                 taskListContainer.innerHTML = "<tr><td colspan='4'>긴급 작업이 없습니다.</td></tr>";
                 return;
             }
-        
+
             // 긴급 작업 렌더링
             urgentTasks.forEach(task => {
                 const dueDate = new Date(task.dueDate);
                 const formattedDate = `${dueDate.getUTCFullYear()}년 ${String(dueDate.getUTCMonth() + 1).padStart(2, "0")}월 ${String(dueDate.getUTCDate()).padStart(2, "0")}일`;
-        
+
                 const row = document.createElement("tr");
                 row.classList.add("urgent-task-item");  // 클래스 추가
-        
+
                 // 작업 이름, 마감일, 담당자 표시
                 row.innerHTML = `
                     <td><strong>${task.taskName}</strong></td>

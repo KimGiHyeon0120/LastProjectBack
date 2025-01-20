@@ -129,7 +129,7 @@ body {
 }
 
 .options-menu button:hover {
-    background-color: #f9f9f9;
+    background-color: #e5e5e5;
     color: #000;
 }
 
@@ -480,7 +480,7 @@ body {
 .assignee-image {
     width: 30px; /* 이미지 너비 */
     height: 30px; /* 이미지 높이 */
-    padding: 3px;
+    padding: 4px;
     border-radius: 50%; /* 원형으로 표시 */
     object-fit: cover; /* 이미지 비율 유지 */
 }
