@@ -233,23 +233,6 @@ body {
 
 
 
-/* 스프린트별 작업량 */
-
-#sprintTasksChart {
-    max-width: 100%;
-    /* 부모 컨테이너의 너비에 맞춤 */
-    max-height: 400px;
-    /* 최대 높이 설정 */
-    width: 100%;
-    /* 그래프가 부모 컨테이너를 채우도록 설정 */
-    height: auto;
-    /* 비율 유지 */
-    display: block;
-    /* 그래프를 블록 요소로 설정 */
-    margin: 0 auto;
-    /* 중앙 정렬 */
-}
-
 
 
 
@@ -478,69 +461,92 @@ body {
 
 
 
-/* 드롭다운 컨테이너 */
-.dropdown-container {
-    position: relative;
-    display: inline-block;
-    margin-bottom: 20px;
+
+/* 스프린트별 작업량 */
+
+
+
+#sprintTasksChart {
+    width: 100%;
+    max-width: 600px;
 }
 
-/* 드롭다운 버튼 스타일 */
-.sprint-dropdown-button {
-    background-color: #fff;
-    color: #333;
-    padding: 10px 15px;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    cursor: pointer;
-    text-align: left;
-    width: 150px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+.task-bar:hover {
+    background-color: #ddd;
+}
+
+.task-bar {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    padding: 8px;
+    margin-bottom: 15px;
+    border-radius: 4px; /* 전체 task-bar에 둥근 모서리 추가 */
 }
 
-.sprint-dropdown-button::after {
-    content: '▼';
-    font-size: 10px;
-    margin-left: 10px;
-    color: #666;
+.task-name-container {
+    display: flex;
+    align-items: center;
+    margin-right: 10px; /* 이름과 진행 바 간의 간격 */
 }
 
-.sprint-dropdown-button:hover {
-    background-color: #f9f9f9;
+.profile-image {
+    width: 30px; /* 프로필 이미지 크기 */
+    height: 30px; /* 프로필 이미지 크기 */
+    border-radius: 50%; /* 원형으로 만들기 */
+    margin-right: 10px; /* 이름과 간격 설정 */
 }
 
-/* 드롭다운 콘텐츠 */
-.sprint-dropdown-content {
-    display: none;
-    position: absolute;
-    background-color: #fff;
-    min-width: 150px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-    z-index: 1;
+.task-name {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.task-gauge {
+    height: 20px;
+    background-color: #e0e0e0; /* 회색 배경 (안차지하는 부분) */
+    position: relative;
+    margin: 0 10px;
+    flex: 1;
     border-radius: 4px;
     overflow: hidden;
-    border: 1px solid #ccc;
 }
 
-/* 드롭다운 항목 */
-.sprint-dropdown-content a {
-    color: #333;
-    padding: 10px 15px;
-    text-decoration: none;
-    display: block;
+.task-progress {
+    height: 100%;
+    transition: width 0.3s ease; /* 변화 시 애니메이션 */
+    background-color: #4caf50; /* 고정된 색상 */
+}
+
+.task-empty {
+    height: 100%;
+    background-color: #d3d3d3; /* 회색 (남은 부분) */
+}
+
+.task-percentage {
+    width: 50px;
+    text-align: center;
+    font-weight: bold;
     font-size: 14px;
-    transition: background-color 0.2s ease;
+}
+/* 전체 제목 컨테이너 스타일 */
+.title-container {
+    margin-top: 20px;
+    display: flex; /* 자식 요소들을 가로로 배치 */
+    align-items: center; /* 수직 가운데 정렬 */
+    justify-content: left; /* 두 텍스트 사이에 간격을 자동으로 배치 */
+    margin-left: 3px;
+
 }
 
-.sprint-dropdown-content a:hover {
-    background-color: #f1f1f1;
+/* 제목 스타일 */
+.title {
+    font-size: 13px; /* 제목 글자 크기 */
+    font-weight: bold; /* 제목 글자 굵게 */
+    color: #333; /* 글자 색 */
+ 
 }
 
-/* 드롭다운 활성화 시 콘텐츠 표시 */
-.dropdown-container:hover .sprint-dropdown-content {
-    display: block;
+/* 제목 간격 추가 (옵션) */
+.title + .title {
+    margin-left: 73px; /* 두 제목 사이의 간격 */
 }
