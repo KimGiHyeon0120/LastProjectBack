@@ -503,15 +503,31 @@ router.put('/update_status', async (req, res) => {
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-// Task 삭제
+// 작업 삭제
 router.delete('/delete', async (req, res) => {
-    const { taskId } = req.body;
+    const { taskId } = req.body;  // 요청 본문에서 taskId를 받음
 
     if (!taskId) {
         return res.status(400).json({ message: '작업 ID는 필수입니다.' });
     }
 
+    // MySQL 연결 설정
+    const connection = mysql.createConnection({
+        host: 'localhost',
+        port: 3306,
+        user: 'root',
+        password: '1234',
+        database: 'project',
+    });
+
     try {
+        // 1. task_history에서 해당 task_id를 참조하는 모든 레코드 삭제
+        await connection.promise().query(
+            `DELETE FROM task_history WHERE task_id = ?`,
+            [taskId]
+        );
+
+        // 2. Tasks 테이블에서 해당 task_id 삭제
         const [result] = await connection.promise().query(
             `DELETE FROM Tasks WHERE task_id = ?`,
             [taskId]
@@ -525,9 +541,10 @@ router.delete('/delete', async (req, res) => {
     } catch (err) {
         console.error('작업 삭제 오류:', err);
         res.status(500).json({ message: '작업 삭제 중 오류가 발생했습니다.' });
+    } finally {
+        connection.end();  // 연결 종료
     }
 });
-
 
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────

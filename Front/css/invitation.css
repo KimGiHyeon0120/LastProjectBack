@@ -1,0 +1,72 @@
+  /* 공통 스타일 */
+  body {
+    font-family: 'Arial', sans-serif;
+    background-color: white;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+
+h1 {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+p {
+    font-size: 18px;
+    color: #555;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+/* 버튼 스타일 */
+button {
+    display: inline-block;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin: 0 10px;
+}
+
+#acceptBtn {
+    background-color: #90CAF9; /* 살짝 연한 파란색 */
+    color: white;
+}
+#acceptBtn:hover {
+    background-color: #64B5F6; /* 약간 진한 파란색 */
+}
+
+#declineBtn {
+    background-color: #ef4d58; /* 빨간색 버튼 */
+}
+
+#declineBtn:hover {
+    background-color: #e53935; /* 더 진한 빨강 */
+}
+
+/* 모바일 대응 스타일 */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 20px;
+    }
+
+    p {
+        font-size: 16px;
+    }
+
+    button {
+        padding: 10px 15px;
+        font-size: 14px;
+    }
+}

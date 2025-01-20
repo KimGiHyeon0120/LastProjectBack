@@ -220,8 +220,6 @@ ORDER BY t.due_date ASC;
     `;
 
     try {
-        console.log("Project ID:", projectId); // 요청에서 전달된 프로젝트 ID 확인
-        console.log("Executing query:", query); // SQL 쿼리 로그 출력
         const [results] = await connection.promise().query(query, [projectId]);
         res.json(results);
     } catch (error) {

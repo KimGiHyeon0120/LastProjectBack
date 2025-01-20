@@ -9,6 +9,7 @@ const path = require('path');
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, path.join(__dirname, '../../Front/profile')); // ../profile 폴더에 저장
+        cb(null, path.join(__dirname, '../profile')); // ../profile 폴더에 저장
     },
     filename: (req, file, cb) => {
         const uniqueName = `${Date.now()}-${file.originalname}`; // 고유 파일명 설정
@@ -294,7 +295,7 @@ router.post('/profile-setting', upload.single('user_profile_image'), async (req,
     const { user_idx, user_name } = req.body;
 
     // 데이터베이스에 저장될 경로 (프론트엔드에서 접근할 경로)
-    const user_profile_image = req.file ? `../profile/${req.file.filename}` : null;
+    const user_profile_image = req.file ? `../../Server/profile/${req.file.filename}` : null;
 
     // 검증
     if (!user_idx || (!user_name && !user_profile_image)) {
