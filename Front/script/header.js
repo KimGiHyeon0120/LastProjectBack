@@ -121,7 +121,21 @@ document.addEventListener('DOMContentLoaded', function () {
     fetchNotifications();
 });
 
+// 프로필 이미지를 선택했을 때 미리보기 갱신
+function updateProfilePreview() {
+    const fileInput = document.getElementById('profile-popup-profile-image-input');
+    const previewImage = document.getElementById('profile-popup-profile-preview-img');
+    const file = fileInput.files[0];
 
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            previewImage.src = e.target.result; // 미리보기 이미지 업데이트
+            enableSaveButton(); // 저장 버튼 활성화
+        };
+        reader.readAsDataURL(file);
+    }
+}
 
 // 프로필 사진 업데이트
 function updateProfileImage() {

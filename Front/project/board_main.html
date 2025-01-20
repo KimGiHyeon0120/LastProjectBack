@@ -23,7 +23,7 @@
 
     <div class="main">
         <div class="projectList-header">
-            <h1>프로젝트</h1>
+            <h1>스프린트 리스트</h1>
             <div class="btn-area">
                 <button id="addSprintBtn" class="projectList-create-btn">스프린트 만들기</button>
             </div>
@@ -1299,7 +1299,7 @@
                             // 팝업 및 배경 숨기기
                             $("#editTaskPopup").fadeOut();
                             $(".popup-background").fadeOut();
-                            
+
 
                             // 화면 새로고침 또는 일부 업데이트
                             fetchSprints();
@@ -1326,38 +1326,40 @@
                 // 작업 삭제 버튼 클릭 시 팝업 열기
                 $("#deleteTaskBtn").click(function () {
                     const taskId = $(this).data("task-id"); // 삭제할 taskId 가져오기
-                
+
                     if (!taskId) {
                         alert("삭제할 작업 ID가 설정되지 않았습니다.");
                         return;
                     }
-                
+
                     // 삭제 확인 팝업 열기
                     $(".delete-popup-background").fadeIn();
                     $("#popup-delete-task").fadeIn();
-                
+
                     // 실제 삭제 버튼 클릭 시 작업 삭제 요청
-                    $("#popup-delete-task .delete-btn").click(function () {
+                    $("#popup-delete-task .delete-btn").off("click").on("click", function () {
                         $.ajax({
                             url: `${API_URL}/tasks/delete`, // URL
                             method: "DELETE",
                             contentType: "application/json", // JSON 형식으로 요청 보냄
                             data: JSON.stringify({ taskId: taskId }), // taskId를 JSON 형식으로 전달
-                            success: function () {
+                            success: function (response) {
                                 alert("작업이 삭제되었습니다.");
                                 $(".delete-popup-background").fadeOut(); // 팝업 닫기
                                 $("#popup-delete-task").fadeOut();
                                 $("#editTaskPopup").fadeOut();
                                 $(".popup-background").fadeOut();
+
+                                $(`#task-${taskId}`).remove(); // 예시: taskId를 가진 DOM 요소 삭제
                                 fetchSprints(); // 스프린트 새로고침
                             },
                             error: function (err) {
-                                console.error("작업 삭제 실패:", err);
+                                console.error("작업 삭제 실패:", err); // 실패 시 로그
                                 alert("작업 삭제 중 오류가 발생했습니다.");
                             }
                         });
                     });
-            
+
 
                     // 취소 버튼 클릭 시 팝업 닫기
                     $("#popup-delete-task .cancel-btn").click(function () {

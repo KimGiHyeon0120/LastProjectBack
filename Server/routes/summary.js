@@ -138,6 +138,7 @@ router.get('/sprints/:sprint_id/team/tasks', async (req, res) => {
 
     const query = `
         SELECT 
+            u.user_profile_image as memberProfile,
             u.user_name AS memberName, -- 팀원 이름
              u.user_profile_image as memberProfile,
             COUNT(t.task_id) AS taskCount -- 팀원의 작업량
@@ -163,6 +164,7 @@ router.get('/alltasks/all', async (req, res) => {
 
     const query = `
         SELECT 
+            u.user_profile_image as memberProfile,
             u.user_name AS memberName,
             u.user_profile_image as memberProfile,
             COUNT(t.task_id) AS taskCount
@@ -213,9 +215,11 @@ SELECT
         WHEN DATEDIFF(t.due_date, CURDATE()) <= 5 THEN '중간' -- 5일 이내 마감
         ELSE '낮음' -- 그 외
     END AS calculatedPriority,
-    COALESCE(u.user_name, '담당자 없음') AS assignedTo
+    COALESCE(u.user_name, '담당자 없음') AS assignedTo,
+    COALESCE(s.sprint_name, '스프린트 없음') AS sprintName -- 스프린트 이름 추가
 FROM Tasks t
 LEFT JOIN Users u ON t.assigned_to = u.user_idx
+LEFT JOIN Sprints s ON t.sprint_id = s.sprint_id -- Tasks 테이블과 Sprints 테이블을 JOIN하여 스프린트 이름을 가져옴
 WHERE t.project_id = ? -- 특정 프로젝트 ID
   AND t.due_date <= DATE_ADD(CURDATE(), INTERVAL 5 DAY) -- 5일 이내 마감 작업
 ORDER BY t.due_date ASC;
@@ -237,43 +241,63 @@ ORDER BY t.due_date ASC;
 
 
 // 5. 내 작업 리스트
+
+
+// 내 작업 필터링
 router.get('/tasks/mytasks', async (req, res) => {
-    const userId = req.query.userId; // 클라이언트에서 전달된 사용자 ID
-    const projectId = req.query.projectId; // 클라이언트에서 전달된 프로젝트 ID
+    const { userId, projectId, sprintIds } = req.query; // 사용자 ID, 프로젝트 ID, 스프린트 IDs
 
     if (!userId || !projectId) {
         return res.status(400).json({ error: "사용자 ID와 프로젝트 ID가 필요합니다." });
     }
 
     try {
-        const query = `
-SELECT 
-    t.task_name AS taskName, -- 작업 이름
-    ts.Tasks_status_name AS taskStatus, -- 작업 상태 (기본 상태 그대로 가져옴)
-    CASE 
-        WHEN t.due_date = CURDATE() OR t.due_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY) THEN '긴급'
-        WHEN DATEDIFF(t.due_date, CURDATE()) <= 3 THEN '높음'
-        WHEN DATEDIFF(t.due_date, CURDATE()) <= 5 THEN '중간'
-        ELSE '낮음'
-    END AS priority, -- 우선순위
-    DATE_FORMAT(t.due_date, '%Y년 %m월 %d일') AS dueDate, -- 마감일
-    s.sprint_name AS sprintName, -- 스프린트 이름
-    DATE_FORMAT(t.start_date, '%Y년 %m월 %d일') AS startDate -- 시작일
-FROM Tasks t
-LEFT JOIN Tasks_status ts ON t.Tasks_status_id = ts.Tasks_status_id
-LEFT JOIN Sprints s ON t.sprint_id = s.sprint_id
-WHERE t.assigned_to = ? AND t.project_id = ?
-ORDER BY s.sprint_id, t.due_date ASC;
-        `;
+        let query = `
+        SELECT 
+            t.task_name AS taskName, -- 작업 이름
+            ts.Tasks_status_name AS taskStatus, -- 작업 상태
+            t.sprint_id,
+            s.sprint_name,
+            CASE 
+                WHEN t.due_date = CURDATE() OR t.due_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY) THEN '긴급'
+                WHEN DATEDIFF(t.due_date, CURDATE()) <= 3 THEN '높음'
+                WHEN DATEDIFF(t.due_date, CURDATE()) <= 5 THEN '중간'
+                ELSE '낮음'
+            END AS priority, -- 우선순위
+            DATE_FORMAT(t.due_date, '%Y년 %m월 %d일') AS dueDate, -- 마감일
+            s.sprint_name AS sprintName, -- 스프린트 이름
+            DATE_FORMAT(t.start_date, '%Y년 %m월 %d일') AS startDate -- 시작일
+        FROM Tasks t
+        LEFT JOIN Tasks_status ts ON t.Tasks_status_id = ts.Tasks_status_id
+        LEFT JOIN Sprints s ON t.sprint_id = s.sprint_id
+        WHERE t.assigned_to = ? AND t.project_id = ?`;
 
-        const [results] = await connection.promise().query(query, [userId, projectId]);
-        res.json(results);
+        let params = [userId, projectId];
+
+        // sprintIds가 전달되면 해당 스프린트들로 필터링
+        if (sprintIds) {
+            // sprintIds가 배열로 제공되면 쿼리 파라미터를 처리
+            const sprintIdsArray = sprintIds.split(',').map(id => parseInt(id, 10));
+            if (sprintIdsArray.length === 0 || sprintIdsArray.some(isNaN)) {
+                return res.status(400).json({ error: "잘못된 스프린트 ID가 포함되어 있습니다." });
+            }
+
+            query += " AND s.sprint_id IN (?)";
+            params.push(sprintIdsArray);
+        }
+
+        query += " ORDER BY s.sprint_id, t.due_date ASC"; // 스프린트별로 정렬
+
+        // 데이터베이스에서 필터링된 작업 조회
+        const [tasks] = await connection.promise().query(query, params);
+
+        // 결과 반환
+        res.json(tasks);
     } catch (error) {
         console.error("Error fetching user tasks:", error);
-        res.status(500).json({ error: "Failed to fetch user tasks" });
+        res.status(500).json({ error: "작업을 가져오는 중 오류가 발생했습니다." });
     }
 });
-
 
 
 

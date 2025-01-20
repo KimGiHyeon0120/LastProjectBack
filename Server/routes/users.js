@@ -526,7 +526,7 @@ router.get('/googlelogin/redirect', async (req, res) => {
 
             if (checkResults.length > 0) {
                 // 기존 사용자 → 지정된 페이지로 이동
-                return res.redirect('http://127.0.0.1:5500/Front/project/projectList.html');
+                return res.redirect('http://192.168.20.37:5500/Front/project/projectList.html');
             } else {
                 // 새 사용자 등록 후 이동
                 const insertQuery = `
@@ -539,7 +539,7 @@ router.get('/googlelogin/redirect', async (req, res) => {
                         return res.status(500).send('Database error occurred while registering user');
                     }
                     // 새 사용자도 지정된 페이지로 이동
-                    return res.redirect('http://127.0.0.1:5500/Front/project/projectList.html');
+                    return res.redirect('http://192.168.20.37:5500/Front/project/projectList.html');
                 });
             }
         });
