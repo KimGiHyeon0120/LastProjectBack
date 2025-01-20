@@ -21,14 +21,13 @@
     <div class="main">
         <div class="container">
             <div class="header">
-                <div class="card" onclick="showContent('team', this)">
+                <div class="card" onclick="showContent('team')">
                     <h2>팀 프로젝트 현황</h2>
                 </div>
-                <div class="card" onclick="showContent('tasks', this)">
+                <div class="card" onclick="showContent('tasks')">
                     <h2>내 할일</h2>
                 </div>
             </div>
-            
 
             <div class="content" id="team">
                 <div class="row">
@@ -50,16 +49,27 @@
 
                     <div class="right-column section-top-right">
                         <h3>전체 프로젝트 진행률</h3>
-                        <canvas id="projectProgressChart" width="400" height="400"></canvas>
+                        <canvas id="projectProgressChart" width="400" height="400">
+
+                        </canvas>
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="left-column section-bottom-left">
                         <h3>스프린트별 작업량</h3>
+                    
                         <label for="sprint-select"><strong>스프린트를 선택하세요:</strong></label>
                         <select id="sprint-select"></select>
-                        <canvas id="sprintTasksChart" width="400" height="300"></canvas>
+                    
+                        <div class="title-container">
+                            <span class="title">담당자</span>
+                            <span class="title">업무 배분</span>
+                        </div>
+                        <div id="sprintTasksChart">
+                            <!-- 작업량 바가 여기에 동적으로 렌더링 됩니다. -->
+                        </div>
+                        <canvas id="sprintTasksChart" width="400" height="400"></canvas>
                     </div>
 
                     <div class="right-column section-bottom-right">
@@ -95,7 +105,7 @@
         //192.168.20.37
 
 
-        function showContent(sectionId, clickedCard) {
+        function showContent(sectionId) {
             // 모든 콘텐츠 섹션 숨기기
             const contents = document.querySelectorAll('.content');
             contents.forEach((content) => {
@@ -109,19 +119,10 @@
             } else {
                 console.error(`섹션 ID를 찾을 수 없습니다: ${sectionId}`);
             }
-
-            // 모든 카드에서 'active' 클래스 제거
-            const cards = document.querySelectorAll('.card');
-            cards.forEach((card) => {
-                card.classList.remove('active');
-            });
-
-            // 클릭된 카드에 'active' 클래스 추가
-            clickedCard.classList.add('active');
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            showContent('team', document.querySelector('.card')); // 초기 상태: team 활성화
+            showContent('team'); // 초기 상태: team 활성화
         });
 
 
@@ -206,10 +207,8 @@
 
 
             /* 전체 프로젝트 진행률 */
-
             // Chart.js 플러그인 등록
             Chart.register(ChartDataLabels);
-
 
             // 전체 프로젝트 진행률 데이터를 가져오는 함수
             async function fetchProjectProgress() {
@@ -222,8 +221,7 @@
                 }
             }
 
-
-            // Chart.js를 사용하여 원형 그래프 렌더링
+            // Chart.js를 사용하여 도넛 그래프 렌더링
             function renderProjectProgressChart(data) {
                 const ctx = document.getElementById("projectProgressChart").getContext("2d");
 
@@ -247,6 +245,7 @@
                             data: [toDo, inProgress, completed], // 순서 변경
                             backgroundColor: ["#007bff", "#ffc107", "#28a745"], // 색상 순서 변경
                             hoverBackgroundColor: ["#0056b3", "#e0a800", "#218838"], // 호버 색상 순서 변경
+
                         },
                     ],
                 };
@@ -254,12 +253,13 @@
                 // Chart.js 옵션
                 const options = {
                     responsive: true,
+                    cutout: '0%', // 가운데 비우기 (비율을 조정하여 크기 변경 가능)
                     plugins: {
                         tooltip: {
                             callbacks: {
                                 label: function (context) {
                                     const value = context.raw;
-                                    const percentage = ((value / totalTasks) * 100).toFixed(2);
+                                    const percentage = ((value / totalTasks) * 110).toFixed(2);
                                     return `${context.label}: ${value}개 (${percentage}%)`;
                                 },
                             },
@@ -277,13 +277,14 @@
                     },
                 };
 
-                // 원형 그래프 생성
+                // 도넛 그래프 생성
                 new Chart(ctx, {
-                    type: "pie",
+                    type: "doughnut", // 원형이 아닌 도넛형 차트로 설정
                     data: chartData,
                     options: options,
                 });
             }
+
 
 
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -388,89 +389,75 @@
             }
 
 
-            // 스프린트 작업량 데이터를 막대그래프로 렌더링하는 함수
             function renderSprintTasksChart(data) {
-                const ctx = document.getElementById("sprintTasksChart").getContext("2d");
-
+                const container = document.getElementById("sprintTasksChart"); // 그래프를 렌더링할 컨테이너
+                console.log(data);
                 // 기존 그래프 제거
-                if (sprintChart) {
-                    sprintChart.destroy();
-                }
+                container.innerHTML = ''; // 기존 내용 지우기
 
                 if (!data || data.length === 0) {
                     console.warn("스프린트 작업 데이터가 비어 있습니다. 수신된 데이터:", data);
                     return; // 데이터가 없으면 함수 종료
                 }
 
+                // 전체 작업량 합산
+                const totalTaskCount = data.reduce((sum, task) => sum + task.taskCount, 0);
+
+                // 고정된 색상으로 설정 (예시로 초록색 사용)
+                const fixedColor = "#4caf50"; // 예: 초록색
+
                 // 데이터 처리
-                const labels = data.map((task) => task.memberName); // 팀원 이름
-                const taskCounts = data.map((task) => task.taskCount); // 작업량
-                const maxValue = Math.max(...taskCounts); // 작업량 중 최대값 계산
-                const yMax = maxValue < 5 ? 5 : Math.ceil(maxValue / 5) * 5; // 최대값이 5 미만일 경우 최소 5로 설정, 5의 배수로 맞춤
+                data.forEach((task, index) => {
+                    const taskBar = document.createElement("div");
+                    taskBar.classList.add("task-bar");
 
-                // 고정된 색상 배열 (팀원별 고유 색상)
-                const fixedColors = [
-                    "#FF5733", // 빨강
-                    "#33FF57", // 초록
-                    "#3357FF", // 파랑
-                    "#FF33A1", // 분홍
-                    "#FFC300", // 노랑
-                    "#33FFF5", // 민트
-                    "#A833FF", // 보라
-                ];
+                    const taskNameContainer = document.createElement("div");
+                    taskNameContainer.classList.add("task-name-container");
 
-                // 팀원별 색상 할당
-                const backgroundColors = labels.map((_, index) => fixedColors[index % fixedColors.length]);
-                const hoverColors = backgroundColors.map((color) => `${color}CC`); // 약간 투명도를 추가하여 어둡게 표현 (CSS rgba 방식)
+                    const taskName = document.createElement("span");
+                    taskName.classList.add("task-name");
+                    taskName.textContent = task.memberName;
 
-                // Chart.js 데이터
-                const chartData = {
-                    labels: labels,
-                    datasets: [
-                        {
-                            data: taskCounts,
-                            backgroundColor: backgroundColors, // 팀원별 고유 색상 적용
-                            hoverBackgroundColor: hoverColors, // 호버 시 약간 어두운 색상
-                            barThickness: 20, // 막대 두께 설정
-                        },
-                    ],
-                };
+                    const profileImage = document.createElement("img");
+                    profileImage.classList.add("profile-image");
+                       // 프로필 이미지가 없을 경우 기본 이미지 설정
+        profileImage.src = task.memberProfile ? task.memberProfile : '../profile/default-profile.png'; // 기본 이미지 경로
 
-                // Chart.js 옵션
-                const options = {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            display: false, // 범례 숨기기
-                        },
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            min: 0, // Y축 최솟값 설정
-                            max: yMax, // 동적으로 최대값 설정
-                            ticks: {
-                                stepSize: 5, // 눈금 간격
-                            },
-                            title: {
-                                display: true,
-                                text: "작업량 (개)",
-                            },
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: "팀원",
-                            },
-                        },
-                    },
-                };
 
-                // 새로운 그래프 생성
-                sprintChart = new Chart(ctx, {
-                    type: "bar",
-                    data: chartData,
-                    options: options,
+                    // 프로필 이미지와 이름을 한 컨테이너에 배치
+                    taskNameContainer.appendChild(profileImage);
+                    taskNameContainer.appendChild(taskName);
+
+                    const taskGauge = document.createElement("div");
+                    taskGauge.classList.add("task-gauge");
+
+                    const taskProgress = document.createElement("div");
+                    taskProgress.classList.add("task-progress");
+                    const taskEmpty = document.createElement("div");
+                    taskEmpty.classList.add("task-empty");
+
+                    // 작업량 비율 계산 (소수점 없이 반올림)
+                    const taskPercentageValue = totalTaskCount > 0 ? Math.round((task.taskCount / totalTaskCount) * 100) : 0;
+
+                    // 스타일 적용
+                    taskProgress.style.width = `${taskPercentageValue}%`; // 실제 작업량 표시
+                    taskEmpty.style.width = `${100 - taskPercentageValue}%`; // 안차지 않은 부분 표시
+                    taskProgress.style.backgroundColor = fixedColor; // 고정된 색상으로 설정
+                    taskEmpty.style.backgroundColor = "#d3d3d3"; // 회색 (남은 부분)
+
+                    // 백분율 표시 (소수점 없이 표시)
+                    const taskPercentage = document.createElement("span");
+                    taskPercentage.classList.add("task-percentage");
+                    taskPercentage.textContent = `${taskPercentageValue}%`;
+
+                    // 구성 요소를 적절하게 배치
+                    taskGauge.appendChild(taskProgress);
+                    taskGauge.appendChild(taskEmpty);
+                    taskBar.appendChild(taskNameContainer);
+                    taskBar.appendChild(taskGauge);
+                    taskBar.appendChild(taskPercentage);
+
+                    container.appendChild(taskBar);
                 });
             }
 
@@ -484,6 +471,8 @@
                     fetchSprintTasks(selectedSprintId); // 선택된 스프린트 데이터 가져오기
                 }
             });
+
+
 
 
             // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────

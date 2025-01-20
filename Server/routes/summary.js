@@ -139,6 +139,7 @@ router.get('/sprints/:sprint_id/team/tasks', async (req, res) => {
     const query = `
         SELECT 
             u.user_name AS memberName, -- 팀원 이름
+             u.user_profile_image as memberProfile,
             COUNT(t.task_id) AS taskCount -- 팀원의 작업량
         FROM Tasks t
         JOIN Users u ON t.assigned_to = u.user_idx
@@ -163,6 +164,7 @@ router.get('/alltasks/all', async (req, res) => {
     const query = `
         SELECT 
             u.user_name AS memberName,
+            u.user_profile_image as memberProfile,
             COUNT(t.task_id) AS taskCount
         FROM Tasks t
         JOIN Users u ON t.assigned_to = u.user_idx
