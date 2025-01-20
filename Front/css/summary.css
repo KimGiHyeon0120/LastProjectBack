@@ -449,7 +449,7 @@ body {
     border: 1px solid #ddd; /* li 항목에만 하단 선 추가 */
     border-bottom: 2px solid #ddd; /* li 항목에만 하단 선 추가 */
     border-right: 2px solid #ddd;
-    border-radius: 8px;
+    border-radius: 4px;
     background-color: #F9F9F9;
     overflow: hidden;
 }
