@@ -79,7 +79,6 @@ router.get('/list-by-user', async (req, res) => {
     }
 
     try {
-
         // 소유한 프로젝트 조회
         const [ownedProjects] = await connection.promise().query(
             `SELECT 
@@ -89,7 +88,8 @@ router.get('/list-by-user', async (req, res) => {
                 p.is_team_project,
                 pr.project_role_name AS role_name, -- 역할 이름
                 pm.user_idx AS leader_idx, -- 팀장의 ID
-                u.user_name AS leader_name -- 팀장의 이름
+                u.user_name AS leader_name, -- 팀장의 이름
+                IFNULL(u.user_profile_image, '../profile/default-profile.png') AS leader_profile -- 기본 이미지 사용
              FROM Projects p
              LEFT JOIN Project_Members pm ON pm.project_id = p.project_id AND pm.project_role_id = 1
              LEFT JOIN Users u ON pm.user_idx = u.user_idx
@@ -107,7 +107,8 @@ router.get('/list-by-user', async (req, res) => {
                 p.is_team_project,
                 pr.project_role_name AS role_name, -- 역할 이름
                 pm_leader.user_idx AS leader_idx, -- 팀장의 ID
-                u_leader.user_name AS leader_name -- 팀장의 이름
+                u_leader.user_name AS leader_name, -- 팀장의 이름
+                IFNULL(u_leader.user_profile_image, '../profile/default-profile.png') AS leader_profile -- 기본 이미지 사용
              FROM Projects p
              INNER JOIN Project_Members pm_user ON pm_user.project_id = p.project_id AND pm_user.user_idx = ?
              LEFT JOIN Project_Members pm_leader ON pm_leader.project_id = p.project_id AND pm_leader.project_role_id = 1
@@ -115,8 +116,6 @@ router.get('/list-by-user', async (req, res) => {
              LEFT JOIN Project_Roles pr ON pm_user.project_role_id = pr.project_role_id`,
             [userId]
         );
-
-
 
         res.status(200).json({
             ownedProjects,
@@ -128,6 +127,7 @@ router.get('/list-by-user', async (req, res) => {
         res.status(500).json({ message: '프로젝트 목록 조회 중 오류가 발생했습니다.' });
     }
 });
+
 
 
 
@@ -598,7 +598,7 @@ router.get('/details', async (req, res) => {
 
         // 팀원 정보 가져오기
         const [teamMembers] = await connection.promise().query(
-            `SELECT pm.user_idx, u.user_name AS name, 
+            `SELECT pm.user_idx, u.user_name AS name, u.user_profile_image AS profile_image,
                     CASE pm.project_role_id 
                         WHEN 1 THEN '팀장' 
                         ELSE '팀원' 
@@ -617,7 +617,7 @@ router.get('/details', async (req, res) => {
 
         // 팀장 정보 가져오기
         const [leaderInfo] = await connection.promise().query(
-            `SELECT pm.user_idx, u.user_name AS leader_name
+            `SELECT pm.user_idx, u.user_name AS leader_name, u.user_profile_image AS profile_image
              FROM Project_Members pm
              JOIN Users u ON pm.user_idx = u.user_idx
              WHERE pm.project_id = ? AND pm.project_role_id = 1`,

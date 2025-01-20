@@ -159,6 +159,7 @@
                     url: `${API_URL}/project/list-by-user?userId=${userIdx}`,
                     method: "GET",
                     success: function (data) {
+                        console.log("프로젝트 목록:", data);
                         renderProjects(data.ownedProjects, data.participatingProjects);
                     },
                     error: function (err) {
@@ -192,7 +193,10 @@
                         <tr class="project-row" data-project-id="${project.project_id}">
                             <td><div class="project-name">${project.project_name}</div></td>
                             <td>${userRole}</td>
-                            <td>${project.leader_name || "정보 없음"}</td>
+                            <td class="leader-info">
+                                <img src="${project.leader_profile}" alt="${project.leader_name}'s Profile" class="leader-profile-img" width="27" height="27" style="border-radius: 50%;">
+                                <span>${project.leader_name || "정보 없음"}</span>
+                            </td>
                             <td class="text-right">
                                 <button class="settings-btn">
                                     <img src="../img/Settings-icon.png" alt="Settings">
@@ -322,55 +326,58 @@
             // 설정 버튼 클릭 이벤트
             $(document).on("click", ".settings-btn", function () {
                 const projectId = $(this).closest("tr").data("project-id");
-
+            
                 // 서버에서 프로젝트 정보 가져오기
                 $.ajax({
                     url: `${API_URL}/project/details?projectId=${projectId}&userIdx=${userIdx}`,
                     method: "GET",
                     success: function (project) {
                         const isCurrentUserLeader = project.current_user_is_leader;
-
+            
                         // 프로젝트 이름 설정
                         $("#input-project-name")
                             .val(project.project_name || "")
                             .prop("readonly", !isCurrentUserLeader);
-
+            
                         $("#button-save-settings").toggle(isCurrentUserLeader); // 팀장이 아닌 경우 숨김
                         $("#button-delete-project")
                             .toggle(isCurrentUserLeader) // 팀장이 아닌 경우 숨김
                             .data("project-id", projectId); // 삭제 버튼에 프로젝트 ID 설정
-
+            
                         const teamMembersList = project.team_members.map(member => {
                             const isCurrentUser = parseInt(userIdx, 10) === parseInt(member.user_idx, 10);
-
+            
                             const additionalControls = isCurrentUserLeader && member.role !== "팀장"
-                                ? `
-                <button class="grant-leader-btn" data-user-idx="${member.user_idx}">팀장 권한 부여</button>
-                <button class="remove-member-btn" data-user-idx="${member.user_idx}">삭제</button>
-                `
+                                ? ` 
+                                <button class="grant-leader-btn" data-user-idx="${member.user_idx}">팀장 권한 부여</button>
+                                <button class="remove-member-btn" data-user-idx="${member.user_idx}">삭제</button>
+                                `
                                 : "";
-
+            
                             return `
-                <li class="popup-project-settings-member-item 
-                    ${isCurrentUser ? "current-user" : ""}
-                    ${member.role === "팀장" ? "leader" : ""}" 
-                    data-user-idx="${member.user_idx}">
-                    ${member.name} ${additionalControls}
-                </li>
-                `;
+                                <li class="popup-project-settings-member-item 
+                                    ${isCurrentUser ? "current-user" : ""} 
+                                    ${member.role === "팀장" ? "leader" : ""}" 
+                                    data-user-idx="${member.user_idx}">
+                                    <span>
+                                    <img src="${member.profile_image || '../profile/default-profile.png'}" alt="${member.name}'s Profile" class="team-member-profile-img" width="27" height="27" style="border-radius: 50%;">
+                                    ${member.name} ${additionalControls}
+                                    </span>
+                                </li>
+                            `;
                         }).join("");
-
+            
                         $("#list-team-members").html(teamMembersList);
-
+            
                         // 팀장일 경우 "추가 +" 버튼 추가
                         if (isCurrentUserLeader) {
                             $("#list-team-members").append(`
-                    <li class="popup-project-settings-member-item add-member-item">
-                        <button class="add-member-btn" data-project-id="${projectId}">+ 팀원 추가</button>
-                    </li>
-                `);
+                                <li class="popup-project-settings-member-item add-member-item">
+                                    <button class="add-member-btn" data-project-id="${projectId}">+ 팀원 추가</button>
+                                </li>
+                            `);
                         }
-
+            
                         // 팝업 열기
                         $("#popup-project-settings").data("project-id", projectId).fadeIn();
                     },
