@@ -1,63 +1,48 @@
 body {
     font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f5f7;
+    padding: 10px 400px;
 }
 
-.container {
-    padding: 20px;
-}
 
 .header {
     display: flex;
     justify-content: space-between;
-    padding: 20px;
+    gap: 20px;
     background-color: #fff;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 20px;
 }
-
+/* 카드 기본 스타일 */
 .header .card {
     text-align: center;
     flex: 1;
-    margin: 0 10px;
     padding: 20px;
     background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    border: 1px solid #ddd;
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: background-color 0.3s, color 0.3s; /* 배경색과 텍스트 색상 변화에 대한 부드러운 전환 */
 }
 
+/* 카드에 마우스 올렸을 때 스타일 */
 .header .card:hover {
-    transform: scale(1.05);
+    background-color: #f0f0f0; /* 마우스 오버 시 배경색 변경 */
 }
 
+/* 활성화된 카드 스타일 */
+.header .card.active {
+    background-color: #A3D7B2; /* 활성화된 카드 배경색 */
+    color: white; /* 활성화된 카드 텍스트 색 */
+}
+
+/* 카드 제목 스타일 */
 .header .card h2 {
     margin: 0;
-    color: #333;
+    color: #333; /* 기본 텍스트 색상 */
 }
 
-.header .card span {
-    font-size: 24px;
-    font-weight: bold;
-    color: #e91e63;
-}
-.content {
-    display: none;
-    margin-top: 20px;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.content.active {
-    display: block;
-}
-
-.hidden {
-    display: none; /* 추가적인 숨김 처리 */
+/* 카드 제목에 마우스 올렸을 때 스타일 */
+.header .card:hover h2 {
+    color: #000; /* 마우스 오버 시 텍스트 색상 변경 */
 }
 
 /* 전체 행 스타일 */
@@ -78,8 +63,10 @@ body {
     /* 동일한 비율로 좌우 공간 차지 */
     padding: 20px;
     background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    border-bottom:  3px solid #ddd;
+    border-right: 3px solid #ddd;
 }
 
 /* 오른쪽 컬럼 스타일 */
@@ -88,95 +75,11 @@ body {
     /* 동일한 비율로 좌우 공간 차지 */
     padding: 20px;
     background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-/* 업무 진행상태 테이블 스타일 */
-#task-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-#task-table th,
-#task-table td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-}
-
-#task-table th {
-    background-color: #f4f5f7;
-    font-weight: bold;
-    color: #333;
-}
-
-#task-table td {
-    background-color: #fff;
-    color: #555;
-}
-
-#task-table tr:hover {
-    background-color: #e6e6e6;
-}
-
-#task-table td strong {
-    color: #e91e63;
-}
-
-/* 팀원 목록 스타일 */
-#team-member-list {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-}
-
-#team-member-list li {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    margin-bottom: 10px;
-    background-color: #f9f9f9;
-    border-radius: 8px;
+    border-radius: 4px;
     border: 1px solid #ddd;
+    border-bottom:  3px solid #ddd;
+    border-right: 3px solid #ddd;
 }
-
-#team-member-list li .team-member {
-    display: flex;
-    align-items: center;
-}
-
-#team-member-list li img.profile-image {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    margin-right: 10px;
-}
-
-#team-member-list li span {
-    font-size: 16px;
-    color: #333;
-}
-
-#team-member-list li span strong {
-    color: #333;
-}
-
-#team-member-list li:hover {
-    background-color: #e6e6e6;
-}
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -384,7 +287,7 @@ body {
     font-size: 0.9rem;
     color: #333;
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    
 }
 
 .urgent-task-item:last-child {
@@ -407,8 +310,7 @@ body {
 }
 
 .urgent-task-item:hover {
-    transform: scale(1.02);
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+
 }
 
 
@@ -517,7 +419,7 @@ body {
     list-style: none;
     padding: 0;
     margin: 0;
-    max-height: 650px;
+    max-height: 900px;
     overflow-y: auto;
 }
 
@@ -526,10 +428,8 @@ body {
     margin-bottom: 20px;
     padding: 15px;
     border: 1px solid #ddd;
-    border-radius: 8px;
+    border-radius: 4px;
     background-color: #ffffff;
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s, box-shadow 0.2s;
     overflow: hidden;
 }
 
@@ -537,9 +437,8 @@ body {
 .mytasks-list li h4 {
     margin: 0 0 15px;
     font-size: 1.4rem;
-    color: #0056b3;
-    border-bottom: 2px solid #0056b3;
-    padding-bottom: 5px;
+    color: #333;
+
 }
 
 /* 테이블 스타일 */
@@ -584,19 +483,6 @@ body {
 
 /* 스프린트 카드 hover 효과 */
 .mytasks-list li:hover {
-    transform: scale(1.02);
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+
 }
 
-/* 반응형 테이블 */
-@media (max-width: 768px) {
-    .mytasks-list li table th,
-    .mytasks-list li table td {
-        font-size: 0.8rem;
-        padding: 6px;
-    }
-
-    .mytasks-list li h4 {
-        font-size: 1.2rem;
-    }
-}

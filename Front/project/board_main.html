@@ -1241,7 +1241,6 @@
                     const status = $("#editTaskStatus").val();
                     // 담당자 관련 코드 주석 처리
                     // let assignedTo = $("#editTaskAssignedTo").val();
-
                     // "담당자 없음" 처리: 빈 값일 경우 null로 설정
                     // assignedTo = assignedTo === "" ? null : assignedTo;
 
@@ -1291,6 +1290,7 @@
                             // 필수 데이터 유효성 검사
                             if (!taskId || !taskName || !userIdx) { // changedBy -> userIdx로 변경
                                 console.error("필수 데이터 누락:", { taskId, taskName, userIdx });
+
                                 alert("작업 저장에 필요한 데이터가 누락되었습니다.");
                                 return false; // 요청 중단
                             }
@@ -1299,6 +1299,7 @@
                             // 팝업 및 배경 숨기기
                             $("#editTaskPopup").fadeOut();
                             $(".popup-background").fadeOut();
+                            
 
                             // 화면 새로고침 또는 일부 업데이트
                             fetchSprints();
