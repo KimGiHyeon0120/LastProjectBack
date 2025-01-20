@@ -488,16 +488,33 @@
             // 마감 기한이 하루 남은 작업 가져오기
             async function fetchUrgentTasks() {
                 try {
-                    const response = await fetch(`${API_URL}/summary/tasks/urgent`);
+                    // sessionStorage에서 projectId 가져오기
+                    const projectId = sessionStorage.getItem("projectId");
+                    if (!projectId) {
+                        console.error("프로젝트 ID를 찾을 수 없습니다.");
+                        return;
+                    }
+
+                    // API 요청에 projectId 포함
+                    const response = await fetch(`${API_URL}/summary/tasks/urgent?projectId=${projectId}`);
                     if (!response.ok) throw new Error(`Failed to fetch urgent tasks. Status: ${response.status}`);
 
                     const tasks = await response.json();
-                    renderUrgentTasks(tasks);
+
+                    // 모든 작업의 dueDate를 UTC 기준으로 변환
+                    const adjustedTasks = tasks.map(task => {
+                        const utcDueDate = new Date(task.dueDate); // 서버에서 받은 UTC 날짜
+                        utcDueDate.setHours(utcDueDate.getHours() + 9); // 한국 시간(UTC+9)으로 조정
+                        return { ...task, dueDate: utcDueDate.toISOString() };
+                    });
+
+                    renderUrgentTasks(adjustedTasks);
                 } catch (error) {
                     console.error("Error fetching urgent tasks:", error);
                     alert("마감 기한이 하루 남은 작업 데이터를 가져오는 중 오류가 발생했습니다.");
                 }
             }
+
 
 
             // 리스트 형식
@@ -509,29 +526,21 @@
                     return;
                 }
 
-                taskList.innerHTML = ""; // 기존 내용 초기화
+                taskList.innerHTML = ""; // 기존 내용을 초기화
 
-                // 오늘과 내일 날짜 계산
-                const today = new Date();
-                const todayString = today.toISOString().split("T")[0];
-                const tomorrow = new Date(today);
-                tomorrow.setDate(today.getDate() + 1);
-                const tomorrowString = tomorrow.toISOString().split("T")[0];
+                // 긴급 작업만 필터링
+                const urgentTasks = tasks.filter(task => task.calculatedPriority === "긴급");
 
-                // 오늘 또는 내일 마감 작업 필터링
-                const urgentTasks = tasks.filter(task => {
-                    const dueDate = task.dueDate.split("T")[0]; // ISO 형식에서 날짜 부분만 추출
-                    return dueDate === todayString || dueDate === tomorrowString;
-                });
 
                 if (urgentTasks.length === 0) {
-                    taskList.innerHTML = "<li>오늘 또는 내일 마감인 작업이 없습니다.</li>";
+                    taskList.innerHTML = "<li>긴급 작업이 없습니다.</li>";
                     return;
                 }
 
-                urgentTasks.forEach((task) => {
+                // 긴급 작업 렌더링
+                urgentTasks.forEach(task => {
                     const dueDate = new Date(task.dueDate);
-                    const formattedDate = `${dueDate.getFullYear()}년 ${String(dueDate.getMonth() + 1).padStart(2, "0")}월 ${String(dueDate.getDate()).padStart(2, "0")}일`;
+                    const formattedDate = `${dueDate.getUTCFullYear()}년 ${String(dueDate.getUTCMonth() + 1).padStart(2, "0")}월 ${String(dueDate.getUTCDate()).padStart(2, "0")}일`;
 
                     const listItem = document.createElement("li");
                     listItem.className = "urgent-task-item";
@@ -539,12 +548,13 @@
                     listItem.innerHTML = `
                         <strong>${task.taskName}</strong>
                         : <em>마감일: ${formattedDate}</em>
-                         <span>우선순위: ${task.priority}</span>
-                         <span>담당자: ${task.assignedTo || "미정"}</span>
+                        <span>우선순위: ${task.calculatedPriority}</span>
+                        <span>담당자: ${task.assignedTo || "미정"}</span>
                     `;
                     taskList.appendChild(listItem);
                 });
             }
+
 
             // 카드 형식
             // 작업 데이터를 카드에 렌더링 
@@ -557,21 +567,11 @@
 
     container.innerHTML = ""; // 기존 내용 초기화
 
-    // 오늘과 내일 날짜 계산
-    const today = new Date();
-    const todayString = today.toISOString().split("T")[0];
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
-    const tomorrowString = tomorrow.toISOString().split("T")[0];
-
-    // 오늘 또는 내일 마감 작업 필터링
-    const urgentTasks = tasks.filter(task => {
-        const dueDate = task.dueDate.split("T")[0]; // ISO 형식에서 날짜 부분만 추출
-        return dueDate === todayString || dueDate === tomorrowString;
-    });
+    // 긴급 작업 필터링
+    const urgentTasks = tasks.filter(task => task.calculatedPriority === "긴급");
 
     if (urgentTasks.length === 0) {
-        container.innerHTML = "<p>오늘 또는 내일 마감인 작업이 없습니다.</p>";
+        container.innerHTML = "<p>긴급 작업이 없습니다.</p>";
         return;
     }
 
@@ -585,7 +585,7 @@
         card.innerHTML = `
             <h4>${task.taskName}</h4>
             <p><strong>마감일:</strong> ${formattedDate}</p>
-            <p><strong>우선순위:</strong> ${task.priority}</p>
+            <p><strong>우선순위:</strong> ${task.calculatedPriority}</p>
             <p><strong>담당자:</strong> ${task.assignedTo || "미정"}</p>
         `;
 
