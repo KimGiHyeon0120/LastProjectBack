@@ -205,8 +205,6 @@
 
                 // 필수 데이터 유효성 검사
                 if (!requestData.taskId || !requestData.taskName || !requestData.changedBy) {
-                    console.error('필수 데이터 누락:', requestData);
-                    alert('업데이트에 필요한 데이터가 누락되었습니다.');
                     return;
                 }
 
@@ -222,8 +220,6 @@
                 if (!response.ok) {
                     // 서버 오류 처리
                     const errorData = await response.json();
-                    console.error('이벤트 업데이트 실패:', errorData);
-                    alert('이벤트 업데이트 중 문제가 발생했습니다.');
                     return;
                 }
 
@@ -231,8 +227,6 @@
                 initializeFullCalendar();
 
             } catch (error) {
-                console.error('이벤트 업데이트 오류:', error);
-                alert('이벤트 업데이트 중 오류가 발생했습니다. 다시 시도해주세요.');
             }
         }
 
@@ -290,7 +284,6 @@
                 if (!response.ok) throw new Error("데이터를 가져오는데 실패했습니다.");
                 return await response.json(); // JSON 데이터 반환
             } catch (error) {
-                console.error("API 호출 오류:", error);
                 return [];
             }
         }
@@ -304,7 +297,6 @@
                 }
                 return await response.json();
             } catch (error) {
-                console.error('Error fetching user role:', error);
                 return null;
             }
         }

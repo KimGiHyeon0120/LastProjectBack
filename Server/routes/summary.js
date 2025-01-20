@@ -216,6 +216,7 @@ SELECT
         ELSE '낮음' -- 그 외
     END AS calculatedPriority,
     COALESCE(u.user_name, '담당자 없음') AS assignedTo,
+    u.user_profile_image AS userProfile,
     COALESCE(s.sprint_name, '스프린트 없음') AS sprintName -- 스프린트 이름 추가
 FROM Tasks t
 LEFT JOIN Users u ON t.assigned_to = u.user_idx
