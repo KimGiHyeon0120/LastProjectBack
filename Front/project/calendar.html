@@ -51,66 +51,6 @@
         let currentDate = new Date();
 
 
-        // FullCalendar 초기화 함수
-        async function initializeFullCalendar() {
-            const calendarEl = document.getElementById('calendar-container');
-
-            const calendar = new FullCalendar.Calendar(calendarEl, {
-                height: 'auto',
-                expandRows: false,
-                slotMinTime: '08:00',
-                slotMaxTime: '20:00',
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
-                },
-                initialView: 'dayGridMonth',
-                initialDate: currentDate, // 현재 날짜로 초기화
-                locale: 'ko',
-                navLinks: true,
-                editable: true, // 이벤트 수정 가능
-                selectable: true, // 이벤트 생성 가능
-                nowIndicator: true,
-                eventResizableFromStart: true, // 시작일도 조정 가능
-                showNonCurrentDates: false,
-                eventAdd: function (obj) {
-                    updateEventOnServer(obj.event); // 새 이벤트 추가
-                },
-                eventChange: function (obj) {
-                    updateEventOnServer(obj.event); // 이벤트 변경
-                },
-                eventRemove: function (obj) {
-                    deleteEventOnServer(obj.event); // 이벤트 삭제
-                },
-                eventResize: function (obj) {
-                    updateEventOnServer(obj.event); // 이벤트 크기 변경(시작일/종료일 변경)
-                },
-                dayCellDidMount: function (info) {
-                    const currentMonth = currentDate.getMonth();
-                    const currentYear = currentDate.getFullYear();
-
-                    // 다음 달의 첫 주 계산
-                    const nextMonth = currentMonth + 1;
-                    const firstDayOfNextMonth = new Date(currentYear, nextMonth, 1);
-                    const firstWeekEnd = new Date(currentYear, nextMonth, 7 - firstDayOfNextMonth.getDay());
-
-                    const cellDate = new Date(info.date);
-
-                    // 다음 달이고 첫 주에 해당하면 숨기기
-                    if (
-                        cellDate.getMonth() === nextMonth &&
-                        cellDate.getTime() <= firstWeekEnd.getTime()
-                    ) {
-                        info.el.style.display = 'none'; // 셀 숨기기
-                    }
-                },
-                events: [] // 초기에는 이벤트 없음
-            });
-
-            await renderTasks(calendar, projectId); // 작업 데이터 렌더링
-            calendar.render();
-        }
 
 
 
@@ -289,7 +229,7 @@
                 }
 
                 // 성공 메시지
-                console.log('이벤트 업데이트 성공:', await response.json());
+                initializeFullCalendar();
             } catch (error) {
                 console.error('이벤트 업데이트 오류:', error);
                 alert('이벤트 업데이트 중 오류가 발생했습니다. 다시 시도해주세요.');
