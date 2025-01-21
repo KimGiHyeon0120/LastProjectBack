@@ -583,7 +583,7 @@ function saveProfilePopup() {
                 }
 
                 // 페이지 리디렉션 또는 팝업 닫기
-                window.location.href = '../users/profile-main.html';
+                location.href = location.href;
             } else {
             }
         },
