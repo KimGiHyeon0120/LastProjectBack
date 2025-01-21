@@ -213,7 +213,8 @@
                 // 전역 변수로 저장
                 window.userMap = userMap;
 
-                // 초기 렌더링
+                // 초기 렌더링  
+
                 renderTasks(statuses, allTasks, teamMembers);
 
                 // 드롭다운 이벤트를 재연결
@@ -226,7 +227,6 @@
             } catch (err) {
             }
         }
-
 
 
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -648,11 +648,13 @@
                         const statusDropdown = $("#editTaskStatus");
                         statusDropdown.empty();
                         statuses.forEach(status => {
+
                             const isSelected = status.id === selectedStatusId ? "selected" : "";
                             statusDropdown.append(`<option value="${status.id}" ${isSelected}>${status.name}</option>`);
                         });
                     },
                     error: function (err) {
+
                     }
                 });
             }
@@ -1194,14 +1196,23 @@
             }
 
             // 검색 필터링
+            // 검색 필터링
             searchInput.addEventListener('input', function () {
                 const query = searchInput.value.toLowerCase().trim();
-                const searchedTasks = filteredTasks.filter(task =>
-                    (task.taskName || task.task_name).toLowerCase().includes(query) ||
-                    (task.description || '').toLowerCase().includes(query) ||
-                    (task.assignedToName || '담당자 없음').toLowerCase().includes(query)
-                );
-                renderTasks(statuses, searchedTasks, teamMembers);
+
+                // 최신 데이터를 가져오기 위해 fetchTasksAndMembers() 호출
+                fetchTasksAndMembers().then(() => {
+                    // 검색 결과 필터링
+                    const searchedTasks = filteredTasks.filter(task =>
+                        (task.taskName || task.task_name).toLowerCase().includes(query) ||
+                        (task.description || '').toLowerCase().includes(query) ||
+                        (task.assignedToName || '담당자 없음').toLowerCase().includes(query)
+                    );
+
+                    console.log(statuses);
+                    console.log(teamMembers);
+                    renderTasks(statuses, searchedTasks, teamMembers); // 검색된 작업 렌더링
+                });
             });
 
             // 필터 이벤트 연결
@@ -1211,8 +1222,9 @@
             const projectId = sessionStorage.getItem('projectId');
             if (projectId) {
                 loadSprintFilters(projectId);
-                fetchTasksAndMembers();
+  
             }
+
         });
     </script>
 </body>
