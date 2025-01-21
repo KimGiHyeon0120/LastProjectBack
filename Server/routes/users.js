@@ -250,7 +250,28 @@ router.get('/get-idx', async (req, res) => {
 
 
 
+router.get('/get-idx/email', async (req, res) => {
+    const { userId } = req.query; // 클라이언트에서 userId로 받음
+    if (!userId) {
+        return res.status(400).json({ message: 'userId는 필수입니다.' });
+    }
 
+    try {
+        const [result] = await connection.promise().query(
+            'SELECT user_idx FROM Users WHERE user_email = ?',
+            [userId] // 쿼리 파라미터를 이메일로 매핑
+        );
+
+        if (result.length === 0) {
+            return res.status(404).json({ message: '해당 userId를 찾을 수 없습니다.' });
+        }
+
+        res.status(200).json({ user_idx: result[0].user_idx });
+    } catch (err) {
+        console.error('user_idx 조회 오류:', err);
+        res.status(500).json({ message: 'user_idx 조회 중 오류가 발생했습니다.' });
+    }
+});
 
 
 
@@ -364,10 +385,6 @@ router.post('/password-verify', async (req, res) => {
         }
     });
 });
-
-
-
-
 
 
 
@@ -526,7 +543,7 @@ router.get('/googlelogin/redirect', async (req, res) => {
 
             if (checkResults.length > 0) {
                 // 기존 사용자 → 지정된 페이지로 이동
-                return res.redirect('http://192.168.20.37:5500/Front/project/projectList.html');
+                return res.redirect(`http://192.168.20.37:5500/Front/project/projectList.html?email=${encodeURIComponent(email)}`);
             } else {
                 // 새 사용자 등록 후 이동
                 const insertQuery = `
@@ -539,7 +556,7 @@ router.get('/googlelogin/redirect', async (req, res) => {
                         return res.status(500).send('Database error occurred while registering user');
                     }
                     // 새 사용자도 지정된 페이지로 이동
-                    return res.redirect('http://192.168.20.37:5500/Front/project/projectList.html');
+                    return res.redirect(`http://192.168.20.37:5500/Front/project/projectList.html?email=${encodeURIComponent(email)}`);
                 });
             }
         });

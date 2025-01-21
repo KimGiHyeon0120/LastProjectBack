@@ -252,7 +252,7 @@
                         member.userId === task.assigned_to || member.userId === task.assignedTo
                     );
                     const profileImage = assignedMember?.profileImage || '../profile/default-profile.png';
-                    const assignedToName = assignedMember?.userName || '같이';
+                    const assignedToName = assignedMember?.userName || '담당자 없음';
 
                     // 날짜 변환 함수
                     const parseDate = dateStr => {
@@ -316,7 +316,7 @@
                                     `).join('')}
                                     <div class="dropdown-item" onclick="selectAssignee(${task.taskId || task.task_id}, null, '../profile/default-profile.png', '담당자 없음')">
                                         <img src="../profile/default-profile.png" class="dropdown-image" alt="프로필">
-                                        <span>같이</span>
+                                        <span>담당자 없음</span>
                                     </div>
                                 </div>
                             </div>
