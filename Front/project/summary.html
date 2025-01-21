@@ -392,7 +392,7 @@
                         const activeLabel = tooltip.dataPoints[0].label; // 툴팁에서 현재 호버된 항목의 레이블
                         const activeIndex = chartData.labels.indexOf(activeLabel);
                         const activeValue = chartData.datasets[0].data[activeIndex];
-                        const percentage = ((activeValue / totalTasks) * 100);
+                        const percentage = ((activeValue / totalTasks) * 100).toFixed(0);
 
                         // 첫 번째 줄: 항목 이름 (예: '할 일', '진행 중', '완료')
                         ctx.fillText(`${activeLabel}`, centerX + xOffset, centerY + yOffsetLine1);
@@ -431,7 +431,7 @@
                             callbacks: {
                                 label: function (context) {
                                     const value = context.raw;
-                                    const percentage = ((value / totalTasks) * 100);
+                                    const percentage = ((value / totalTasks) * 100).toFixed(0);;
                                     return `${context.label}: ${value}개 (${percentage}%)`;
                                 },
                             },

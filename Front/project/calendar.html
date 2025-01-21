@@ -76,19 +76,28 @@
             const calendarEl = document.getElementById('calendar-container');
 
             const calendar = new FullCalendar.Calendar(calendarEl, {
-                height: 'auto',
-                expandRows: false,
+                height: '1100px',
+                contentHeight: '300px',
+                events: 'https://fullcalendar.io/api/demo-feeds/events/.json',
+                expandRows: true,
                 fixedWeekCount: false,  // 한 달의 마지막 주를 표시
-   
+
                 headerToolbar: {
                     right: 'prev,today,next',
                     left: 'title',
-             
+
                 },
+                // 날짜 헤더를 영어로 표시
+
                 initialView: 'dayGridMonth',
                 initialDate: currentDate,
-                locale: 'ko',
-                navLinks: true,
+                locale: 'en',
+                // 날짜 헤더에 요일만 표시 (숫자만 표시되도록 설정)
+                dayHeaderFormat: { weekday: 'short', month: 'short', day: 'numeric' }, // 영어로 표시
+
+
+          
+                navLinks: false,
                 editable: true,
                 selectable: true,
                 nowIndicator: true,
@@ -239,8 +248,9 @@
         // 작업 렌더링 함수
         async function renderTasks(calendar, projectId) {
             const tasks = await fetchTasks(projectId);
-            
+
             const events = tasks.map(task => ({
+
                 id: task.taskId,
                 title: task.taskName,
                 start: task.startDate,  // 정확한 시작일
@@ -258,7 +268,7 @@
                     status: task.statusName
                 }
             }));
- 
+            console.log(events);
             calendar.addEventSource(events);
         }
 

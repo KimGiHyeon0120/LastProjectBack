@@ -490,39 +490,85 @@
 
 
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
         function bindSprintEvents() {
-            // 옵션 버튼
-            $(".options-btn").off("click").on("click", function (e) {
-                if (userRole === "팀원") return; // 팀원은 옵션 버튼 사용 불가
-                e.stopPropagation(); // 다른 클릭 이벤트 방지
-                const menu = $(this).siblings(".options-menu");
-                $(".options-menu").not(menu).hide(); // 다른 메뉴 닫기
-                menu.toggle(); // 현재 메뉴 열기/닫기
-            });
+    // 옵션 버튼
+    $(".options-btn").off("click").on("click", function (e) {
+        if (userRole === "팀원") return; // 팀원은 옵션 버튼 사용 불가
+        e.stopPropagation(); // 다른 클릭 이벤트 방지
+        const menu = $(this).siblings(".options-menu");
+        $(".options-menu").not(menu).hide(); // 다른 메뉴 닫기
+        menu.toggle(); // 현재 메뉴 열기/닫기
+    });
 
-            $(document).off("click").on("click", function () {
-                $(".options-menu").hide();
-            });
+    $(document).off("click").on("click", function () {
+        $(".options-menu").hide();
+    });
 
-            // 삭제 버튼
-            $(".delete-sprint-btn").off("click").on("click", function () {
-                if (userRole === "팀원") return; // 팀원은 삭제 버튼 사용 불가
-                const sprintId = $(this).data("sprint-id");
-                if (confirm("스프린트를 삭제하시겠습니까? 관련 작업은 '임시저장'으로 이동됩니다.")) {
-                    deleteSprint(sprintId);
-                }
-            });
+    // 삭제 버튼
+    $(".delete-sprint-btn").off("click").on("click", function () {
+        if (userRole === "팀원") return; // 팀원은 삭제 버튼 사용 불가
 
-            // 편집 버튼
-            $(".edit-sprint-btn").off("click").on("click", function () {
-                if (userRole === "팀원") return; // 팀원은 편집 버튼 사용 불가
-                const sprintId = $(this).data("sprint-id");
-                openEditPopup(sprintId);
-            });
+        const sprintId = $(this).data("sprint-id");
+
+        // 팝업 동적 업데이트
+        const deletePopup = $("#popup-delete-task");
+        const deletePopupBackground = $(".delete-popup-background");
+        const headerText = deletePopup.find(".header-text");
+        const popupMessage = deletePopup.find(".delete-popup-form p");
+        const deleteBtn = deletePopup.find(".delete-btn");
+
+        // 팝업 내용 변경
+        headerText.text("스프린트를 삭제하시겠습니까?");
+        popupMessage.text("관련 작업은 '임시저장'으로 이동됩니다.");
+        deleteBtn.data("sprint-id", sprintId);
+
+        // 팝업 열기
+        deletePopupBackground.fadeIn(); // 배경 표시
+        deletePopup.fadeIn(); // 팝업 표시
+    });
+
+    // 팝업 닫기 (취소 버튼)
+    $("#popup-delete-task .cancel-btn").off("click").on("click", function () {
+        const deletePopup = $("#popup-delete-task");
+        const deleteBtn = deletePopup.find(".delete-btn");
+
+        // 팝업 닫기
+        $(".delete-popup-background").fadeOut(); // 배경 숨기기
+        deletePopup.fadeOut(function () {
+            // 팝업이 완전히 닫힌 후 초기화 실행
+            deletePopup.find(".header-text").text("이 작업을 삭제하시겠습니까");
+            deletePopup.find(".delete-popup-form p").text("삭제하면 영구적으로 제거됩니다.");
+            deleteBtn.removeData("sprint-id"); // sprintId 초기화
+        });
+    });
+
+    // 팝업 삭제 버튼 클릭
+    $("#popup-delete-task .delete-btn").off("click").on("click", function () {
+        const sprintId = $(this).data("sprint-id");
+        if (sprintId) {
+            deleteSprint(sprintId); // 스프린트 삭제 로직 호출
         }
 
+        // 팝업 닫기
+        $(".delete-popup-background").fadeOut();
+        $("#popup-delete-task").fadeOut(function () {
+            // 삭제 후 초기화
+            $("#popup-delete-task .header-text").text("이 작업을 삭제하시겠습니까");
+            $("#popup-delete-task .delete-popup-form p").text("삭제하면 영구적으로 제거됩니다.");
+            $(this).find(".delete-btn").removeData("sprint-id");
+        });
+    });
 
+    // 편집 버튼
+    $(".edit-sprint-btn").off("click").on("click", function () {
+        if (userRole === "팀원") return; // 팀원은 편집 버튼 사용 불가
+        const sprintId = $(this).data("sprint-id");
+        openEditPopup(sprintId);
+    });
+}
+
+
+        
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
         function loadStatusDropdown(task) {
