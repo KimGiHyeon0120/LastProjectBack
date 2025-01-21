@@ -11,15 +11,6 @@ body {
     overflow: hidden;
 }
 
-/* 위치 고정된 요소들 비활성화 */
-.fc-header-toolbar .fc-dayGridMonth-button,
-.fc-header-toolbar .fc-timeGridWeek-button,
-.fc-header-toolbar .fc-timeGridDay-button,
-.fc-header-toolbar .fc-listMonth-button,
-.fc-header-toolbar .fc-listWeek-button,
-.fc-header-toolbar .fc-listDay-button {
-    display: none !important; /* 다른 이동 버튼 숨기기 */
-}
 
 
 /* 캘린더 컨테이너 스타일 */
