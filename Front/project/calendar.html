@@ -91,9 +91,12 @@
 
                 initialView: 'dayGridMonth',
                 initialDate: currentDate,
-                locale: 'en',
-                // 날짜 헤더에 요일만 표시 (숫자만 표시되도록 설정)
-                dayHeaderFormat: { weekday: 'short', month: 'short', day: 'numeric' }, // 영어로 표시
+                locale: 'ko',
+        // 날짜 셀에 텍스트를 숫자만 표시
+    dayCellContent: function(info) {
+        const day = info.date.getDate(); // 날짜 (1일, 2일, ...)
+        return day.toString(); // 숫자만 반환
+    },
 
 
           
