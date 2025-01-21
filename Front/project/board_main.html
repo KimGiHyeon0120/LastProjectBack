@@ -490,7 +490,6 @@
 
 
         // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
         function bindSprintEvents() {
     // 옵션 버튼
     $(".options-btn").off("click").on("click", function (e) {
@@ -530,8 +529,17 @@
 
     // 팝업 닫기 (취소 버튼)
     $("#popup-delete-task .cancel-btn").off("click").on("click", function () {
+        const deletePopup = $("#popup-delete-task");
+        const deleteBtn = deletePopup.find(".delete-btn");
+
+        // 팝업 닫기
         $(".delete-popup-background").fadeOut(); // 배경 숨기기
-        $("#popup-delete-task").fadeOut(); // 팝업 숨기기
+        deletePopup.fadeOut(function () {
+            // 팝업이 완전히 닫힌 후 초기화 실행
+            deletePopup.find(".header-text").text("이 작업을 삭제하시겠습니까");
+            deletePopup.find(".delete-popup-form p").text("삭제하면 영구적으로 제거됩니다.");
+            deleteBtn.removeData("sprint-id"); // sprintId 초기화
+        });
     });
 
     // 팝업 삭제 버튼 클릭
@@ -543,13 +551,12 @@
 
         // 팝업 닫기
         $(".delete-popup-background").fadeOut();
-        $("#popup-delete-task").fadeOut();
-    });
-
-    // 배경 클릭 시 팝업 닫기
-    $(".delete-popup-background").off("click").on("click", function () {
-        $(this).fadeOut(); // 배경 숨기기
-        $("#popup-delete-task").fadeOut(); // 팝업 숨기기
+        $("#popup-delete-task").fadeOut(function () {
+            // 삭제 후 초기화
+            $("#popup-delete-task .header-text").text("이 작업을 삭제하시겠습니까");
+            $("#popup-delete-task .delete-popup-form p").text("삭제하면 영구적으로 제거됩니다.");
+            $(this).find(".delete-btn").removeData("sprint-id");
+        });
     });
 
     // 편집 버튼

@@ -1,5 +1,5 @@
 body {
-    padding: 10px 40px;
+    padding: 40px 40px;
 }
 
 .calendar {
@@ -18,6 +18,8 @@ body {
     background-color: #f9f9f9;
     padding: 20px;
     border-radius: 4px;
+    border-bottom: 2px solid #ddd;
+    border-right: 2px solid #ddd;
 }
 
 
@@ -106,22 +108,8 @@ body {
 
 /* 오늘 날짜가 포함된 날짜 셀 스타일 */
 .fc-day.fc-day-today {
-    color: #333 !important;
+    background-color: #FFFADF!important;
     position: relative;
-}
-
-/* 날짜 숫자에 빨간색 동그라미 추가 */
-.fc-day.fc-day-today::before {
-    content: '' !important;
-    position: absolute !important;
-    top: 3px !important;
-    left: 85% !important;
-    transform: translateX(-50%) !important;
-    width: 30px !important;
-    height: 30px !important;
-    background-color: red !important;
-    border-radius: 50% !important;
-    z-index: 1 !important;
 }
 
 
