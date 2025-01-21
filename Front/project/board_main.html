@@ -146,7 +146,7 @@
                 <!-- 담당자 선택 추가 -->
                 <label>담당자</label>
                 <select id="taskAssignedTo" required>
-                    <option value="" selected>담당자 없음</option> <!-- 기본값 설정 -->
+                    <option value="" selected>같이</option> <!-- 기본값 설정 -->
                     <!-- 팀원 목록은 JavaScript로 동적 추가 -->
                 </select>
 
@@ -301,7 +301,7 @@
                             <div class="assignee-section">
                                 <div class="assignee-dropdown" style="text-align: center;">
                                     <img src="${task.assignedToImage || '../profile/default-profile.png'}" class="assignee-image" alt="프로필" onclick="toggleAssigneeDropdown(${task.taskId})" >
-                                    <span class="assignee-name">${task.assignedToName || '담당자 없음'}</span>
+                                    <span class="assignee-name">${task.assignedToName || '같이'}</span>
                                 </div>
 
                                 <div class="dropdown-options hidden" id="dropdown_${task.taskId}">
@@ -963,7 +963,7 @@
                         `).join('')}
                         <div class="dropdown-item" onclick="selectAssignee(${taskId}, null, '../profile/default-profile.png', '담당자 없음')">
                             <img src="../profile/default-profile.png" class="dropdown-image" alt="프로필">
-                            <span>담당자 없음</span>
+                            <span>같이</span>
                         </div>
                     `;
                 } catch (err) {
@@ -1237,7 +1237,7 @@
 
                     // 드롭다운 초기화
                     dropdown.innerHTML = `
-            <option value="" selected>담당자 없음</option> <!-- 기본값 설정 -->
+            <option value="" selected>같이</option> <!-- 기본값 설정 -->
         `;
 
                     // 팀원 목록 추가
@@ -1634,7 +1634,7 @@
 
                 const noAssigneeOption = document.createElement("option");
                 noAssigneeOption.value = "";
-                noAssigneeOption.textContent = "담당자 없음";
+                noAssigneeOption.textContent = "같이";
                 dropdown.appendChild(noAssigneeOption);
 
             } catch (err) {
