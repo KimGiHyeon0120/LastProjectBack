@@ -85,7 +85,7 @@ body {
     display: flex; /* 아이콘을 중앙에 배치 */
     justify-content: center; /* 가로 중앙 정렬 */
     align-items: center; /* 세로 중앙 정렬 */
-    transition: background-color 0.3s ease, transform 0.2s ease;
+    transition: background-color 0.3s ease;
 }
 /* 옵션 버튼 호버 시 */
 .options-btn:hover {

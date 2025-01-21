@@ -24,7 +24,7 @@ router.get('/team/tasks', (req, res) => {
     }
 
     const query = `
-        SELECT 
+        SELECT
             u.user_idx AS userIdx, -- 사용자 ID 추가
             u.user_name AS memberName,
             SUM(CASE WHEN t.Tasks_status_id = 3 THEN 1 ELSE 0 END) AS completed,
@@ -65,7 +65,7 @@ router.get('/all/tasks', async (req, res) => {
     }
 
     const query = `
-        SELECT 
+        SELECT
             Tasks_status_id,
             COUNT(*) AS count
         FROM Tasks
@@ -115,7 +115,7 @@ router.get('/projects/:project_id/sprints', async (req, res) => {
     const { project_id } = req.params; // 프로젝트 ID
 
     const query = `
-        SELECT 
+        SELECT
             sprint_id AS sprintId,
             sprint_name AS sprintName
         FROM Sprints
@@ -137,7 +137,7 @@ router.get('/sprints/:sprint_id/team/tasks', async (req, res) => {
     const { sprint_id } = req.params;
 
     const query = `
-        SELECT 
+        SELECT
             u.user_profile_image as memberProfile,
             u.user_name AS memberName, -- 팀원 이름
              u.user_profile_image as memberProfile,
@@ -163,7 +163,7 @@ router.get('/alltasks/all', async (req, res) => {
     const projectId = req.query.projectId; // 프로젝트 ID를 쿼리 파라미터로 받음
 
     const query = `
-        SELECT 
+        SELECT
             u.user_profile_image as memberProfile,
             u.user_name AS memberName,
             u.user_profile_image as memberProfile,
@@ -205,7 +205,7 @@ router.get('/alltasks/all', async (req, res) => {
 router.get('/tasks/urgent', async (req, res) => {
     const { projectId } = req.query; // 요청에서 projectId를 받아옴
     const query = `
-SELECT 
+SELECT
     t.task_id AS taskId,
     t.task_name AS taskName,
     t.due_date AS dueDate,
@@ -254,12 +254,12 @@ router.get('/tasks/mytasks', async (req, res) => {
 
     try {
         let query = `
-        SELECT 
+        SELECT
             t.task_name AS taskName, -- 작업 이름
             ts.Tasks_status_name AS taskStatus, -- 작업 상태
             t.sprint_id,
             s.sprint_name,
-            CASE 
+            CASE
                 WHEN t.due_date = CURDATE() OR t.due_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY) THEN '긴급'
                 WHEN DATEDIFF(t.due_date, CURDATE()) <= 3 THEN '높음'
                 WHEN DATEDIFF(t.due_date, CURDATE()) <= 5 THEN '중간'

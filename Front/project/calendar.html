@@ -22,15 +22,17 @@
     <div class="main">
         <div class="calendar">
             <!-- 캘린더 상단 헤더 -->
-            <div class="header">
-                <button id="prev">◀</button>
-                <button id="today">오늘</button>
-                <button id="next">▶</button>
+            <div class="fc-header-toolbar2">
+                <!-- 오늘 버튼 -->
+                <div id="today" class="nav-button today2"></div>
+                <!-- 이전 버튼 -->
+                <div id="prev" class="nav-button prev2"></div>
+                <!-- 다음 버튼 -->
+                <div id="next" class="nav-button next2"></div>
             </div>
 
 
-
-            <!-- 날짜 및 작업 표시 영역 -->
+            <!-- 캘린더 날짜 및 작업 표시 영역 -->
             <div id="calendar-container"></div>
         </div>
     </div>
@@ -76,12 +78,12 @@
             const calendar = new FullCalendar.Calendar(calendarEl, {
                 height: 'auto',
                 expandRows: false,
-                slotMinTime: '08:00',
-                slotMaxTime: '20:00',
+                fixedWeekCount: false,  // 한 달의 마지막 주를 표시
+   
                 headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+                    right: 'prev,today,next',
+                    left: 'title',
+             
                 },
                 initialView: 'dayGridMonth',
                 initialDate: currentDate,
@@ -237,7 +239,7 @@
         // 작업 렌더링 함수
         async function renderTasks(calendar, projectId) {
             const tasks = await fetchTasks(projectId);
-
+            
             const events = tasks.map(task => ({
                 id: task.taskId,
                 title: task.taskName,
@@ -256,7 +258,7 @@
                     status: task.statusName
                 }
             }));
-
+ 
             calendar.addEventSource(events);
         }
 
